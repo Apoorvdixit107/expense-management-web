@@ -6,13 +6,14 @@ import { Logo } from "@/components/brand/Logo";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ORGANIZATION_TYPE_LABELS } from "@/lib/types";
+import { organizationTypeLabel } from "@/lib/types";
 
 const TYPE_STYLES: Record<string, string> = {
   COMPANY: "bg-violet-100 text-violet-700",
   HOME: "bg-brand-light text-brand",
   SHOP: "bg-emerald-100 text-emerald-700",
   OTHER: "bg-neutral-100 text-neutral-700",
+  CUSTOM: "bg-amber-100 text-amber-800",
 };
 
 export default function SelectAccountPage() {
@@ -52,7 +53,7 @@ export default function SelectAccountPage() {
             <span className="min-w-0 flex-1">
               <span className="block font-semibold text-ink">{org.name}</span>
               <span className="mt-0.5 inline-block rounded-full bg-paper px-2 py-0.5 text-xs font-medium text-muted">
-                {ORGANIZATION_TYPE_LABELS[org.type]}
+                {organizationTypeLabel(org)}
               </span>
             </span>
             <span className="text-muted" aria-hidden>

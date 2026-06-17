@@ -39,18 +39,20 @@ export type CreateExpenseRequest = {
   spentAt?: string;
 };
 
-export type OrganizationType = "COMPANY" | "HOME" | "SHOP" | "OTHER";
+export type OrganizationType = "COMPANY" | "HOME" | "SHOP" | "OTHER" | "CUSTOM";
 
 export type Organization = {
   id: number;
   name: string;
   type: OrganizationType;
+  customTypeLabel: string | null;
   createdAt: string;
 };
 
 export type CreateOrganizationRequest = {
   name: string;
   type: OrganizationType;
+  customTypeLabel?: string;
 };
 
 export type UpdateOrganizationRequest = CreateOrganizationRequest;
@@ -87,14 +89,29 @@ export type ConnectBankAccountRequest = {
   connectNow: boolean;
 };
 
-export const ORGANIZATION_TYPE_LABELS: Record<OrganizationType, string> = {
+export const ORGANIZATION_TYPE_LABELS: Record<Exclude<OrganizationType, "CUSTOM">, string> = {
   COMPANY: "Company",
   HOME: "Home",
   SHOP: "Shop",
   OTHER: "Other",
 };
 
-export const ORGANIZATION_TYPE_OPTIONS: OrganizationType[] = ["COMPANY", "HOME", "SHOP", "OTHER"];
+export const ORGANIZATION_TYPE_OPTIONS: Exclude<OrganizationType, "CUSTOM">[] = [
+  "COMPANY",
+  "HOME",
+  "SHOP",
+  "OTHER",
+];
+
+export function organizationTypeLabel(org: Pick<Organization, "type" | "customTypeLabel">): string {
+  if (org.type === "CUSTOM" && org.customTypeLabel) {
+    return org.customTypeLabel;
+  }
+  if (org.type === "CUSTOM") {
+    return "Custom";
+  }
+  return ORGANIZATION_TYPE_LABELS[org.type];
+}
 
 export type Notification = {
   id: number;

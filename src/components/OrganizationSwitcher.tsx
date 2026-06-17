@@ -3,13 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useOrganization } from "@/components/OrganizationProvider";
-import { ORGANIZATION_TYPE_LABELS } from "@/lib/types";
+import { organizationTypeLabel } from "@/lib/types";
 
 const TYPE_COLORS: Record<string, string> = {
   COMPANY: "bg-violet-500/20 text-violet-200",
   HOME: "bg-brand/20 text-brand",
   SHOP: "bg-emerald-500/20 text-emerald-200",
   OTHER: "bg-white/10 text-[var(--sidebar-text)]",
+  CUSTOM: "bg-amber-500/20 text-amber-200",
 };
 
 export function OrganizationSwitcher({ onNavigate }: { onNavigate?: () => void }) {
@@ -33,7 +34,7 @@ export function OrganizationSwitcher({ onNavigate }: { onNavigate?: () => void }
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold text-white">{currentOrg.name}</span>
           <span className="block truncate text-xs text-[var(--sidebar-text)]">
-            {ORGANIZATION_TYPE_LABELS[currentOrg.type]}
+            {organizationTypeLabel(currentOrg)}
           </span>
         </span>
         <span className="text-[var(--sidebar-text)]" aria-hidden>
@@ -64,7 +65,7 @@ export function OrganizationSwitcher({ onNavigate }: { onNavigate?: () => void }
                 }`}
               >
                 <span className="truncate font-medium">{org.name}</span>
-                <span className="ml-auto text-xs opacity-70">{ORGANIZATION_TYPE_LABELS[org.type]}</span>
+                <span className="ml-auto text-xs opacity-70">{organizationTypeLabel(org)}</span>
               </button>
             ))}
             <Link
