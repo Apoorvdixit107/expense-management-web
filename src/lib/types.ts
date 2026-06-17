@@ -420,6 +420,29 @@ export type ReferralProfile = {
   totalEarnedPaise: number;
   pendingReferrals: number;
   rewardedReferrals: number;
+  minWithdrawalPaise: number;
+  canWithdraw: boolean;
+  pendingWithdrawalPaise: number;
+};
+
+export type PayoutMethod = "UPI" | "BANK";
+
+export type WithdrawWalletRequest = {
+  payoutMethod: PayoutMethod;
+  upiId?: string;
+  accountHolderName?: string;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+};
+
+export type WalletWithdrawalResponse = {
+  id: number;
+  amountPaise: number;
+  payoutMethod: PayoutMethod;
+  status: "PENDING" | "COMPLETED" | "REJECTED";
+  createdAt: string;
+  walletBalancePaise: number;
 };
 
 export const EXPENSE_CATEGORIES = [

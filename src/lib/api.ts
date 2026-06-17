@@ -32,6 +32,8 @@ import type {
   BankAccount,
   ConnectBankAccountRequest,
   ReferralProfile,
+  WithdrawWalletRequest,
+  WalletWithdrawalResponse,
   OrganizationBalanceRange,
   OrganizationReport,
   OrganizationReportType,
@@ -123,6 +125,12 @@ export const api = {
     ),
 
   getReferralProfile: () => request<ReferralProfile>("/api/referrals/me"),
+
+  withdrawWallet: (body: WithdrawWalletRequest) =>
+    request<WalletWithdrawalResponse>("/api/referrals/withdraw", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 
   getProfile: () => request<UserProfile>("/api/auth/profile"),
 

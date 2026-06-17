@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { WalletWithdrawModal } from "@/components/WalletWithdrawModal";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
@@ -12,13 +13,18 @@ import type { ReferralProfile } from "@/lib/types";
 
 export default function ReferAndEarnPage() {
   const [profile, setProfile] = useState<ReferralProfile | null>(null);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
-  useEffect(() => {
+  const loadProfile = useCallback(() => {
     api
       .getReferralProfile()
       .then(setProfile)
       .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load referral profile"));
   }, []);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   async function copyLink() {
     if (!profile) return;
@@ -43,6 +49,11 @@ export default function ReferAndEarnPage() {
   if (!profile) {
     return <div className="py-20 text-center text-muted">Loading...</div>;
   }
+
+  const minWithdrawal = profile.minWithdrawalPaise ?? 5000;
+  const canWithdraw =
+    profile.canWithdraw ??
+    (profile.walletBalancePaise >= minWithdrawal && profile.pendingWithdrawalPaise === 0);
 
   return (
     <div className="space-y-8">
@@ -98,6 +109,23 @@ export default function ReferAndEarnPage() {
               {formatCurrency(formatPaise(profile.totalEarnedPaise))}
             </span>
           </p>
+
+          {profile.pendingWithdrawalPaise > 0 ? (
+            <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+              Withdrawal of {formatCurrency(formatPaise(profile.pendingWithdrawalPaise))} is being
+              processed.
+            </p>
+          ) : null}
+
+          {canWithdraw ? (
+            <Button type="button" className="mt-4 w-full" onClick={() => setWithdrawOpen(true)}>
+              Withdraw
+            </Button>
+          ) : profile.walletBalancePaise > 0 && profile.walletBalancePaise < minWithdrawal ? (
+            <p className="mt-4 text-sm text-muted">
+              Withdraw when your balance reaches {formatCurrency(formatPaise(minWithdrawal))} or more.
+            </p>
+          ) : null}
         </Card>
       </div>
 
@@ -124,6 +152,13 @@ export default function ReferAndEarnPage() {
           </p>
         </Card>
       </div>
+
+      <WalletWithdrawModal
+        open={withdrawOpen}
+        onClose={() => setWithdrawOpen(false)}
+        walletBalancePaise={profile.walletBalancePaise}
+        onSuccess={loadProfile}
+      />
     </div>
   );
 }
