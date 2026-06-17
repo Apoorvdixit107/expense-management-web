@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BillingDetailsCard } from "@/components/BillingDetailsCard";
 import { ShippingDetailsForm } from "@/components/ShippingDetailsForm";
+import { Modal } from "@/components/ui/Modal";
 import { useRazorpayCheckout } from "@/hooks/useRazorpayCheckout";
 import { useSubscription } from "@/components/SubscriptionProvider";
 import { Button } from "@/components/ui/Button";
@@ -60,26 +60,6 @@ export default function ManagePlanPage() {
     return <div className="py-20 text-center text-muted">Redirecting to sign in...</div>;
   }
 
-  if (checkoutPlan) {
-    return (
-      <div className="space-y-8">
-        <PageHeader title="Manage plan" subtitle="Enter details before payment" />
-        <ShippingDetailsForm
-          planLabel={checkoutPlan.name}
-          loading={loadingPlan === checkoutPlan.code}
-          onCancel={() => setCheckoutPlan(null)}
-          onSubmit={async (details: ShippingDetails, sendInvoiceEmail: boolean) => {
-            await payForPlan(checkoutPlan.code, details, sendInvoiceEmail);
-            setCheckoutPlan(null);
-            await refresh();
-            const updated = await api.listInvoices();
-            setInvoices(updated);
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
       <PageHeader
@@ -108,8 +88,6 @@ export default function ManagePlanPage() {
           </p>
         </Card>
       )}
-
-      <BillingDetailsCard />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {plans.map((plan) => {
@@ -191,6 +169,35 @@ export default function ManagePlanPage() {
           Back to expenses
         </Link>
       </p>
+
+      <Modal
+        open={checkoutPlan != null}
+        onClose={() => {
+          if (loadingPlan) return;
+          setCheckoutPlan(null);
+        }}
+        title="Your billing details"
+        subtitle={
+          checkoutPlan
+            ? `Enter details for ${checkoutPlan.name} — email is required for your invoice.`
+            : undefined
+        }
+      >
+        {checkoutPlan ? (
+          <ShippingDetailsForm
+            planLabel={checkoutPlan.name}
+            loading={loadingPlan === checkoutPlan.code}
+            onCancel={() => setCheckoutPlan(null)}
+            onSubmit={async (details: ShippingDetails, sendInvoiceEmail: boolean) => {
+              await payForPlan(checkoutPlan.code, details, sendInvoiceEmail);
+              setCheckoutPlan(null);
+              await refresh();
+              const updated = await api.listInvoices();
+              setInvoices(updated);
+            }}
+          />
+        ) : null}
+      </Modal>
     </div>
   );
 }

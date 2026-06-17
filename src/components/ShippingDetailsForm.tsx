@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import type { BillingCompany, ShippingDetails } from "@/lib/types";
 
 type Props = {
-  onSubmit: (details: ShippingDetails, sendInvoiceEmail: boolean) => void;
+  onSubmit: (details: ShippingDetails, sendInvoiceEmail: boolean) => void | Promise<void>;
   onCancel: () => void;
   loading?: boolean;
   planLabel: string;
@@ -18,6 +18,7 @@ type Props = {
 export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: Props) {
   const user = getUser();
   const [billingCompany, setBillingCompany] = useState<BillingCompany | null>(null);
+  const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState(user?.email ?? "");
   const [name, setName] = useState(user?.fullName ?? "");
   const [phone, setPhone] = useState("");
@@ -44,30 +45,36 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
       .catch(() => undefined);
   }, []);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
-    onSubmit(
-      {
-        email: email.trim(),
-        name: name.trim() || undefined,
-        phone: phone.trim() || undefined,
-        gst: gst.trim() || undefined,
-        pan: pan.trim() || undefined,
-        address: address.trim() || undefined,
-        pincode: pincode.trim() || undefined,
-      },
-      sendInvoiceEmail
-    );
+
+    const details: ShippingDetails = {
+      email: email.trim(),
+      name: name.trim() || undefined,
+      phone: phone.trim() || undefined,
+      gst: gst.trim() || undefined,
+      pan: pan.trim() || undefined,
+      address: address.trim() || undefined,
+      pincode: pincode.trim() || undefined,
+    };
+
+    setSaving(true);
+    try {
+      await api.updateBillingDetails({ shippingDetails: details, sendInvoiceByEmail: sendInvoiceEmail });
+      await onSubmit(details, sendInvoiceEmail);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save billing details");
+    } finally {
+      setSaving(false);
+    }
   }
 
+  const busy = loading || saving;
+
   return (
-    <Card className="max-w-2xl">
+    <div>
       <p className="text-sm font-semibold uppercase tracking-wide text-brand">Checkout — {planLabel}</p>
-      <h2 className="mt-2 text-xl font-bold text-ink">Billing & shipping details</h2>
-      <p className="mt-2 text-sm text-muted">
-        Email is required for your invoice. All other fields are optional.
-      </p>
 
       {billingCompany ? (
         <div className="mt-6 rounded-xl border border-border bg-paper p-4 text-sm">
@@ -115,14 +122,14 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
         </label>
 
         <div className="flex flex-wrap gap-3 pt-2">
-          <Button type="submit" disabled={loading}>
-            {loading ? "Processing..." : "Continue to payment"}
+          <Button type="submit" disabled={busy}>
+            {busy ? "Processing..." : "Continue to payment"}
           </Button>
-          <Button type="button" variant="secondary" onClick={onCancel} disabled={loading}>
+          <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
             Cancel
           </Button>
         </div>
       </form>
-    </Card>
+    </div>
   );
 }
