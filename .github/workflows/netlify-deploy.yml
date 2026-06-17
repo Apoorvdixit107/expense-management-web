@@ -33,6 +33,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check deploy env
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if [ -z "${NEXT_PUBLIC_API_URL}" ]; then
+            echo "::error::Set NEXT_PUBLIC_API_URL in GitHub repo Variables (expense-management-web)."
+            echo "Example: https://your-name.trycloudflare.com"
+            exit 1
+          fi
+          echo "API URL: ${NEXT_PUBLIC_API_URL}"
+
       - name: Verify production build
         run: npm run build
 
