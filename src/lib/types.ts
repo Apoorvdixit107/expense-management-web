@@ -129,7 +129,7 @@ export type ExpenseReport = {
   breakdown: PeriodBreakdown[];
 };
 
-export type ReportPeriod = "LAST_7_DAYS" | "LAST_30_DAYS" | "MONTH" | "YEAR";
+export type ReportPeriod = "TODAY" | "LAST_7_DAYS" | "LAST_30_DAYS" | "MONTH" | "YEAR";
 
 export type PlanCode = "PRO" | "BEAST";
 
