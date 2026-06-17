@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
-import { saveSession } from "@/lib/auth";
+import { saveSession, updateStoredUser } from "@/lib/auth";
 import { postAuthPath } from "@/lib/navigation";
+import { applyProfilePreferences } from "@/lib/preferences";
 import { clearReferralCode, getReferralCode } from "@/lib/referral";
 
 type GoogleSignInButtonProps = {
@@ -38,6 +39,16 @@ export function GoogleSignInButton({ mode, redirectTo }: GoogleSignInButtonProps
       const auth = await api.googleLogin(response.credential, referralCode);
       if (mode === "signup") clearReferralCode();
       saveSession(auth);
+      try {
+        const profile = await api.getProfile();
+        applyProfilePreferences(profile);
+        updateStoredUser({
+          fullName: profile.fullName,
+          profileImageUrl: profile.profileImageUrl,
+        });
+      } catch {
+        // profile sync is best-effort after sign-in
+      }
       router.push(redirectTo || postAuthPath());
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Google sign in failed");

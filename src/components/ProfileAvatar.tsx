@@ -20,6 +20,7 @@ export function ProfileAvatar({ name, imageUrl, size = "md", className = "" }: P
       <img
         src={imageUrl}
         alt={name}
+        referrerPolicy="no-referrer"
         className={`rounded-full object-cover ${sizeClass} ${className}`}
       />
     );

@@ -102,6 +102,43 @@ export function trendChartTitle(filter: DashboardFilter): string {
   }
 }
 
+export function filterToDateRange(filter: DashboardFilter): { fromDate: string; toDate: string } {
+  const now = new Date();
+  const today = localDateString(now);
+
+  switch (filter.period) {
+    case "TODAY":
+      return { fromDate: today, toDate: today };
+    case "LAST_7_DAYS": {
+      const from = new Date(now);
+      from.setDate(from.getDate() - 6);
+      return { fromDate: localDateString(from), toDate: today };
+    }
+    case "LAST_30_DAYS": {
+      const from = new Date(now);
+      from.setDate(from.getDate() - 29);
+      return { fromDate: localDateString(from), toDate: today };
+    }
+    case "MONTH": {
+      const [year, month] = filter.monthInput.split("-").map(Number);
+      const lastDay = new Date(year, month, 0).getDate();
+      return {
+        fromDate: `${year}-${pad2(month)}-01`,
+        toDate: `${year}-${pad2(month)}-${pad2(lastDay)}`,
+      };
+    }
+    case "YEAR":
+      return {
+        fromDate: `${filter.yearInput}-01-01`,
+        toDate: `${filter.yearInput}-12-31`,
+      };
+    case "CUSTOM_RANGE":
+      return { fromDate: filter.fromDate, toDate: filter.toDate };
+    default:
+      return { fromDate: today, toDate: today };
+  }
+}
+
 export function trendChartSubtitle(filter: DashboardFilter): string {
   switch (filter.period) {
     case "TODAY":

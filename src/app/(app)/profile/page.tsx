@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { CookieSettingsLink } from "@/components/CookieSettingsLink";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { useUserPreferences } from "@/components/UserPreferencesProvider";
 import { toast } from "@/components/toast";
@@ -226,6 +227,13 @@ export default function ProfilePage() {
             <Button type="submit" disabled={saving}>
               {saving ? labels.saving : labels.save}
             </Button>
+
+            <p className="text-xs text-muted">
+              <CookieSettingsLink className="text-brand hover:text-brand-hover" /> ·{" "}
+              <a href="/cookies" className="text-brand hover:text-brand-hover">
+                Cookie policy
+              </a>
+            </p>
           </form>
         </Card>
       </div>

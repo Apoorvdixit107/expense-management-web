@@ -6,6 +6,7 @@ import { SubscriptionProvider } from "@/components/SubscriptionProvider";
 import { UserPreferencesProvider } from "@/components/UserPreferencesProvider";
 import { ToastProvider } from "@/components/toast";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { CookieConsent } from "@/components/CookieConsent";
 import { ReferralCapture } from "@/components/ReferralCapture";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </Suspense>
               {children}
               <WhatsAppButton />
+              <CookieConsent />
               </UserPreferencesProvider>
             </SubscriptionProvider>
           </ToastProvider>

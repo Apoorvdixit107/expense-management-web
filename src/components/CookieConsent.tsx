@@ -67,26 +67,16 @@ function CookieSettingsPanel({
                   <p className="font-semibold text-ink">{category.title}</p>
                   <p className="mt-1 text-sm text-muted">{category.description}</p>
                 </div>
-                <label className="relative inline-flex shrink-0 cursor-pointer items-center">
+                <label className="flex shrink-0 items-center gap-2">
                   <input
                     type="checkbox"
-                    className="peer sr-only"
+                    className="h-5 w-5 rounded border-border accent-brand"
                     checked={checked}
                     disabled={disabled}
                     onChange={(e) => {
                       if (category.id === "functional") setFunctional(e.target.checked);
                       if (category.id === "analytics") setAnalytics(e.target.checked);
                     }}
-                  />
-                  <span
-                    className={`h-6 w-11 rounded-full transition ${
-                      checked ? "bg-brand" : "bg-border"
-                    } ${disabled ? "opacity-60" : ""} peer-focus-visible:ring-2 peer-focus-visible:ring-brand/30`}
-                  />
-                  <span
-                    className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${
-                      checked ? "translate-x-5" : ""
-                    }`}
                   />
                 </label>
               </div>

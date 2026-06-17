@@ -18,6 +18,27 @@ export type LoginRequest = {
   password: string;
 };
 
+export type DailyBalanceSummary = {
+  date: string;
+  totalIn: number;
+  totalOut: number;
+  netChange: number;
+  closingBalance: number;
+};
+
+export type OrganizationBalanceRange = {
+  organizationId: number;
+  fromDate: string;
+  toDate: string;
+  openingBalance: number;
+  closingBalance: number;
+  currentBalance: number;
+  periodTotalIn: number;
+  periodTotalOut: number;
+  periodNetChange: number;
+  dailySummaries: DailyBalanceSummary[];
+};
+
 export type ExpenseType = "IN" | "OUT";
 
 export type Expense = {

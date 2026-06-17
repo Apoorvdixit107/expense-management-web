@@ -29,6 +29,7 @@ import type {
   BankAccount,
   ConnectBankAccountRequest,
   ReferralProfile,
+  OrganizationBalanceRange,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
@@ -140,6 +141,13 @@ export const api = {
 
   deleteOrganization: (id: number) =>
     request<void>(`/api/organizations/${id}`, { method: "DELETE" }),
+
+  getOrganizationBalanceSummary: (organizationId: number, fromDate: string, toDate: string) => {
+    const params = new URLSearchParams({ fromDate, toDate });
+    return request<OrganizationBalanceRange>(
+      `/api/organizations/${organizationId}/balance-summary?${params}`
+    );
+  },
 
   listCategories: (organizationId: number) =>
     request<ExpenseCategory[]>(`/api/organizations/${organizationId}/categories`),

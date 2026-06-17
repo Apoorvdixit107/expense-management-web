@@ -151,6 +151,9 @@ export function LandingPage() {
             <Link href="/register" className="hover:text-[#212121]">
               Register
             </Link>
+            <Link href="/cookies" className="hover:text-[#212121]">
+              Cookies
+            </Link>
           </div>
         </div>
       </footer>
