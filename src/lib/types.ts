@@ -20,6 +20,7 @@ export type LoginRequest = {
 
 export type DailyBalanceSummary = {
   date: string;
+  openingBalance: number;
   totalIn: number;
   totalOut: number;
   netChange: number;
@@ -37,6 +38,38 @@ export type OrganizationBalanceRange = {
   periodTotalOut: number;
   periodNetChange: number;
   dailySummaries: DailyBalanceSummary[];
+};
+
+export type OrganizationReportType =
+  | "ORGANIZATION_BALANCE"
+  | "DATE_WISE_IN"
+  | "DATE_WISE_OUT"
+  | "CATEGORY_WISE";
+
+export type OrganizationReportRow = {
+  date: string | null;
+  label: string;
+  totalAmount: number;
+  totalIn: number;
+  totalOut: number;
+  openingBalance: number;
+  closingBalance: number;
+  transactionCount: number;
+  flow: "IN" | "OUT";
+};
+
+export type OrganizationReport = {
+  type: OrganizationReportType;
+  organizationId: number;
+  organizationName: string;
+  fromDate: string;
+  toDate: string;
+  periodOpeningBalance: number;
+  periodClosingBalance: number;
+  periodTotalIn: number;
+  periodTotalOut: number;
+  periodTotalAmount: number;
+  rows: OrganizationReportRow[];
 };
 
 export type ExpenseType = "IN" | "OUT";

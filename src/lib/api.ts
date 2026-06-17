@@ -30,6 +30,8 @@ import type {
   ConnectBankAccountRequest,
   ReferralProfile,
   OrganizationBalanceRange,
+  OrganizationReport,
+  OrganizationReportType,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
@@ -147,6 +149,16 @@ export const api = {
     return request<OrganizationBalanceRange>(
       `/api/organizations/${organizationId}/balance-summary?${params}`
     );
+  },
+
+  getOrganizationReport: (
+    organizationId: number,
+    type: OrganizationReportType,
+    fromDate: string,
+    toDate: string
+  ) => {
+    const params = new URLSearchParams({ type, fromDate, toDate });
+    return request<OrganizationReport>(`/api/organizations/${organizationId}/reports?${params}`);
   },
 
   listCategories: (organizationId: number) =>

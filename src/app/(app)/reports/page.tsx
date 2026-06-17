@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { CategoryBars, PeriodBars, StatCard } from "@/components/ReportCards";
+import { useEffect, useMemo, useState } from "react";
+import { StatCard } from "@/components/ReportCards";
+import { ReportDateFilter as ReportDateFilterBar } from "@/components/reports/ReportDateFilter";
+import { ReportExportBar } from "@/components/reports/ReportExportBar";
+import { ReportTable } from "@/components/reports/ReportTable";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { Card } from "@/components/ui/Card";
@@ -11,29 +14,35 @@ import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import { isSubscriber } from "@/lib/navigation";
-import type { ExpenseReport, ReportPeriod } from "@/lib/types";
-
-const periods: { label: string; value: ReportPeriod }[] = [
-  { label: "Last 7 days", value: "LAST_7_DAYS" },
-  { label: "Last 30 days", value: "LAST_30_DAYS" },
-];
+import {
+  createDefaultReportDateFilter,
+  REPORT_TYPE_OPTIONS,
+  resolveReportDateRange,
+  type OrganizationReport,
+  type OrganizationReportType,
+  type ReportDateFilter as ReportDateFilterState,
+} from "@/lib/reports";
 
 function ReportsContent() {
   const { currentOrg, currentOrgId } = useOrganization();
-  const [period, setPeriod] = useState<ReportPeriod>("LAST_7_DAYS");
-  const [summary, setSummary] = useState<ExpenseReport | null>(null);
-  const [monthly, setMonthly] = useState<ExpenseReport | null>(null);
-  const year = new Date().getFullYear();
+  const [reportType, setReportType] = useState<OrganizationReportType>("ORGANIZATION_BALANCE");
+  const [dateFilter, setDateFilter] = useState<ReportDateFilterState>(createDefaultReportDateFilter);
+  const [report, setReport] = useState<OrganizationReport | null>(null);
+
+  const { fromDate, toDate } = useMemo(() => resolveReportDateRange(dateFilter), [dateFilter]);
 
   useEffect(() => {
     if (!currentOrgId) return;
-    Promise.all([api.reportSummary(period, currentOrgId), api.reportMonthly(year, currentOrgId)])
-      .then(([summaryReport, monthlyReport]) => {
-        setSummary(summaryReport);
-        setMonthly(monthlyReport);
-      })
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load reports"));
-  }, [period, year, currentOrgId]);
+    if (fromDate > toDate) {
+      toast.error("End date must be on or after start date.");
+      return;
+    }
+
+    api
+      .getOrganizationReport(currentOrgId, reportType, fromDate, toDate)
+      .then((data) => setReport(data))
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load report"));
+  }, [currentOrgId, reportType, fromDate, toDate]);
 
   return (
     <div className="space-y-8">
@@ -41,45 +50,58 @@ function ReportsContent() {
         title="Reports"
         subtitle={
           currentOrg
-            ? `Analyze spending for ${currentOrg.name} by period and category`
-            : "Analyze spending by period and category"
-        }
-        action={
-          <div className="flex gap-2">
-            {periods.map((item) => (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => setPeriod(item.value)}
-                className={`h-11 rounded-xl px-5 text-sm font-semibold transition ${
-                  period === item.value
-                    ? "bg-brand text-white shadow-sm"
-                    : "border border-border bg-surface text-ink hover:bg-paper"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+            ? `Financial reports for ${currentOrg.name}`
+            : "Select an organization to view reports"
         }
       />
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <StatCard label={summary?.label ?? "Summary"} value={formatCurrency(summary?.totalAmount ?? 0)} highlight />
-        <StatCard label="Transactions" value={String(summary?.transactionCount ?? 0)} />
+      <Card className="space-y-4">
+        <label className="block space-y-2">
+          <span className="text-sm font-semibold text-ink">Report type</span>
+          <select
+            value={reportType}
+            onChange={(e) => setReportType(e.target.value as OrganizationReportType)}
+            className="h-11 w-full max-w-md rounded-xl border border-border bg-paper px-3 text-sm font-medium text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+          >
+            {REPORT_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <ReportDateFilterBar filter={dateFilter} onChange={setDateFilter} />
+      </Card>
+
+      {currentOrgId ? (
+        <ReportExportBar
+          organizationId={currentOrgId}
+          reportType={reportType}
+          fromDate={fromDate}
+          toDate={toDate}
+          report={report}
+        />
+      ) : null}
+
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Opening balance" value={formatCurrency(report?.periodOpeningBalance ?? 0)} />
+        <StatCard
+          label="Closing balance"
+          value={formatCurrency(report?.periodClosingBalance ?? 0)}
+          highlight
+        />
+        <StatCard label="Money in" value={formatCurrency(report?.periodTotalIn ?? 0)} />
+        <StatCard label="Money out" value={formatCurrency(report?.periodTotalOut ?? 0)} />
       </div>
 
       <Card>
-        <h2 className="text-xl font-bold text-ink">By category</h2>
+        <h2 className="text-xl font-bold text-ink">Report data</h2>
+        <p className="mt-1 text-sm text-muted">
+          {fromDate === toDate ? `For ${fromDate}` : `${fromDate} to ${toDate}`}
+        </p>
         <div className="mt-6">
-          <CategoryBars items={summary?.byCategory ?? []} />
-        </div>
-      </Card>
-
-      <Card>
-        <h2 className="text-xl font-bold text-ink">Monthly trend ({year})</h2>
-        <div className="mt-6">
-          <PeriodBars items={monthly?.breakdown ?? []} />
+          <ReportTable report={report} />
         </div>
       </Card>
     </div>
@@ -103,8 +125,11 @@ export default function ReportsPage() {
     return (
       <div className="space-y-6 py-12 text-center">
         <h1 className="text-2xl font-bold text-ink">Reports require a plan</h1>
-        <p className="text-muted">Subscribe to unlock full analytics and monthly trends.</p>
-        <Link href="/manage-plan" className="inline-flex rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-hover">
+        <p className="text-muted">Subscribe to unlock full analytics and export options.</p>
+        <Link
+          href="/manage-plan"
+          className="inline-flex rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-hover"
+        >
           View plans
         </Link>
       </div>
