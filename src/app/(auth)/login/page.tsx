@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AuthDivider, GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { api } from "@/lib/api";
@@ -35,7 +36,14 @@ export default function LoginPage() {
     <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
       <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
       <p className="mt-2 text-sm text-slate-500">Sign in to manage your expenses</p>
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+
+      <div className="mt-6">
+        <GoogleSignInButton mode="signin" onError={setError} />
+      </div>
+
+      <AuthDivider />
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Email"
           name="email"

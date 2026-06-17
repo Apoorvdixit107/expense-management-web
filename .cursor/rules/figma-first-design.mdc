@@ -1,0 +1,39 @@
+---
+description: Figma-first UI workflow — design approval before implementation
+alwaysApply: true
+---
+
+# Figma-first design workflow
+
+For all UI/frontend work on ExpenseKit, follow this order. Do not implement visual changes until design is approved.
+
+## Phase 1 — Design (Figma)
+
+1. Create or update designs in Figma before writing UI code.
+2. Deliverables per screen/feature:
+   - Figma file link (view access for review)
+   - Pages: Mobile (375px) + Desktop (1440px) at minimum
+   - Components: buttons, inputs, cards, nav, typography scale, color tokens
+   - States: default, hover, empty, loading, error
+3. If direct Figma editing is unavailable, provide a **Figma-ready spec** (frames, spacing, colors, copy) the user can paste into Figma, or reference mockups for approval.
+
+## Phase 2 — Approval (user gate)
+
+- Stop and wait for explicit user approval (e.g. "approved", "go ahead", "implement").
+- Do not implement layout, colors, or new screens until approved.
+- Revisions stay in Figma/spec until re-approved.
+
+## Phase 3 — Implementation (code)
+
+1. Match Figma: spacing, typography, colors, border-radius, shadows.
+2. Extract tokens into Tailwind theme or CSS variables when practical.
+3. Reuse components; avoid one-off styles that diverge from the design system.
+4. After build, note any intentional deviations from Figma.
+
+## Figma handoff checklist
+
+- [ ] Figma link shared
+- [ ] User approved design
+- [ ] Colors/fonts/spacing documented
+- [ ] Mobile + desktop covered
+- [ ] Empty and error states included

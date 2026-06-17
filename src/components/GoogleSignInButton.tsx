@@ -1,0 +1,88 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { api } from "@/lib/api";
+import { saveSession } from "@/lib/auth";
+
+type GoogleSignInButtonProps = {
+  mode: "signin" | "signup";
+  onError?: (message: string) => void;
+};
+
+export function GoogleSignInButton({ mode, onError }: GoogleSignInButtonProps) {
+  const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [buttonWidth, setButtonWidth] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+
+  useEffect(() => {
+    const width = containerRef.current?.offsetWidth;
+    if (width) setButtonWidth(Math.floor(width));
+  }, []);
+
+  async function handleSuccess(response: CredentialResponse) {
+    if (!response.credential) {
+      onError?.("Google sign in failed");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const auth = await api.googleLogin(response.credential);
+      saveSession(auth);
+      router.push("/dashboard");
+    } catch (err) {
+      onError?.(err instanceof Error ? err.message : "Google sign in failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!clientId) {
+    return (
+      <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+        Add <code className="font-mono">NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> to enable Google sign in.
+      </p>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className="w-full">
+      {loading ? (
+        <div className="flex h-10 items-center justify-center rounded-lg border border-slate-200 text-sm text-slate-500">
+          Signing in with Google...
+        </div>
+      ) : buttonWidth === null ? (
+        <div className="h-10 rounded-lg border border-slate-200 bg-slate-50" />
+      ) : (
+        <div className="flex justify-center [&>div]:w-full">
+          <GoogleLogin
+            onSuccess={handleSuccess}
+            onError={() => onError?.("Google sign in failed")}
+            theme="outline"
+            size="large"
+            width={buttonWidth}
+            text={mode === "signup" ? "signup_with" : "signin_with"}
+            shape="rectangular"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function AuthDivider() {
+  return (
+    <div className="relative my-5">
+      <div className="absolute inset-0 flex items-center">
+        <div className="w-full border-t border-slate-200" />
+      </div>
+      <div className="relative flex justify-center text-xs uppercase">
+        <span className="bg-white px-2 text-slate-400">or</span>
+      </div>
+    </div>
+  );
+}

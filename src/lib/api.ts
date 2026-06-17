@@ -32,7 +32,12 @@ async function request<T>(path: string, init: RequestInit = {}, auth = true): Pr
     if (token) headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_URL}${path}`, { ...init, headers });
+  const response = await fetch(`${API_URL}${path}`, { ...init, headers }).catch(() => {
+    throw new ApiError(
+      "Cannot reach the API. Start the backend: cd ExpenseManagementSystem && docker compose up",
+      0
+    );
+  });
 
   if (response.status === 401 && auth) {
     clearSession();
@@ -55,6 +60,9 @@ export const api = {
 
   login: (body: LoginRequest) =>
     request<AuthResponse>("/api/auth/login", { method: "POST", body: JSON.stringify(body) }, false),
+
+  googleLogin: (idToken: string) =>
+    request<AuthResponse>("/api/auth/google", { method: "POST", body: JSON.stringify({ idToken }) }, false),
 
   listExpenses: () => request<Expense[]>("/api/expenses"),
 
