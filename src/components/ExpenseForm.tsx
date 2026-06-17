@@ -13,6 +13,7 @@ import { ensureTrialStarted } from "@/lib/trial";
 import {
   EXPENSE_CATEGORIES,
   type BankAccount,
+  type BillScanPrefill,
   type CreateExpenseRequest,
   type Expense,
   type ExpenseCategory,
@@ -23,6 +24,7 @@ import {
 type ExpenseFormProps = {
   mode: "api" | "guest";
   defaultType?: ExpenseType;
+  billPrefill?: BillScanPrefill | null;
   editingExpense?: Expense | null;
   onCancelEdit?: () => void;
   onCreated: () => void;
@@ -40,7 +42,14 @@ function defaultFormState(type: ExpenseType = "OUT") {
   };
 }
 
-export function ExpenseForm({ mode, defaultType = "OUT", editingExpense, onCancelEdit, onCreated }: ExpenseFormProps) {
+export function ExpenseForm({
+  mode,
+  defaultType = "OUT",
+  billPrefill,
+  editingExpense,
+  onCancelEdit,
+  onCreated,
+}: ExpenseFormProps) {
   const { currentOrg, currentOrgId } = useOrganization();
   const submittingRef = useRef(false);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
@@ -86,6 +95,25 @@ export function ExpenseForm({ mode, defaultType = "OUT", editingExpense, onCance
     setDescription(editingExpense.description ?? "");
     setSpentAt(isoToLocalDatetimeInput(editingExpense.spentAt));
   }, [editingExpense]);
+
+  useEffect(() => {
+    if (!billPrefill || editingExpense) return;
+    if (billPrefill.amount) setAmount(billPrefill.amount);
+    if (billPrefill.description) setDescription(billPrefill.description);
+    if (billPrefill.categoryId) setCategoryId(billPrefill.categoryId);
+    if (billPrefill.spentAt) {
+      const normalized = billPrefill.spentAt.includes("T")
+        ? billPrefill.spentAt.length === 16
+          ? `${billPrefill.spentAt}:00`
+          : billPrefill.spentAt
+        : `${billPrefill.spentAt}T12:00:00`;
+      try {
+        setSpentAt(isoToLocalDatetimeInput(new Date(normalized).toISOString()));
+      } catch {
+        setSpentAt(localDatetimeInputValue());
+      }
+    }
+  }, [billPrefill, editingExpense]);
 
   const loadCategories = useCallback(async () => {
     if (!currentOrgId) return;
@@ -198,7 +226,14 @@ export function ExpenseForm({ mode, defaultType = "OUT", editingExpense, onCance
   return (
     <div id="expense-form">
     <Card>
-      <h2 className="text-xl font-bold text-ink">{isEditing ? "Edit transaction" : "Add transaction"}</h2>
+      <h2 className="text-xl font-bold text-ink">
+        {isEditing ? "Edit transaction" : billPrefill ? "Verify & create transaction" : "Add transaction"}
+      </h2>
+      {billPrefill ? (
+        <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+          Review AI-extracted fields. Edit anything that looks wrong, then save.
+        </p>
+      ) : null}
       {mode === "api" && currentOrg ? (
         <p className="mt-1 text-sm text-muted">
           {isEditing ? "Updating entry for" : "Recording for"}{" "}

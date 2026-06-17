@@ -7,6 +7,8 @@ import type {
   CheckoutSession,
   CreateExpenseRequest,
   UpdateExpenseRequest,
+  ScanBillRequest,
+  ScanBillResponse,
   Expense,
   ExpenseReport,
   Invoice,
@@ -133,6 +135,12 @@ export const api = {
 
   createExpense: (body: CreateExpenseRequest) =>
     request<Expense>("/api/expenses", { method: "POST", body: JSON.stringify(body) }),
+
+  scanBill: (body: ScanBillRequest) =>
+    request<ScanBillResponse>("/api/expenses/scan-bill", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 
   updateExpense: (id: number, body: UpdateExpenseRequest) =>
     request<Expense>(`/api/expenses/${id}`, { method: "PUT", body: JSON.stringify(body) }),

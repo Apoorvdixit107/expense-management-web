@@ -107,6 +107,38 @@ export type UpdateExpenseRequest = {
   spentAt?: string;
 };
 
+export type ScanBillRequest = {
+  organizationId: number;
+  type: ExpenseType;
+  fileName: string;
+  mimeType: string;
+  contentBase64: string;
+};
+
+export type ScanBillResponse = {
+  type: ExpenseType;
+  amount: number | null;
+  spentAt: string | null;
+  merchant: string | null;
+  description: string | null;
+  suggestedCategory: string | null;
+  categoryId: number | null;
+  confidence: string | null;
+  notes: string | null;
+  mock: boolean;
+};
+
+export type BillScanPrefill = {
+  amount?: string;
+  spentAt?: string;
+  description?: string;
+  categoryId?: number;
+  suggestedCategory?: string;
+  confidence?: string | null;
+  notes?: string | null;
+  mock?: boolean;
+};
+
 export type OrganizationType = "COMPANY" | "HOME" | "SHOP" | "OTHER" | "CUSTOM";
 
 export type Organization = {

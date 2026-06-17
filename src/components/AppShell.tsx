@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
+import { PremiumStarButton } from "@/components/PremiumStarButton";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { useUserPreferences } from "@/components/UserPreferencesProvider";
 import { Logo } from "@/components/brand/Logo";
@@ -120,7 +121,10 @@ function Sidebar({
   return (
     <div className="flex h-full flex-col bg-sidebar text-[var(--sidebar-text)]">
       <div className="border-b border-sidebar-border px-4 py-4">
-        <Logo href="/expenses" height={40} variant="icon" showWordmark onClick={onNavigate} />
+        <div className="flex items-center justify-between gap-2">
+          <Logo href="/expenses" height={40} variant="icon" showWordmark onClick={onNavigate} />
+          <PremiumStarButton />
+        </div>
       </div>
 
       <SidebarNav links={links} pathname={pathname} unread={unread} onNavigate={onNavigate} />
@@ -245,6 +249,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </svg>
           </button>
           <Logo href="/expenses" height={32} variant="icon" className="lg:hidden" />
+          <div className="ml-auto">
+            <PremiumStarButton />
+          </div>
         </header>
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">

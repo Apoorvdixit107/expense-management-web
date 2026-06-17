@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ExpenseList } from "@/components/ExpenseList";
+import { ExpensesSubNav } from "@/components/ExpensesSubNav";
 import { OrganizationBalance } from "@/components/TransactionAmount";
 import { ReportDateFilter as ReportDateFilterBar } from "@/components/reports/ReportDateFilter";
 import { useOrganization } from "@/components/OrganizationProvider";
@@ -106,6 +107,8 @@ export default function ExpensesPage() {
           ) : null
         }
       />
+
+      <ExpensesSubNav />
 
       {currentOrg ? (
         <Card className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
