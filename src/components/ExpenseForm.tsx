@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
+import { localDatetimeInputValue, localDatetimeToISO } from "@/lib/format";
 import { addGuestExpense } from "@/lib/guest";
 import { ensureTrialStarted } from "@/lib/trial";
 import { EXPENSE_CATEGORIES, type BankAccount, type CreateExpenseRequest, type ExpenseCategory } from "@/lib/types";
@@ -24,23 +25,48 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
   const [bankAccountId, setBankAccountId] = useState<number | "">("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
-  const [spentAt, setSpentAt] = useState(() => new Date().toISOString().slice(0, 16));
+  const [spentAt, setSpentAt] = useState(() => localDatetimeInputValue());
   const [loading, setLoading] = useState(false);
   const [guestCategory, setGuestCategory] = useState<string>(EXPENSE_CATEGORIES[0]);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [addingCategory, setAddingCategory] = useState(false);
+
+  const loadCategories = useCallback(async () => {
+    if (!currentOrgId) return;
+    const cats = await api.listCategories(currentOrgId);
+    setCategories(cats);
+    if (cats.length > 0) {
+      setCategoryId((prev) => (prev !== "" && cats.some((c) => c.id === prev) ? prev : cats[0].id));
+    }
+  }, [currentOrgId]);
 
   useEffect(() => {
     if (mode !== "api" || !currentOrgId) return;
-    Promise.all([api.listCategories(currentOrgId), api.listBankAccounts(currentOrgId)])
-      .then(([cats, banks]) => {
-        setCategories(cats);
-        setBankAccounts(banks);
-        if (cats.length > 0) setCategoryId(cats[0].id);
-      })
+    Promise.all([loadCategories(), api.listBankAccounts(currentOrgId)])
+      .then(([, banks]) => setBankAccounts(banks))
       .catch(() => {
         setCategories([]);
         setBankAccounts([]);
       });
-  }, [mode, currentOrgId]);
+  }, [mode, currentOrgId, loadCategories]);
+
+  async function handleAddCategory() {
+    if (!currentOrgId || !newCategoryName.trim()) return;
+    setAddingCategory(true);
+    try {
+      const created = await api.createCategory(currentOrgId, newCategoryName.trim());
+      setCategories((prev) => [...prev, created]);
+      setCategoryId(created.id);
+      setNewCategoryName("");
+      setShowAddCategory(false);
+      toast.success(`Category "${created.name}" added.`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add category");
+    } finally {
+      setAddingCategory(false);
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -53,7 +79,7 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
           category: guestCategory,
           amount: Number(amount),
           description: description.trim() || undefined,
-          spentAt: new Date(spentAt).toISOString(),
+          spentAt: localDatetimeToISO(spentAt),
         });
       } else {
         if (!currentOrgId || categoryId === "") {
@@ -66,14 +92,14 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
           bankAccountId: bankAccountId === "" ? undefined : Number(bankAccountId),
           amount: Number(amount),
           description: description.trim() || undefined,
-          spentAt: new Date(spentAt).toISOString(),
+          spentAt: localDatetimeToISO(spentAt),
         };
         await api.createExpense(payload);
       }
       setAmount("");
       setDescription("");
       setBankAccountId("");
-      setSpentAt(new Date().toISOString().slice(0, 16));
+      setSpentAt(localDatetimeInputValue());
       toast.success("Expense saved successfully.");
       onCreated();
     } catch (err) {
@@ -101,8 +127,19 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
       ) : null}
       <form onSubmit={handleSubmit} className="mt-6 space-y-5">
         <div className="grid gap-5 sm:grid-cols-2">
-          <label className="block space-y-1.5">
-            <span className="text-sm font-medium text-ink">Category</span>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-ink">Category</span>
+              {mode === "api" ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAddCategory((v) => !v)}
+                  className="text-xs font-semibold text-brand hover:text-brand-hover"
+                >
+                  {showAddCategory ? "Cancel" : "+ Add custom category"}
+                </button>
+              ) : null}
+            </div>
             {mode === "guest" ? (
               <select
                 value={guestCategory}
@@ -123,7 +160,7 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
                 required
               >
                 {categories.length === 0 ? (
-                  <option value="">No categories — create an organization first</option>
+                  <option value="">Add a category below to get started</option>
                 ) : (
                   categories.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -133,7 +170,27 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
                 )}
               </select>
             )}
-          </label>
+            {mode === "api" && showAddCategory ? (
+              <div className="mt-2 flex gap-2">
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      void handleAddCategory();
+                    }
+                  }}
+                  placeholder="e.g. Petrol, Rent, Salary"
+                  className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                />
+                <Button type="button" disabled={addingCategory} className="shrink-0" onClick={() => void handleAddCategory()}>
+                  {addingCategory ? "..." : "Add"}
+                </Button>
+              </div>
+            ) : null}
+          </div>
           {mode === "api" && bankAccounts.length > 0 ? (
             <label className="block space-y-1.5">
               <span className="text-sm font-medium text-ink">Bank account (optional)</span>
@@ -161,14 +218,26 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
-          <Input
-            label="Date & time"
-            name="spentAt"
-            type="datetime-local"
-            required
-            value={spentAt}
-            onChange={(e) => setSpentAt(e.target.value)}
-          />
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-ink">Date & time</span>
+              <button
+                type="button"
+                onClick={() => setSpentAt(localDatetimeInputValue())}
+                className="text-xs font-semibold text-brand hover:text-brand-hover"
+              >
+                Use now
+              </button>
+            </div>
+            <input
+              name="spentAt"
+              type="datetime-local"
+              required
+              value={spentAt}
+              onChange={(e) => setSpentAt(e.target.value)}
+              className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+            />
+          </div>
           <Input
             label="Description"
             name="description"
@@ -178,7 +247,7 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
             className="sm:col-span-2"
           />
         </div>
-        <Button type="submit" disabled={loading || (mode === "api" && categories.length === 0)}>
+        <Button type="submit" disabled={loading || (mode === "api" && categories.length === 0 && !showAddCategory)}>
           {loading ? "Saving..." : "Save expense"}
         </Button>
       </form>
