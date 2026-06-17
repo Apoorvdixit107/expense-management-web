@@ -10,7 +10,7 @@ import type {
   ReportPeriod,
 } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
 
 export class ApiError extends Error {
   status: number;
@@ -34,20 +34,32 @@ async function request<T>(path: string, init: RequestInit = {}, auth = true): Pr
 
   const response = await fetch(`${API_URL}${path}`, { ...init, headers }).catch(() => {
     throw new ApiError(
-      "Cannot reach the API. Start the backend: cd ExpenseManagementSystem && docker compose up",
+      "Cannot reach the API. Start the backend: cd ExpenseManagementSystem && docker compose up (gateway on :8081)",
       0
     );
   });
 
   if (response.status === 401 && auth) {
     clearSession();
-    if (typeof window !== "undefined") window.location.href = "/login";
     throw new ApiError("Session expired. Please sign in again.", 401);
   }
 
   if (!response.ok) {
-    const message = await response.text().catch(() => response.statusText);
-    throw new ApiError(message || "Request failed", response.status);
+    const body = await response.text().catch(() => "");
+    let message = body;
+    try {
+      const json = JSON.parse(body) as { detail?: string; message?: string };
+      message = json.detail ?? json.message ?? body;
+    } catch {
+      // plain text error body
+    }
+    if (!message) {
+      if (response.status === 401) message = "Invalid email or password";
+      else if (response.status === 403) message = "Access denied. Try Google sign-in or create a new account.";
+      else if (response.status === 409) message = "Email already registered";
+      else message = `Request failed (${response.status})`;
+    }
+    throw new ApiError(message, response.status);
   }
 
   if (response.status === 204) return undefined as T;
