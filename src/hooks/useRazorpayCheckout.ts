@@ -93,7 +93,7 @@ async function openCheckout(
         email: shipping.email,
         contact: shipping.phone ?? "",
       },
-      theme: { color: "#E85D04" },
+      theme: { color: "#FF6C37" },
       handler: async (response: {
         razorpay_payment_id: string;
         razorpay_order_id: string;

@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { TrialBanner } from "@/components/TrialBanner";
+import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSubscription } from "@/components/SubscriptionProvider";
 import { api } from "@/lib/api";
 import { clearSession, getUser } from "@/lib/auth";
 import { clearSubscriptionState } from "@/lib/subscription";
-import { isSubscriber } from "@/lib/navigation";
+import { isAuthenticated, isSubscriber } from "@/lib/navigation";
 
 type NavLink = {
   href: string;
@@ -17,7 +17,7 @@ type NavLink = {
   icon: string;
 };
 
-const guestLinks: NavLink[] = [
+const memberLinks: NavLink[] = [
   { href: "/expenses", label: "Expenses", icon: "₹" },
   { href: "/reports", label: "Reports", icon: "▤" },
   { href: "/notifications", label: "Notifications", icon: "◔" },
@@ -100,28 +100,22 @@ function Sidebar({
   onLogout: () => void;
   onNavigate?: () => void;
 }) {
+  const loggedIn = isAuthenticated();
+
   return (
     <div className="flex h-full flex-col bg-sidebar text-[var(--sidebar-text)]">
-      <div className="border-b border-sidebar-border px-5 py-5">
-        <Link href="/expenses" onClick={onNavigate} className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white shadow-sm">
-            E
-          </span>
-          <div>
-            <p className="text-base font-bold text-white">ExpenseKit</p>
-            <p className="text-xs text-[var(--sidebar-text)]">Expense manager</p>
-          </div>
-        </Link>
+      <div className="border-b border-sidebar-border px-4 py-4">
+        <Logo href="/expenses" height={36} framed onClick={onNavigate} />
       </div>
 
       <SidebarNav links={links} pathname={pathname} unread={unread} onNavigate={onNavigate} />
 
       <div className="mt-auto border-t border-sidebar-border p-4">
-        {subscriber && user ? (
+        {loggedIn && user ? (
           <div className="mb-3 rounded-lg bg-white/5 px-3 py-2.5">
             <p className="truncate text-sm font-semibold text-white">{user.fullName}</p>
             <p className="truncate text-xs text-[var(--sidebar-text)]">{user.email}</p>
-            {subscription.planName ? (
+            {subscriber && subscription.planName ? (
               <span className="mt-2 inline-block rounded-full bg-brand/20 px-2 py-0.5 text-xs font-semibold text-brand">
                 {subscription.planName}
               </span>
@@ -131,23 +125,13 @@ function Sidebar({
 
         <div className="flex items-center gap-2">
           <ThemeToggle variant="sidebar" className="flex-1" />
-          {subscriber ? (
-            <button
-              type="button"
-              onClick={onLogout}
-              className="flex h-10 flex-1 items-center justify-center rounded-lg border border-sidebar-border text-xs font-medium text-[var(--sidebar-text)] transition hover:bg-white/5 hover:text-white"
-            >
-              Sign out
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              onClick={onNavigate}
-              className="flex h-10 flex-1 items-center justify-center rounded-lg bg-brand text-xs font-semibold text-white transition hover:bg-brand-hover"
-            >
-              Sign in
-            </Link>
-          )}
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex h-10 flex-1 items-center justify-center rounded-lg border border-sidebar-border text-xs font-medium text-[var(--sidebar-text)] transition hover:bg-white/5 hover:text-white"
+          >
+            Sign out
+          </button>
         </div>
       </div>
     </div>
@@ -179,12 +163,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  const links = subscriber ? subscriberLinks : guestLinks;
+  const links = subscriber ? subscriberLinks : memberLinks;
 
   function logout() {
     clearSession();
     clearSubscriptionState();
-    router.push("/expenses");
+    router.push("/");
   }
 
   return (
@@ -231,10 +215,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="font-bold text-ink">ExpenseKit</span>
+          <Logo href="/expenses" height={28} className="lg:hidden" />
         </header>
-
-        {!subscriber ? <TrialBanner /> : null}
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <div className="mx-auto max-w-[1200px]">{children}</div>

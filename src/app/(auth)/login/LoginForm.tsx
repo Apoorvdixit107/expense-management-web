@@ -69,8 +69,8 @@ export default function LoginForm() {
       </form>
       <p className="mt-8 text-center text-sm text-muted">
         New here?{" "}
-        <Link href="/expenses" className="font-semibold text-brand hover:text-brand-hover">
-          Start free trial
+        <Link href="/register" className="font-semibold text-brand hover:text-brand-hover">
+          Create an account
         </Link>
       </p>
     </Card>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { isAuthenticated } from "@/lib/auth";
 import { isSubscribed } from "@/lib/subscription";
@@ -21,12 +22,7 @@ export default function SubscribePage() {
   return (
     <div className="min-h-screen bg-paper">
       <header className="flex items-center justify-between border-b border-border bg-surface px-6 py-5">
-        <Link href="/expenses" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white">
-            E
-          </span>
-          <span className="text-lg font-bold text-ink">ExpenseKit</span>
-        </Link>
+        <Logo href="/expenses" height={40} />
         <ThemeToggle />
       </header>
 

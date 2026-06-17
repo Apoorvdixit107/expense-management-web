@@ -39,7 +39,16 @@ export default function ManagePlanPage() {
     api
       .listPlans()
       .then(setPlans)
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load plans"));
+      .catch((err) => {
+        const message = err instanceof Error ? err.message : "Failed to load plans";
+        if (message.includes("404") || message.includes("Not Found")) {
+          toast.error(
+            "Billing API is unavailable. Restart backend with: bash scripts/start-tunnel.sh --build"
+          );
+        } else {
+          toast.error(message);
+        }
+      });
     api
       .listInvoices()
       .then(setInvoices)

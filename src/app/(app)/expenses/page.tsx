@@ -4,36 +4,26 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseList } from "@/components/ExpenseList";
-import { TrialGate } from "@/components/TrialGate";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
-import { listGuestExpenses, type GuestExpense } from "@/lib/guest";
 import { isSubscriber } from "@/lib/navigation";
-import { ensureTrialStarted } from "@/lib/trial";
 import type { Expense } from "@/lib/types";
 
 export default function ExpensesPage() {
   const [subscriber, setSubscriber] = useState(false);
-  const [apiExpenses, setApiExpenses] = useState<Expense[]>([]);
-  const [guestExpenses, setGuestExpenses] = useState<GuestExpense[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [ready, setReady] = useState(false);
 
   const loadExpenses = useCallback(() => {
-    if (isSubscriber()) {
-      api
-        .listExpenses()
-        .then(setApiExpenses)
-        .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load expenses"));
-    } else {
-      ensureTrialStarted();
-      setGuestExpenses(listGuestExpenses());
-    }
+    api
+      .listExpenses()
+      .then(setExpenses)
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load expenses"));
   }, []);
 
   useEffect(() => {
-    const sub = isSubscriber();
-    setSubscriber(sub);
+    setSubscriber(isSubscriber());
     loadExpenses();
     setReady(true);
   }, [loadExpenses]);
@@ -42,37 +32,22 @@ export default function ExpensesPage() {
     return <div className="py-20 text-center text-muted">Loading...</div>;
   }
 
-  const content = (
+  return (
     <div className="space-y-8">
       <PageHeader
-        title={subscriber ? "Expenses" : "Start tracking expenses"}
-        subtitle={
-          subscriber
-            ? "Synced to your Pro account"
-            : "No sign-up required. Your 7-day free trial starts now — add your first expense below."
-        }
+        title="Expenses"
+        subtitle={subscriber ? "Synced to your account" : "Subscribe to unlock full reports and notifications"}
       />
-      <ExpenseForm mode={subscriber ? "api" : "guest"} onCreated={loadExpenses} />
-      {subscriber ? (
-        <ExpenseList mode="api" expenses={apiExpenses} onChanged={loadExpenses} />
-      ) : (
-        <>
-          <ExpenseList mode="guest" expenses={guestExpenses} onChanged={loadExpenses} />
-          <div className="rounded-2xl border border-dashed border-border bg-surface p-5 text-center text-sm text-muted">
-            Data stored locally during trial.{" "}
-            <Link href="/register" className="font-semibold text-brand hover:text-brand-hover">
-              Create account
-            </Link>{" "}
-            or{" "}
-            <Link href="/manage-plan" className="font-semibold text-brand hover:text-brand-hover">
-              subscribe
-            </Link>{" "}
-            to sync across devices.
-          </div>
-        </>
-      )}
+      <ExpenseForm mode="api" onCreated={loadExpenses} />
+      <ExpenseList mode="api" expenses={expenses} onChanged={loadExpenses} />
+      {!subscriber ? (
+        <div className="rounded-2xl border border-dashed border-border bg-surface p-5 text-center text-sm text-muted">
+          Upgrade for dashboard, email alerts, and cloud reports.{" "}
+          <Link href="/manage-plan" className="font-semibold text-brand hover:text-brand-hover">
+            View plans
+          </Link>
+        </div>
+      ) : null}
     </div>
   );
-
-  return subscriber ? content : <TrialGate>{content}</TrialGate>;
 }

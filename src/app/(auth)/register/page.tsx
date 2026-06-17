@@ -37,7 +37,7 @@ export default function RegisterPage() {
   return (
     <Card className="!shadow-[var(--shadow-elevated)]" padding="lg">
       <h1 className="text-[28px] font-bold text-ink">Create account</h1>
-      <p className="mt-2 text-sm text-muted">Optional during trial — save your progress across devices</p>
+      <p className="mt-2 text-sm text-muted">Create your account to access ExpenseKit</p>
 
       <div className="mt-8">
         <GoogleSignInButton mode="signup" />

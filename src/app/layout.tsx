@@ -13,8 +13,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ExpenseKit | Personal Expense Management",
-  description: "Track expenses, view reports, and manage your spending with ExpenseKit.",
+  title: "ExpenseKit | Expense Management",
+  description: "Track expenses, view reports, and manage your spending. Sign in to get started.",
+  icons: {
+    icon: [{ url: "/icon-32.png", sizes: "32x32", type: "image/png" }],
+    apple: [{ url: "/favicon.png", sizes: "192x192", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

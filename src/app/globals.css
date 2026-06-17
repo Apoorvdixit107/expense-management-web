@@ -3,15 +3,15 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --brand-primary: #e85d04;
-  --brand-primary-hover: #c2410c;
-  --brand-primary-light: #ffedd5;
+  --brand-primary: #ff6c37;
+  --brand-primary-hover: #e85a2e;
+  --brand-primary-light: #fff0eb;
   --brand-crimson: #dc2626;
-  --neutral-900: #431407;
-  --neutral-700: #57534e;
-  --neutral-500: #78716c;
-  --neutral-200: #fed7aa;
-  --neutral-50: #fff7ed;
+  --neutral-900: #212121;
+  --neutral-700: #424242;
+  --neutral-500: #6b6b6b;
+  --neutral-200: #ebebeb;
+  --neutral-50: #fafafa;
   --surface-card: #ffffff;
   --semantic-error: #dc2626;
   --semantic-success: #16a34a;
@@ -19,9 +19,9 @@
   --sidebar-border: #1f2937;
   --sidebar-text: #9ca3af;
   --sidebar-text-hover: #f3f4f6;
-  --sidebar-active-bg: rgba(232, 93, 4, 0.12);
-  --shadow-card: 0 1px 3px rgba(232, 93, 4, 0.08);
-  --shadow-elevated: 0 8px 30px rgba(232, 93, 4, 0.12);
+  --sidebar-active-bg: rgba(255, 108, 55, 0.12);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
 .dark {

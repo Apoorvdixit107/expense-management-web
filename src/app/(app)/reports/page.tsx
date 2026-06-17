@@ -4,15 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CategoryBars, PeriodBars, StatCard } from "@/components/ReportCards";
 import { SubscriberGuard } from "@/components/SubscriberGuard";
-import { TrialGate } from "@/components/TrialGate";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
-import { guestReportMonthly, guestReportSummary } from "@/lib/guest";
 import { formatCurrency } from "@/lib/format";
 import { isSubscriber } from "@/lib/navigation";
-import { ensureTrialStarted } from "@/lib/trial";
 import type { ExpenseReport, ReportPeriod } from "@/lib/types";
 
 const periods: { label: string; value: ReportPeriod }[] = [
@@ -20,37 +17,26 @@ const periods: { label: string; value: ReportPeriod }[] = [
   { label: "Last 30 days", value: "LAST_30_DAYS" },
 ];
 
-function ReportsContent({ subscriber }: { subscriber: boolean }) {
+function ReportsContent() {
   const [period, setPeriod] = useState<ReportPeriod>("LAST_7_DAYS");
   const [summary, setSummary] = useState<ExpenseReport | null>(null);
   const [monthly, setMonthly] = useState<ExpenseReport | null>(null);
   const year = new Date().getFullYear();
 
   useEffect(() => {
-    if (subscriber) {
-      Promise.all([api.reportSummary(period), api.reportMonthly(year)])
-        .then(([summaryReport, monthlyReport]) => {
-          setSummary(summaryReport);
-          setMonthly(monthlyReport);
-        })
-        .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load reports"));
-      return;
-    }
-
-    ensureTrialStarted();
-    setSummary(guestReportSummary(period));
-    setMonthly(guestReportMonthly(year));
-  }, [period, year, subscriber]);
+    Promise.all([api.reportSummary(period), api.reportMonthly(year)])
+      .then(([summaryReport, monthlyReport]) => {
+        setSummary(summaryReport);
+        setMonthly(monthlyReport);
+      })
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load reports"));
+  }, [period, year]);
 
   return (
     <div className="space-y-8">
       <PageHeader
         title="Reports"
-        subtitle={
-          subscriber
-            ? "Analyze spending by period and category"
-            : "Summary from your trial expenses stored on this device"
-        }
+        subtitle="Analyze spending by period and category"
         action={
           <div className="flex gap-2">
             {periods.map((item) => (
@@ -89,20 +75,6 @@ function ReportsContent({ subscriber }: { subscriber: boolean }) {
           <PeriodBars items={monthly?.breakdown ?? []} />
         </div>
       </Card>
-
-      {!subscriber ? (
-        <div className="rounded-2xl border border-dashed border-border bg-surface p-5 text-center text-sm text-muted">
-          Reports use local trial data.{" "}
-          <Link href="/register" className="font-semibold text-brand hover:text-brand-hover">
-            Create account
-          </Link>{" "}
-          or{" "}
-          <Link href="/manage-plan" className="font-semibold text-brand hover:text-brand-hover">
-            subscribe
-          </Link>{" "}
-          for synced reports across devices.
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -120,17 +92,21 @@ export default function ReportsPage() {
     return <div className="py-20 text-center text-muted">Loading...</div>;
   }
 
-  if (subscriber) {
+  if (!subscriber) {
     return (
-      <SubscriberGuard>
-        <ReportsContent subscriber />
-      </SubscriberGuard>
+      <div className="space-y-6 py-12 text-center">
+        <h1 className="text-2xl font-bold text-ink">Reports require a plan</h1>
+        <p className="text-muted">Subscribe to unlock full analytics and monthly trends.</p>
+        <Link href="/manage-plan" className="inline-flex rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-hover">
+          View plans
+        </Link>
+      </div>
     );
   }
 
   return (
-    <TrialGate>
-      <ReportsContent subscriber={false} />
-    </TrialGate>
+    <SubscriberGuard>
+      <ReportsContent />
+    </SubscriberGuard>
   );
 }
