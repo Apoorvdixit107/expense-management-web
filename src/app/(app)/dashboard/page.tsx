@@ -16,20 +16,21 @@ import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
+import {
+  createDefaultDashboardFilter,
+  filterToSummaryOptions,
+  periodDescription,
+  periodStatLabel,
+  trendChartSubtitle,
+  trendChartTitle,
+  type DashboardFilter,
+} from "@/lib/dashboard-period";
 import { formatCurrency } from "@/lib/format";
-import type { ExpenseReport, Notification, ReportPeriod } from "@/lib/types";
-
-type DashboardPeriod = Extract<ReportPeriod, "TODAY" | "LAST_7_DAYS" | "LAST_30_DAYS">;
-
-const PERIOD_LABELS: Record<DashboardPeriod, string> = {
-  TODAY: "today",
-  LAST_7_DAYS: "the last 7 days",
-  LAST_30_DAYS: "the last 30 days",
-};
+import type { ExpenseReport, Notification } from "@/lib/types";
 
 export default function DashboardPage() {
   const { currentOrg, currentOrgId } = useOrganization();
-  const [period, setPeriod] = useState<DashboardPeriod>("LAST_7_DAYS");
+  const [filter, setFilter] = useState<DashboardFilter>(createDefaultDashboardFilter);
   const [summary, setSummary] = useState<ExpenseReport | null>(null);
   const [todayReport, setTodayReport] = useState<ExpenseReport | null>(null);
   const [weekTrend, setWeekTrend] = useState<ExpenseReport | null>(null);
@@ -37,10 +38,21 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!currentOrgId) return;
+
+    if (filter.period === "CUSTOM_RANGE" && filter.fromDate > filter.toDate) {
+      toast.error("End date must be on or after start date.");
+      return;
+    }
+
+    const options = filterToSummaryOptions(filter);
+    const summaryRequest = api.reportSummary(filter.period, currentOrgId, options);
+
     Promise.all([
-      api.reportSummary(period, currentOrgId),
+      summaryRequest,
       api.reportSummary("TODAY", currentOrgId),
-      api.reportSummary("LAST_7_DAYS", currentOrgId),
+      filter.period === "TODAY"
+        ? api.reportSummary("LAST_7_DAYS", currentOrgId)
+        : Promise.resolve(null),
       api.listNotifications(),
     ])
       .then(([periodReport, today, week, items]) => {
@@ -50,9 +62,18 @@ export default function DashboardPage() {
         setNotifications(items.slice(0, 5));
       })
       .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load dashboard"));
-  }, [currentOrgId, period]);
+  }, [
+    currentOrgId,
+    filter.period,
+    filter.monthInput,
+    filter.yearInput,
+    filter.fromDate,
+    filter.toDate,
+  ]);
 
-  const periodLabel = PERIOD_LABELS[period];
+  const periodLabel = periodDescription(filter, summary?.label);
+  const trendItems =
+    filter.period === "TODAY" ? (weekTrend?.breakdown ?? []) : (summary?.breakdown ?? []);
 
   return (
     <SubscriberGuard>
@@ -64,12 +85,12 @@ export default function DashboardPage() {
               ? `Spending insights for ${currentOrg.name}`
               : "Your spending overview"
           }
-          action={<PeriodSelector value={period} onChange={setPeriod} />}
+          action={<PeriodSelector filter={filter} onChange={setFilter} />}
         />
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           <StatCard
-            label={`Total spent (${period === "TODAY" ? "today" : period === "LAST_7_DAYS" ? "7 days" : "30 days"})`}
+            label={`Total spent (${periodStatLabel(filter)})`}
             value={formatCurrency(summary?.totalAmount ?? 0)}
             highlight
           />
@@ -92,8 +113,8 @@ export default function DashboardPage() {
             />
           </DashboardChartCard>
 
-          <DashboardChartCard title="7-day trend" subtitle="Daily spending over the last week">
-            <SpendingTrendChart items={weekTrend?.breakdown ?? []} title="" />
+          <DashboardChartCard title={trendChartTitle(filter)} subtitle={trendChartSubtitle(filter)}>
+            <SpendingTrendChart items={trendItems} title="" />
           </DashboardChartCard>
 
           <DashboardChartCard title="Top categories" subtitle={`Highest spend for ${periodLabel}`}>

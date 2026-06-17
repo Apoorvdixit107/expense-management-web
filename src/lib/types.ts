@@ -146,7 +146,22 @@ export type ExpenseReport = {
   breakdown: PeriodBreakdown[];
 };
 
-export type ReportPeriod = "TODAY" | "LAST_7_DAYS" | "LAST_30_DAYS" | "MONTH" | "YEAR";
+export type ReportPeriod =
+  | "TODAY"
+  | "LAST_7_DAYS"
+  | "LAST_30_DAYS"
+  | "MONTH"
+  | "YEAR"
+  | "CUSTOM_RANGE";
+
+export type DashboardPeriod = ReportPeriod;
+
+export type ReportSummaryOptions = {
+  year?: number;
+  month?: number;
+  fromDate?: string;
+  toDate?: string;
+};
 
 export type PlanCode = "PRO" | "BEAST";
 

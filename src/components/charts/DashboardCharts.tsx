@@ -30,40 +30,8 @@ const PALETTE = [
   "#6B7280",
 ];
 
-type DashboardPeriod = "TODAY" | "LAST_7_DAYS" | "LAST_30_DAYS";
-
-export function PeriodSelector({
-  value,
-  onChange,
-}: {
-  value: DashboardPeriod;
-  onChange: (period: DashboardPeriod) => void;
-}) {
-  const options: { label: string; value: DashboardPeriod }[] = [
-    { label: "Today", value: "TODAY" },
-    { label: "7 days", value: "LAST_7_DAYS" },
-    { label: "30 days", value: "LAST_30_DAYS" },
-  ];
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => onChange(opt.value)}
-          className={`h-10 rounded-xl px-5 text-sm font-semibold transition ${
-            value === opt.value
-              ? "bg-brand text-white shadow-sm"
-              : "border border-border bg-surface text-ink hover:bg-paper"
-          }`}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
-}
+import type { DashboardFilter } from "@/lib/dashboard-period";
+import type { DashboardPeriod } from "@/lib/types";
 
 function ChartTooltip({
   active,
@@ -319,5 +287,97 @@ export function DashboardChartCard({
       {subtitle ? <p className="mt-1 text-sm text-muted">{subtitle}</p> : null}
       <div className="mt-6">{children}</div>
     </Card>
+  );
+}
+
+const PRESET_PERIODS: { label: string; value: DashboardPeriod }[] = [
+  { label: "Today", value: "TODAY" },
+  { label: "7 days", value: "LAST_7_DAYS" },
+  { label: "30 days", value: "LAST_30_DAYS" },
+  { label: "Monthly", value: "MONTH" },
+  { label: "Yearly", value: "YEAR" },
+  { label: "Custom", value: "CUSTOM_RANGE" },
+];
+
+function periodButtonClass(active: boolean) {
+  return `h-10 rounded-xl px-4 text-sm font-semibold transition ${
+    active
+      ? "bg-brand text-white shadow-sm"
+      : "border border-border bg-surface text-ink hover:bg-paper"
+  }`;
+}
+
+export function PeriodSelector({
+  filter,
+  onChange,
+}: {
+  filter: DashboardFilter;
+  onChange: (next: DashboardFilter) => void;
+}) {
+  function setPeriod(period: DashboardPeriod) {
+    onChange({ ...filter, period });
+  }
+
+  return (
+    <div className="flex w-full max-w-3xl flex-col items-end gap-3">
+      <div className="flex flex-wrap justify-end gap-2">
+        {PRESET_PERIODS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => setPeriod(opt.value)}
+            className={periodButtonClass(filter.period === opt.value)}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {filter.period === "MONTH" ? (
+        <label className="flex items-center gap-2 text-sm text-muted">
+          <span>Month</span>
+          <input
+            type="month"
+            value={filter.monthInput}
+            onChange={(e) => onChange({ ...filter, monthInput: e.target.value })}
+            className="h-10 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+          />
+        </label>
+      ) : null}
+
+      {filter.period === "YEAR" ? (
+        <label className="flex items-center gap-2 text-sm text-muted">
+          <span>Year</span>
+          <input
+            type="number"
+            min={2000}
+            max={2100}
+            value={filter.yearInput}
+            onChange={(e) => onChange({ ...filter, yearInput: Number(e.target.value) })}
+            className="h-10 w-28 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+          />
+        </label>
+      ) : null}
+
+      {filter.period === "CUSTOM_RANGE" ? (
+        <div className="flex flex-wrap items-center justify-end gap-2 text-sm text-muted">
+          <span>From</span>
+          <input
+            type="date"
+            value={filter.fromDate}
+            onChange={(e) => onChange({ ...filter, fromDate: e.target.value })}
+            className="h-10 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+          />
+          <span>To</span>
+          <input
+            type="date"
+            value={filter.toDate}
+            min={filter.fromDate}
+            onChange={(e) => onChange({ ...filter, toDate: e.target.value })}
+            className="h-10 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+          />
+        </div>
+      ) : null}
+    </div>
   );
 }

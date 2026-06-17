@@ -16,6 +16,7 @@ import type {
   PlanCode,
   RegisterRequest,
   ReportPeriod,
+  ReportSummaryOptions,
   Subscription,
   UpdateBillingDetailsRequest,
   UpdateProfileRequest,
@@ -165,11 +166,17 @@ export const api = {
   markNotificationRead: (id: number) =>
     request<{ status: string }>(`/api/notifications/${id}/read`, { method: "PATCH" }),
 
-  reportSummary: (period: ReportPeriod, organizationId?: number, year?: number, month?: number) => {
+  reportSummary: (
+    period: ReportPeriod,
+    organizationId?: number,
+    options?: ReportSummaryOptions
+  ) => {
     const params = new URLSearchParams({ period });
     if (organizationId !== undefined) params.set("organizationId", String(organizationId));
-    if (year !== undefined) params.set("year", String(year));
-    if (month !== undefined) params.set("month", String(month));
+    if (options?.year !== undefined) params.set("year", String(options.year));
+    if (options?.month !== undefined) params.set("month", String(options.month));
+    if (options?.fromDate) params.set("fromDate", options.fromDate);
+    if (options?.toDate) params.set("toDate", options.toDate);
     return request<ExpenseReport>(`/api/reports/summary?${params}`);
   },
 
