@@ -4,7 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
-  NEXT_PUBLIC_SITE_URL = "https://expensekit.netlify.app"
+  NEXT_PUBLIC_SITE_URL = "https://expensekit17.netlify.app"
+  # Set NEXT_PUBLIC_API_URL in Netlify UI → Environment variables (or GitHub Actions vars)
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

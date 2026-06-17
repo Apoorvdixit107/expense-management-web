@@ -19,7 +19,7 @@ jobs:
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
-      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://expensekit.netlify.app' }}
+      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://expensekit17.netlify.app' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,21 +37,34 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           if [ -z "${NEXT_PUBLIC_API_URL}" ]; then
-            echo "::error::Set NEXT_PUBLIC_API_URL in GitHub repo Variables (expense-management-web)."
-            echo "Example: https://your-name.trycloudflare.com"
+            echo "::error::Set NEXT_PUBLIC_API_URL in GitHub repo Variables."
+            exit 1
+          fi
+          if [ -z "${NETLIFY_AUTH_TOKEN}" ] || [ -z "${NETLIFY_SITE_ID}" ]; then
+            echo "::error::Set NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID in GitHub Secrets."
             exit 1
           fi
           echo "API URL: ${NEXT_PUBLIC_API_URL}"
+          echo "Site ID: ${NETLIFY_SITE_ID}"
 
-      - name: Verify production build
-        run: npm run build
+      - name: Build for Netlify
+        run: npx netlify-cli@latest build
 
       - name: Deploy to Netlify (production)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: npx netlify-cli@latest deploy --build --prod
+        run: npx netlify-cli@latest deploy --prod --no-build
         timeout-minutes: 10
 
-      - name: Deploy to Netlify (preview)
+      - name: Build and deploy preview
         if: github.event_name == 'pull_request'
-        run: npx netlify-cli@latest deploy --build --alias deploy-preview-${{ github.event.pull_request.number }}
+        run: |
+          npx netlify-cli@latest build
+          npx netlify-cli@latest deploy --alias deploy-preview-${{ github.event.pull_request.number }} --no-build
+        timeout-minutes: 10
+
+      - name: Build and deploy (manual)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          npx netlify-cli@latest build
+          npx netlify-cli@latest deploy --prod --no-build
         timeout-minutes: 10
