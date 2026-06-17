@@ -8,7 +8,7 @@ export function TrialBanner() {
   const daysLeft = getDaysLeft();
 
   return (
-    <div className="border-b border-border bg-brand-light px-6 py-3">
+    <div className="border-b border-border bg-brand-light px-4 py-3 lg:px-8">
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-ink">
           <span className="font-bold">{daysLeft} days left</span> in your free trial — track expenses with no account

@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 
-export function ThemeToggle({ className = "" }: { className?: string }) {
+export function ThemeToggle({
+  className = "",
+  variant = "default",
+}: {
+  className?: string;
+  variant?: "default" | "sidebar";
+}) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -11,26 +17,36 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   }, []);
 
   if (!mounted) {
-    return (
-      <span
-        className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface ${className}`}
-        aria-hidden
-      />
-    );
+    const placeholder =
+      variant === "sidebar"
+        ? `inline-flex h-10 w-10 items-center justify-center rounded-lg border border-sidebar-border ${className}`
+        : `inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface ${className}`;
+    return <span className={placeholder} aria-hidden />;
   }
 
-  return <ThemeToggleInner className={className} />;
+  return <ThemeToggleInner className={className} variant={variant} />;
 }
 
-function ThemeToggleInner({ className }: { className?: string }) {
+function ThemeToggleInner({
+  className,
+  variant,
+}: {
+  className?: string;
+  variant: "default" | "sidebar";
+}) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
+
+  const styles =
+    variant === "sidebar"
+      ? "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-sidebar-border text-[var(--sidebar-text)] transition hover:bg-white/5 hover:text-white"
+      : "inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-ink transition hover:bg-paper";
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-ink transition hover:bg-paper ${className}`}
+      className={`${styles} ${className}`}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Light mode" : "Dark mode"}
     >
