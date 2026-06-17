@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -7,6 +7,8 @@ import { UserPreferencesProvider } from "@/components/UserPreferencesProvider";
 import { ToastProvider } from "@/components/toast";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { CookieConsent } from "@/components/CookieConsent";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { ReferralCapture } from "@/components/ReferralCapture";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
@@ -19,6 +21,15 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "ExpenseKit | Expense Management",
   description: "Track expenses, view reports, and manage your spending. Sign in to get started.",
+  applicationName: "ExpenseKit",
+  appleWebApp: {
+    capable: true,
+    title: "ExpenseKit",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: [
       { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
@@ -27,6 +38,13 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
     shortcut: "/icon-32.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#fafafa",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -45,6 +63,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </Suspense>
               {children}
               <WhatsAppButton />
+              <ServiceWorkerRegister />
+              <InstallPrompt />
               <CookieConsent />
               </UserPreferencesProvider>
             </SubscriptionProvider>

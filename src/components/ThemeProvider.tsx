@@ -22,6 +22,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyTheme(initial);
   }, []);
 
+  useEffect(() => {
+    applyTheme(theme);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.setAttribute("content", theme === "dark" ? "#1c1410" : "#fafafa");
+    }
+  }, [theme]);
+
   const toggleTheme = useCallback(() => {
     setThemeState((current) => {
       const next: Theme = current === "light" ? "dark" : "light";

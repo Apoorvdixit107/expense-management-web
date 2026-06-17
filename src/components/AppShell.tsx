@@ -66,7 +66,9 @@ function SidebarNav({
             href={link.href}
             onClick={onNavigate}
             className={`group relative flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition ${
-              active ? "text-white" : "text-[var(--sidebar-text)] hover:text-[var(--sidebar-text-hover)]"
+              active
+                ? "text-[var(--sidebar-text-active)]"
+                : "text-[var(--sidebar-text)] hover:text-[var(--sidebar-text-hover)]"
             }`}
             style={active ? { background: "var(--sidebar-active-bg)" } : undefined}
           >
@@ -129,7 +131,7 @@ function Sidebar({
           <Link
             href="/profile"
             onClick={onNavigate}
-            className="mb-3 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5 transition hover:bg-white/10"
+            className="mb-3 flex items-center gap-3 rounded-lg bg-[var(--sidebar-profile-bg)] px-3 py-2.5 transition hover:bg-[var(--sidebar-profile-hover)]"
           >
             <ProfileAvatar
               name={user.fullName}
@@ -137,7 +139,7 @@ function Sidebar({
               size="sm"
             />
             <span className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-white">{user.fullName}</p>
+              <p className="truncate text-sm font-semibold text-[var(--sidebar-text-active)]">{user.fullName}</p>
               <p className="truncate text-xs text-[var(--sidebar-text)]">{user.email}</p>
               {subscriber && subscription.planName ? (
                 <span className="mt-2 inline-block rounded-full bg-brand/20 px-2 py-0.5 text-xs font-semibold text-brand">
@@ -153,7 +155,7 @@ function Sidebar({
           <button
             type="button"
             onClick={onLogout}
-            className="flex h-10 flex-1 items-center justify-center rounded-lg border border-sidebar-border text-xs font-medium text-[var(--sidebar-text)] transition hover:bg-white/5 hover:text-white"
+            className="flex h-10 flex-1 items-center justify-center rounded-lg border border-sidebar-border text-xs font-medium text-[var(--sidebar-text)] transition hover:bg-[var(--sidebar-control-hover)] hover:text-[var(--sidebar-control-hover-text)]"
           >
             Sign out
           </button>

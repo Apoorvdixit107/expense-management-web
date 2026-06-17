@@ -39,7 +39,7 @@ function ThemeToggleInner({
 
   const styles =
     variant === "sidebar"
-      ? "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-sidebar-border text-[var(--sidebar-text)] transition hover:bg-white/5 hover:text-white"
+      ? "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-sidebar-border text-[var(--sidebar-text)] transition hover:bg-[var(--sidebar-control-hover)] hover:text-[var(--sidebar-control-hover-text)]"
       : "inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-ink transition hover:bg-paper";
 
   return (

@@ -49,7 +49,7 @@ export function Logo({
     showWordmark && resolvedVariant === "icon" ? (
       <span className="inline-flex items-center gap-2.5">
         {image}
-        <span className="text-base font-bold text-white">ExpenseKit</span>
+        <span className="text-base font-bold text-[var(--sidebar-text-active)]">ExpenseKit</span>
       </span>
     ) : framed ? (
       <span className="inline-flex rounded-xl bg-white px-2 py-1.5 shadow-sm">{image}</span>

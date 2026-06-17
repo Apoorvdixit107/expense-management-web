@@ -2,6 +2,14 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
 :root {
   --brand-primary: #ff6c37;
   --brand-primary-hover: #e85a2e;
@@ -15,10 +23,15 @@
   --surface-card: #ffffff;
   --semantic-error: #dc2626;
   --semantic-success: #16a34a;
-  --sidebar-bg: #111827;
-  --sidebar-border: #1f2937;
-  --sidebar-text: #9ca3af;
-  --sidebar-text-hover: #f3f4f6;
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #ebebeb;
+  --sidebar-text: #6b6b6b;
+  --sidebar-text-hover: #212121;
+  --sidebar-text-active: #212121;
+  --sidebar-profile-bg: #f5f5f5;
+  --sidebar-profile-hover: #ebebeb;
+  --sidebar-control-hover: #f0f0f0;
+  --sidebar-control-hover-text: #212121;
   --sidebar-active-bg: rgba(255, 108, 55, 0.12);
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
   --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.08);
@@ -32,8 +45,15 @@
   --neutral-200: #44403c;
   --neutral-50: #1c1410;
   --surface-card: #292018;
-  --sidebar-bg: #0a0a0a;
-  --sidebar-border: #262626;
+  --sidebar-bg: #111827;
+  --sidebar-border: #1f2937;
+  --sidebar-text: #9ca3af;
+  --sidebar-text-hover: #f3f4f6;
+  --sidebar-text-active: #ffffff;
+  --sidebar-profile-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-profile-hover: rgba(255, 255, 255, 0.1);
+  --sidebar-control-hover: rgba(255, 255, 255, 0.05);
+  --sidebar-control-hover-text: #ffffff;
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35);
   --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.45);
 }
