@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
 import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSubscription } from "@/components/SubscriptionProvider";
@@ -19,6 +20,8 @@ type NavLink = {
 
 const memberLinks: NavLink[] = [
   { href: "/expenses", label: "Expenses", icon: "₹" },
+  { href: "/bank-accounts", label: "Cash & Bank", icon: "◇" },
+  { href: "/organizations", label: "Organizations", icon: "▣" },
   { href: "/reports", label: "Reports", icon: "▤" },
   { href: "/notifications", label: "Notifications", icon: "◔" },
   { href: "/manage-plan", label: "Manage plan", icon: "◆" },
@@ -28,6 +31,8 @@ const memberLinks: NavLink[] = [
 const subscriberLinks: NavLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: "◉" },
   { href: "/expenses", label: "Expenses", icon: "₹" },
+  { href: "/bank-accounts", label: "Cash & Bank", icon: "◇" },
+  { href: "/organizations", label: "Organizations", icon: "▣" },
   { href: "/reports", label: "Reports", icon: "▤" },
   { href: "/notifications", label: "Notifications", icon: "◔" },
   { href: "/manage-plan", label: "Manage plan", icon: "◆" },
@@ -113,6 +118,7 @@ function Sidebar({
       <SidebarNav links={links} pathname={pathname} unread={unread} onNavigate={onNavigate} />
 
       <div className="mt-auto border-t border-sidebar-border p-4">
+        <OrganizationSwitcher onNavigate={onNavigate} />
         {loggedIn && user ? (
           <Link
             href="/profile"
@@ -165,7 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       .catch(() => setUnread(0));
   }, [pathname, subscriber]);
 
-  if (pathname === "/subscribe") {
+  if (pathname === "/subscribe" || pathname === "/select-account") {
     return <>{children}</>;
   }
 

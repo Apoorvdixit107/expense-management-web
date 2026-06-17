@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CategoryBars, PeriodBars, StatCard } from "@/components/ReportCards";
+import { useOrganization } from "@/components/OrganizationProvider";
 import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -18,25 +19,31 @@ const periods: { label: string; value: ReportPeriod }[] = [
 ];
 
 function ReportsContent() {
+  const { currentOrg, currentOrgId } = useOrganization();
   const [period, setPeriod] = useState<ReportPeriod>("LAST_7_DAYS");
   const [summary, setSummary] = useState<ExpenseReport | null>(null);
   const [monthly, setMonthly] = useState<ExpenseReport | null>(null);
   const year = new Date().getFullYear();
 
   useEffect(() => {
-    Promise.all([api.reportSummary(period), api.reportMonthly(year)])
+    if (!currentOrgId) return;
+    Promise.all([api.reportSummary(period, currentOrgId), api.reportMonthly(year, currentOrgId)])
       .then(([summaryReport, monthlyReport]) => {
         setSummary(summaryReport);
         setMonthly(monthlyReport);
       })
       .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load reports"));
-  }, [period, year]);
+  }, [period, year, currentOrgId]);
 
   return (
     <div className="space-y-8">
       <PageHeader
         title="Reports"
-        subtitle="Analyze spending by period and category"
+        subtitle={
+          currentOrg
+            ? `Analyze spending for ${currentOrg.name} by period and category`
+            : "Analyze spending by period and category"
+        }
         action={
           <div className="flex gap-2">
             {periods.map((item) => (

@@ -20,6 +20,9 @@ export type LoginRequest = {
 export type Expense = {
   id: number;
   userId: number;
+  organizationId: number | null;
+  categoryId: number | null;
+  bankAccountId: number | null;
   category: string;
   amount: number;
   description: string | null;
@@ -28,11 +31,70 @@ export type Expense = {
 };
 
 export type CreateExpenseRequest = {
-  category: string;
+  organizationId: number;
+  categoryId: number;
+  bankAccountId?: number;
   amount: number;
   description?: string;
   spentAt?: string;
 };
+
+export type OrganizationType = "COMPANY" | "HOME" | "SHOP" | "OTHER";
+
+export type Organization = {
+  id: number;
+  name: string;
+  type: OrganizationType;
+  createdAt: string;
+};
+
+export type CreateOrganizationRequest = {
+  name: string;
+  type: OrganizationType;
+};
+
+export type UpdateOrganizationRequest = CreateOrganizationRequest;
+
+export type ExpenseCategory = {
+  id: number;
+  organizationId: number;
+  name: string;
+  sortOrder: number;
+  createdAt: string;
+};
+
+export type BankAccountType = "SAVINGS" | "CURRENT";
+export type BankAccountStatus = "MANUAL" | "CONNECTED";
+
+export type BankAccount = {
+  id: number;
+  organizationId: number;
+  bankName: string;
+  accountNickname: string;
+  accountLastFour: string | null;
+  ifscCode: string | null;
+  accountType: BankAccountType;
+  status: BankAccountStatus;
+  connectedAt: string;
+};
+
+export type ConnectBankAccountRequest = {
+  bankName: string;
+  accountNickname: string;
+  accountLastFour?: string;
+  ifscCode?: string;
+  accountType: BankAccountType;
+  connectNow: boolean;
+};
+
+export const ORGANIZATION_TYPE_LABELS: Record<OrganizationType, string> = {
+  COMPANY: "Company",
+  HOME: "Home",
+  SHOP: "Shop",
+  OTHER: "Other",
+};
+
+export const ORGANIZATION_TYPE_OPTIONS: OrganizationType[] = ["COMPANY", "HOME", "SHOP", "OTHER"];
 
 export type Notification = {
   id: number;

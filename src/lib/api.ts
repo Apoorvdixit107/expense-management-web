@@ -21,6 +21,12 @@ import type {
   UpdateProfileRequest,
   UserProfile,
   VerifyPaymentRequest,
+  Organization,
+  CreateOrganizationRequest,
+  UpdateOrganizationRequest,
+  ExpenseCategory,
+  BankAccount,
+  ConnectBankAccountRequest,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
@@ -103,12 +109,54 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
-  listExpenses: () => request<Expense[]>("/api/expenses"),
+  listExpenses: (organizationId?: number) =>
+    request<Expense[]>(
+      organizationId ? `/api/expenses?organizationId=${organizationId}` : "/api/expenses"
+    ),
 
   createExpense: (body: CreateExpenseRequest) =>
     request<Expense>("/api/expenses", { method: "POST", body: JSON.stringify(body) }),
 
   deleteExpense: (id: number) => request<void>(`/api/expenses/${id}`, { method: "DELETE" }),
+
+  listOrganizations: () => request<Organization[]>("/api/organizations"),
+
+  createOrganization: (body: CreateOrganizationRequest) =>
+    request<Organization>("/api/organizations", { method: "POST", body: JSON.stringify(body) }),
+
+  updateOrganization: (id: number, body: UpdateOrganizationRequest) =>
+    request<Organization>(`/api/organizations/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+
+  deleteOrganization: (id: number) =>
+    request<void>(`/api/organizations/${id}`, { method: "DELETE" }),
+
+  listCategories: (organizationId: number) =>
+    request<ExpenseCategory[]>(`/api/organizations/${organizationId}/categories`),
+
+  createCategory: (organizationId: number, name: string) =>
+    request<ExpenseCategory>(`/api/organizations/${organizationId}/categories`, {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    }),
+
+  deleteCategory: (organizationId: number, categoryId: number) =>
+    request<void>(`/api/organizations/${organizationId}/categories/${categoryId}`, {
+      method: "DELETE",
+    }),
+
+  listBankAccounts: (organizationId: number) =>
+    request<BankAccount[]>(`/api/organizations/${organizationId}/bank-accounts`),
+
+  connectBankAccount: (organizationId: number, body: ConnectBankAccountRequest) =>
+    request<BankAccount>(`/api/organizations/${organizationId}/bank-accounts`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  deleteBankAccount: (organizationId: number, bankAccountId: number) =>
+    request<void>(`/api/organizations/${organizationId}/bank-accounts/${bankAccountId}`, {
+      method: "DELETE",
+    }),
 
   listNotifications: () => request<Notification[]>("/api/notifications"),
 
@@ -117,16 +165,25 @@ export const api = {
   markNotificationRead: (id: number) =>
     request<{ status: string }>(`/api/notifications/${id}/read`, { method: "PATCH" }),
 
-  reportSummary: (period: ReportPeriod, year?: number, month?: number) => {
+  reportSummary: (period: ReportPeriod, organizationId?: number, year?: number, month?: number) => {
     const params = new URLSearchParams({ period });
+    if (organizationId !== undefined) params.set("organizationId", String(organizationId));
     if (year !== undefined) params.set("year", String(year));
     if (month !== undefined) params.set("month", String(month));
     return request<ExpenseReport>(`/api/reports/summary?${params}`);
   },
 
-  reportMonthly: (year: number) => request<ExpenseReport>(`/api/reports/monthly?year=${year}`),
+  reportMonthly: (year: number, organizationId?: number) => {
+    const params = new URLSearchParams({ year: String(year) });
+    if (organizationId !== undefined) params.set("organizationId", String(organizationId));
+    return request<ExpenseReport>(`/api/reports/monthly?${params}`);
+  },
 
-  reportYearly: (years = 5) => request<ExpenseReport>(`/api/reports/yearly?years=${years}`),
+  reportYearly: (years = 5, organizationId?: number) => {
+    const params = new URLSearchParams({ years: String(years) });
+    if (organizationId !== undefined) params.set("organizationId", String(organizationId));
+    return request<ExpenseReport>(`/api/reports/yearly?${params}`);
+  },
 
   listPlans: () => request<Plan[]>("/api/billing/plans", {}, false),
 

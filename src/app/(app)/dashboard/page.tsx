@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CategoryBars, StatCard } from "@/components/ReportCards";
+import { useOrganization } from "@/components/OrganizationProvider";
 import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -11,22 +12,31 @@ import { formatCurrency } from "@/lib/format";
 import type { ExpenseReport, Notification } from "@/lib/types";
 
 export default function DashboardPage() {
+  const { currentOrg, currentOrgId } = useOrganization();
   const [summary, setSummary] = useState<ExpenseReport | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    Promise.all([api.reportSummary("LAST_7_DAYS"), api.listNotifications()])
+    if (!currentOrgId) return;
+    Promise.all([api.reportSummary("LAST_7_DAYS", currentOrgId), api.listNotifications()])
       .then(([report, items]) => {
         setSummary(report);
         setNotifications(items.slice(0, 5));
       })
       .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load dashboard"));
-  }, []);
+  }, [currentOrgId]);
 
   return (
     <SubscriberGuard>
       <div className="space-y-8">
-        <PageHeader title="Dashboard" subtitle="Your spending overview for the last 7 days" />
+        <PageHeader
+          title="Dashboard"
+          subtitle={
+            currentOrg
+              ? `Spending overview for ${currentOrg.name} (last 7 days)`
+              : "Your spending overview for the last 7 days"
+          }
+        />
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           <StatCard label="Total spent (7 days)" value={formatCurrency(summary?.totalAmount ?? 0)} highlight />
