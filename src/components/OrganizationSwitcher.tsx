@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useOrganization } from "@/components/OrganizationProvider";
+import { OrganizationBalance } from "@/components/TransactionAmount";
 import { organizationTypeLabel } from "@/lib/types";
 
 const TYPE_COLORS: Record<string, string> = {
@@ -35,6 +36,9 @@ export function OrganizationSwitcher({ onNavigate }: { onNavigate?: () => void }
           <span className="block truncate text-sm font-semibold text-white">{currentOrg.name}</span>
           <span className="block truncate text-xs text-[var(--sidebar-text)]">
             {organizationTypeLabel(currentOrg)}
+          </span>
+          <span className="mt-1 block">
+            <OrganizationBalance balance={currentOrg.balance ?? 0} variant="sidebar" />
           </span>
         </span>
         <span className="text-[var(--sidebar-text)]" aria-hidden>

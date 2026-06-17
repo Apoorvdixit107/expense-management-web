@@ -10,12 +10,15 @@ export type RegisterRequest = {
   email: string;
   password: string;
   fullName: string;
+  referralCode?: string;
 };
 
 export type LoginRequest = {
   email: string;
   password: string;
 };
+
+export type ExpenseType = "IN" | "OUT";
 
 export type Expense = {
   id: number;
@@ -24,6 +27,7 @@ export type Expense = {
   categoryId: number | null;
   bankAccountId: number | null;
   category: string;
+  type: ExpenseType;
   amount: number;
   description: string | null;
   spentAt: string;
@@ -34,6 +38,7 @@ export type CreateExpenseRequest = {
   organizationId: number;
   categoryId: number;
   bankAccountId?: number;
+  type: ExpenseType;
   amount: number;
   description?: string;
   spentAt?: string;
@@ -46,6 +51,7 @@ export type Organization = {
   name: string;
   type: OrganizationType;
   customTypeLabel: string | null;
+  balance: number;
   createdAt: string;
 };
 
@@ -271,12 +277,33 @@ export type UserProfile = {
   fullName: string;
   phone: string | null;
   authProvider: "LOCAL" | "GOOGLE";
+  profileImageUrl: string | null;
+  preferredCurrency: AccountCurrency;
+  preferredLanguage: AppLanguage;
   updatedAt: string | null;
 };
+
+export type AccountCurrency = "INR" | "USD" | "EUR" | "GBP" | "AED" | "SGD" | "JPY" | "CAD" | "AUD";
+
+export type AppLanguage = "EN_IN" | "EN_US" | "HI_IN" | "ES_ES" | "FR_FR" | "DE_DE" | "AR_AE";
 
 export type UpdateProfileRequest = {
   fullName: string;
   phone?: string;
+  profileImageUrl?: string | null;
+  preferredCurrency: AccountCurrency;
+  preferredLanguage: AppLanguage;
+};
+
+export type ReferralProfile = {
+  referralCode: string;
+  shareUrl: string;
+  walletBalancePaise: number;
+  referrerRewardPaise: number;
+  refereeRewardPaise: number;
+  totalEarnedPaise: number;
+  pendingReferrals: number;
+  rewardedReferrals: number;
 };
 
 export const EXPENSE_CATEGORIES = [

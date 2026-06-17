@@ -1,6 +1,6 @@
 import { formatCurrency } from "./format";
 import { ensureTrialStarted, getDaysLeft } from "./trial";
-import type { ExpenseReport, ReportPeriod } from "./types";
+import type { ExpenseReport, ExpenseType, ReportPeriod } from "./types";
 
 const EXPENSES_KEY = "ems_guest_expenses";
 const CONTACT_KEY = "ems_guest_contact";
@@ -8,6 +8,7 @@ const ACTIVITY_KEY = "ems_guest_activity";
 
 export type GuestExpense = {
   id: string;
+  type?: ExpenseType;
   category: string;
   amount: number;
   description?: string;
@@ -51,6 +52,7 @@ export function listGuestExpenses(): GuestExpense[] {
 }
 
 export function addGuestExpense(input: {
+  type?: ExpenseType;
   category: string;
   amount: number;
   description?: string;
@@ -59,6 +61,7 @@ export function addGuestExpense(input: {
   ensureTrialStarted();
   const expense: GuestExpense = {
     id: crypto.randomUUID(),
+    type: input.type ?? "OUT",
     ...input,
     createdAt: new Date().toISOString(),
   };
@@ -67,7 +70,7 @@ export function addGuestExpense(input: {
   writeJson(EXPENSES_KEY, items);
 
   addGuestActivity({
-    title: "Expense added",
+    title: expense.type === "IN" ? "Income added" : "Expense added",
     message: `${input.category} · ${formatCurrency(input.amount)} recorded`,
   });
 
@@ -148,13 +151,18 @@ function expensesInRange(from: Date, to: Date): GuestExpense[] {
   });
 }
 
+function isOutflow(expense: GuestExpense): boolean {
+  return (expense.type ?? "OUT") === "OUT";
+}
+
 function reportFromExpenses(
   expenses: GuestExpense[],
   meta: { periodType: string; label: string; from: Date; to: Date }
 ): ExpenseReport {
+  const outflows = expenses.filter(isOutflow);
   const byCategory = new Map<string, { amount: number; transactionCount: number }>();
 
-  for (const expense of expenses) {
+  for (const expense of outflows) {
     const current = byCategory.get(expense.category) ?? { amount: 0, transactionCount: 0 };
     current.amount += expense.amount;
     current.transactionCount += 1;
@@ -166,8 +174,8 @@ function reportFromExpenses(
     label: meta.label,
     fromDate: meta.from.toISOString(),
     toDate: meta.to.toISOString(),
-    totalAmount: expenses.reduce((sum, expense) => sum + expense.amount, 0),
-    transactionCount: expenses.length,
+    totalAmount: outflows.reduce((sum, expense) => sum + expense.amount, 0),
+    transactionCount: outflows.length,
     byCategory: [...byCategory.entries()]
       .map(([category, data]) => ({ category, ...data }))
       .sort((a, b) => b.amount - a.amount),
@@ -192,7 +200,9 @@ export function guestReportMonthly(year: number): ExpenseReport {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   const breakdown = months.map((label, index) => {
-    const monthExpenses = expenses.filter((expense) => new Date(expense.spentAt).getMonth() === index);
+    const monthExpenses = expenses.filter(
+      (expense) => new Date(expense.spentAt).getMonth() === index && isOutflow(expense)
+    );
     return {
       label,
       amount: monthExpenses.reduce((sum, expense) => sum + expense.amount, 0),

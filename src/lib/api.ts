@@ -28,6 +28,7 @@ import type {
   ExpenseCategory,
   BankAccount,
   ConnectBankAccountRequest,
+  ReferralProfile,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
@@ -99,8 +100,17 @@ export const api = {
   login: (body: LoginRequest) =>
     request<AuthResponse>("/api/auth/login", { method: "POST", body: JSON.stringify(body) }, false),
 
-  googleLogin: (idToken: string) =>
-    request<AuthResponse>("/api/auth/google", { method: "POST", body: JSON.stringify({ idToken }) }, false),
+  googleLogin: (idToken: string, referralCode?: string) =>
+    request<AuthResponse>(
+      "/api/auth/google",
+      {
+        method: "POST",
+        body: JSON.stringify({ idToken, referralCode: referralCode || undefined }),
+      },
+      false
+    ),
+
+  getReferralProfile: () => request<ReferralProfile>("/api/referrals/me"),
 
   getProfile: () => request<UserProfile>("/api/auth/profile"),
 

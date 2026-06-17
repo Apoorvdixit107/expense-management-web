@@ -1,21 +1,30 @@
-export function formatCurrency(amount: number, currency = "INR") {
-  return new Intl.NumberFormat("en-IN", {
+import { getCurrency, getLocale, languageToLocale } from "./preferences";
+import type { AppLanguage } from "./preferences";
+
+export function formatCurrency(amount: number, currency?: string) {
+  const code = currency ?? getCurrency();
+  const locale = getLocale();
+  const fractionDigits = code === "JPY" ? 0 : 0;
+  return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency,
-    maximumFractionDigits: 0,
+    currency: code,
+    maximumFractionDigits: fractionDigits,
+    minimumFractionDigits: fractionDigits,
   }).format(amount);
 }
 
-export function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-IN", {
+export function formatDate(value: string, language?: AppLanguage) {
+  const locale = language ? languageToLocale(language) : getLocale();
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
   }).format(new Date(value));
 }
 
-export function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("en-IN", {
+export function formatDateTime(value: string, language?: AppLanguage) {
+  const locale = language ? languageToLocale(language) : getLocale();
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
+import { ProfileAvatar } from "@/components/ProfileAvatar";
+import { useUserPreferences } from "@/components/UserPreferencesProvider";
 import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSubscription } from "@/components/SubscriptionProvider";
@@ -24,6 +26,7 @@ const memberLinks: NavLink[] = [
   { href: "/organizations", label: "Organizations", icon: "▣" },
   { href: "/reports", label: "Reports", icon: "▤" },
   { href: "/notifications", label: "Notifications", icon: "◔" },
+  { href: "/refer-and-earn", label: "Refer & earn", icon: "↗" },
   { href: "/manage-plan", label: "Manage plan", icon: "◆" },
   { href: "/profile", label: "Profile", icon: "◎" },
 ];
@@ -35,6 +38,7 @@ const subscriberLinks: NavLink[] = [
   { href: "/organizations", label: "Organizations", icon: "▣" },
   { href: "/reports", label: "Reports", icon: "▤" },
   { href: "/notifications", label: "Notifications", icon: "◔" },
+  { href: "/refer-and-earn", label: "Refer & earn", icon: "↗" },
   { href: "/manage-plan", label: "Manage plan", icon: "◆" },
   { href: "/profile", label: "Profile", icon: "◎" },
 ];
@@ -95,6 +99,7 @@ function Sidebar({
   subscriber,
   subscription,
   user,
+  profileImageUrl,
   onLogout,
   onNavigate,
 }: {
@@ -104,6 +109,7 @@ function Sidebar({
   subscriber: boolean;
   subscription: { planName: string | null };
   user: ReturnType<typeof getUser>;
+  profileImageUrl: string | null;
   onLogout: () => void;
   onNavigate?: () => void;
 }) {
@@ -123,15 +129,22 @@ function Sidebar({
           <Link
             href="/profile"
             onClick={onNavigate}
-            className="mb-3 block rounded-lg bg-white/5 px-3 py-2.5 transition hover:bg-white/10"
+            className="mb-3 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5 transition hover:bg-white/10"
           >
-            <p className="truncate text-sm font-semibold text-white">{user.fullName}</p>
-            <p className="truncate text-xs text-[var(--sidebar-text)]">{user.email}</p>
-            {subscriber && subscription.planName ? (
-              <span className="mt-2 inline-block rounded-full bg-brand/20 px-2 py-0.5 text-xs font-semibold text-brand">
-                {subscription.planName}
-              </span>
-            ) : null}
+            <ProfileAvatar
+              name={user.fullName}
+              imageUrl={profileImageUrl ?? user.profileImageUrl}
+              size="sm"
+            />
+            <span className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-white">{user.fullName}</p>
+              <p className="truncate text-xs text-[var(--sidebar-text)]">{user.email}</p>
+              {subscriber && subscription.planName ? (
+                <span className="mt-2 inline-block rounded-full bg-brand/20 px-2 py-0.5 text-xs font-semibold text-brand">
+                  {subscription.planName}
+                </span>
+              ) : null}
+            </span>
           </Link>
         ) : null}
 
@@ -158,6 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [unread, setUnread] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const user = getUser();
+  const { profileImageUrl } = useUserPreferences();
 
   useEffect(() => {
     setMobileOpen(false);
@@ -208,6 +222,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           subscriber={subscriber}
           subscription={subscription}
           user={user}
+          profileImageUrl={profileImageUrl}
           onLogout={logout}
           onNavigate={() => setMobileOpen(false)}
         />

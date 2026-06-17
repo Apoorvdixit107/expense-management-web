@@ -1,3 +1,4 @@
+import { clearPreferences } from "./preferences";
 import type { AuthResponse } from "./types";
 
 const TOKEN_KEY = "ems_token";
@@ -9,6 +10,7 @@ export type StoredUser = {
   email: string;
   fullName: string;
   phone?: string | null;
+  profileImageUrl?: string | null;
 };
 
 export function saveSession(auth: AuthResponse) {
@@ -50,6 +52,7 @@ export function clearSession() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  clearPreferences();
 }
 
 export function isAuthenticated(): boolean {

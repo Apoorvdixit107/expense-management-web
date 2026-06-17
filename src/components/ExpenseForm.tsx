@@ -10,7 +10,13 @@ import { toast } from "@/components/toast";
 import { localDatetimeInputValue, localDatetimeToISO } from "@/lib/format";
 import { addGuestExpense } from "@/lib/guest";
 import { ensureTrialStarted } from "@/lib/trial";
-import { EXPENSE_CATEGORIES, type BankAccount, type CreateExpenseRequest, type ExpenseCategory } from "@/lib/types";
+import {
+  EXPENSE_CATEGORIES,
+  type BankAccount,
+  type CreateExpenseRequest,
+  type ExpenseCategory,
+  type ExpenseType,
+} from "@/lib/types";
 
 type ExpenseFormProps = {
   mode: "api" | "guest";
@@ -21,6 +27,7 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
   const { currentOrg, currentOrgId } = useOrganization();
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [type, setType] = useState<ExpenseType>("OUT");
   const [categoryId, setCategoryId] = useState<number | "">("");
   const [bankAccountId, setBankAccountId] = useState<number | "">("");
   const [amount, setAmount] = useState("");
@@ -76,6 +83,7 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
       if (mode === "guest") {
         ensureTrialStarted();
         addGuestExpense({
+          type,
           category: guestCategory,
           amount: Number(amount),
           description: description.trim() || undefined,
@@ -90,6 +98,7 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
           organizationId: currentOrgId,
           categoryId: Number(categoryId),
           bankAccountId: bankAccountId === "" ? undefined : Number(bankAccountId),
+          type,
           amount: Number(amount),
           description: description.trim() || undefined,
           spentAt: localDatetimeToISO(spentAt),
@@ -100,10 +109,10 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
       setDescription("");
       setBankAccountId("");
       setSpentAt(localDatetimeInputValue());
-      toast.success("Expense saved successfully.");
+      toast.success(type === "IN" ? "Income recorded." : "Expense saved.");
       onCreated();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to add expense");
+      toast.error(err instanceof Error ? err.message : "Failed to save transaction");
     } finally {
       setLoading(false);
     }
@@ -112,19 +121,51 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
   if (mode === "api" && !currentOrg) {
     return (
       <Card>
-        <p className="text-sm text-muted">Select an organization to add expenses.</p>
+        <p className="text-sm text-muted">Select an organization to add transactions.</p>
       </Card>
     );
   }
 
   return (
     <Card>
-      <h2 className="text-xl font-bold text-ink">Add expense</h2>
+      <h2 className="text-xl font-bold text-ink">Add transaction</h2>
       {mode === "api" && currentOrg ? (
         <p className="mt-1 text-sm text-muted">
           Recording for <span className="font-semibold text-ink">{currentOrg.name}</span>
         </p>
       ) : null}
+
+      <div className="mt-6 grid grid-cols-2 gap-2 rounded-xl bg-paper p-1">
+        <button
+          type="button"
+          onClick={() => setType("IN")}
+          className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
+            type === "IN"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "text-muted hover:text-ink"
+          }`}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M12 19V5M12 5L6 11M12 5L18 11" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Money in
+        </button>
+        <button
+          type="button"
+          onClick={() => setType("OUT")}
+          className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
+            type === "OUT"
+              ? "bg-red-600 text-white shadow-sm"
+              : "text-muted hover:text-ink"
+          }`}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M12 5V19M12 19L6 13M12 19L18 13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Money out
+        </button>
+      </div>
+
       <form onSubmit={handleSubmit} className="mt-6 space-y-5">
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-1.5">
@@ -182,7 +223,7 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
                       void handleAddCategory();
                     }
                   }}
-                  placeholder="e.g. Petrol, Rent, Salary"
+                  placeholder="e.g. Salary, Rent, Petrol"
                   className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                 />
                 <Button type="button" disabled={addingCategory} className="shrink-0" onClick={() => void handleAddCategory()}>
@@ -241,14 +282,14 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
           <Input
             label="Description"
             name="description"
-            placeholder="Optional note"
+            placeholder={type === "IN" ? "e.g. Monthly salary" : "Optional note"}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="sm:col-span-2"
           />
         </div>
         <Button type="submit" disabled={loading || (mode === "api" && categories.length === 0 && !showAddCategory)}>
-          {loading ? "Saving..." : "Save expense"}
+          {loading ? "Saving..." : type === "IN" ? "Record income" : "Record expense"}
         </Button>
       </form>
     </Card>

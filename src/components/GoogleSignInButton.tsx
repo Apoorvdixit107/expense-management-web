@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
 import { saveSession } from "@/lib/auth";
 import { postAuthPath } from "@/lib/navigation";
+import { clearReferralCode, getReferralCode } from "@/lib/referral";
 
 type GoogleSignInButtonProps = {
   mode: "signin" | "signup";
@@ -33,7 +34,9 @@ export function GoogleSignInButton({ mode, redirectTo }: GoogleSignInButtonProps
 
     setLoading(true);
     try {
-      const auth = await api.googleLogin(response.credential);
+      const referralCode = mode === "signup" ? getReferralCode() ?? undefined : undefined;
+      const auth = await api.googleLogin(response.credential, referralCode);
+      if (mode === "signup") clearReferralCode();
       saveSession(auth);
       router.push(redirectTo || postAuthPath());
     } catch (err) {

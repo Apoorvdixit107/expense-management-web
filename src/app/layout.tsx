@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SubscriptionProvider } from "@/components/SubscriptionProvider";
+import { UserPreferencesProvider } from "@/components/UserPreferencesProvider";
 import { ToastProvider } from "@/components/toast";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { ReferralCapture } from "@/components/ReferralCapture";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -35,8 +38,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <ThemeProvider>
           <ToastProvider>
             <SubscriptionProvider>
+              <UserPreferencesProvider>
+              <Suspense fallback={null}>
+                <ReferralCapture />
+              </Suspense>
               {children}
               <WhatsAppButton />
+              </UserPreferencesProvider>
             </SubscriptionProvider>
           </ToastProvider>
         </ThemeProvider>
