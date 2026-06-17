@@ -1,40 +1,50 @@
-# Design workflow — Figma first, then code
+# Design workflow — Visual screens first, then code
 
 ## Process
 
 ```
-Figma design  →  You approve  →  I implement in Next.js/Tailwind
+Design preview screens  →  You approve  →  I implement in Next.js
 ```
 
 | Step | Who | Output |
 |------|-----|--------|
-| 1. Design | You in Figma (using our spec) | Frames + components |
+| 1. Preview | Me | All screens at `/design-preview` |
 | 2. Review | You | Feedback or **approval** |
-| 3. Build | Me | Code matching approved design |
+| 3. Build | Me | Code matching approved screens + product flow |
 
-**Rule:** No UI visual changes until you explicitly approve the design.
+**Rule:** No changes to live routes until you approve the preview screens.
 
 ---
 
-## Figma file
+## Where to review
 
-**ExpenseKit:** [Figma design file](https://www.figma.com/design/GAtpyWWdxskVkPc7u7ol0R/ExpenseKit?node-id=0-1)
+**http://localhost:3000/design-preview**
 
-| Doc | Purpose |
-|-----|---------|
-| [FIGMA-DESIGN-SPEC.md](./FIGMA-DESIGN-SPEC.md) | Colors, type, components, all 7 screens |
-| [ROADMAP.md](./ROADMAP.md) | Full project phases through deploy & monetize |
+### Current design (v3)
 
-### Suggested Figma pages
+- **Theme:** Crimson orange + white
+- **UX:** Guest lands on Expenses (no sign-up), 7-day trial, optional account, subscribe to continue
+- **References:** [Money Lover](https://moneylover.me/), [Fast Budget](https://fastbudget.app/), [Spendee](https://www.spendee.com/)
 
-```
-📁 ExpenseKit
-├── 🎨 Design System
-├── 📱 Mobile (375px)
-└── 🖥 Desktop (1440px)
-```
+### Screens (10)
 
-Screens: Landing, Login, Register, Dashboard, Expenses, Reports, Notifications.
+**Guest (trial)**
+1. Expenses (home — entry point)
+2. Notifications — add email/mobile
+3. Notifications — activity feed
+
+**Auth & subscribe**
+4. Subscribe (trial ended)
+5. Register (optional during trial)
+6. Login
+
+**Subscriber**
+7. Dashboard
+8. Expenses (synced)
+9. Reports
+10. Notifications
+
+Product rules: [PRODUCT-FLOW.md](./PRODUCT-FLOW.md)
 
 ---
 
@@ -42,17 +52,11 @@ Screens: Landing, Login, Register, Dashboard, Expenses, Reports, Notifications.
 
 Reply with:
 
-- **"Design approved — implement"**
-
-Until then, work stays in Figma only (no UI code changes).
+- **Feedback** — e.g. “brighter orange”, “simpler trial banner”
+- **“Design approved — implement”** — I match production to the preview
 
 ---
 
-## What I can do
+## Figma (optional)
 
-| Action | How |
-|--------|-----|
-| Design spec | `FIGMA-DESIGN-SPEC.md` (done) |
-| Reference mockups | Ask in chat if you want visual references |
-| Implement from Figma | After your approval |
-| Edit Figma directly | Not available — you build in Figma |
+Mirror in [ExpenseKit on Figma](https://www.figma.com/design/GAtpyWWdxskVkPc7u7ol0R/ExpenseKit) if you want. **Browser preview is the source of truth.**

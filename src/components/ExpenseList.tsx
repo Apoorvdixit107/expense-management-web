@@ -2,25 +2,32 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import { api } from "@/lib/api";
+import { deleteGuestExpense, type GuestExpense } from "@/lib/guest";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import type { Expense } from "@/lib/types";
 
-type ExpenseListProps = {
-  expenses: Expense[];
-  onChanged: () => void;
-};
+type ExpenseListProps =
+  | { mode: "api"; expenses: Expense[]; onChanged: () => void }
+  | { mode: "guest"; expenses: GuestExpense[]; onChanged: () => void };
 
-export function ExpenseList({ expenses, onChanged }: ExpenseListProps) {
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+export function ExpenseList(props: ExpenseListProps) {
+  const [deletingId, setDeletingId] = useState<string | number | null>(null);
   const [error, setError] = useState("");
 
-  async function handleDelete(id: number) {
+  async function handleDelete(id: string | number) {
     setError("");
     setDeletingId(id);
     try {
-      await api.deleteExpense(id);
-      onChanged();
+      if (props.mode === "guest") {
+        deleteGuestExpense(String(id));
+        props.onChanged();
+      } else {
+        await api.deleteExpense(id as number);
+        props.onChanged();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete expense");
     } finally {
@@ -28,41 +35,48 @@ export function ExpenseList({ expenses, onChanged }: ExpenseListProps) {
     }
   }
 
-  if (expenses.length === 0) {
+  if (props.expenses.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
+      <div className="rounded-2xl border border-dashed border-border bg-white px-6 py-12 text-center text-sm text-muted">
         No expenses yet. Add your first expense above.
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      {expenses.map((expense) => (
-        <article
-          key={expense.id}
-          className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700">
-                {expense.category}
-              </span>
-              <span className="text-lg font-bold text-slate-900">{formatCurrency(expense.amount)}</span>
+    <div className="space-y-4">
+      {error ? <p className="text-sm text-error">{error}</p> : null}
+      {props.expenses.map((expense) => {
+        const id = props.mode === "guest" ? (expense as GuestExpense).id : (expense as Expense).id;
+        const category = expense.category;
+        const amount = expense.amount;
+        const spentAt = expense.spentAt;
+        const description =
+          props.mode === "guest"
+            ? (expense as GuestExpense).description
+            : (expense as Expense).description;
+
+        return (
+          <Card key={id} padding="sm" className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge>{category}</Badge>
+                <span className="text-xl font-bold text-ink">{formatCurrency(amount)}</span>
+              </div>
+              <p className="mt-2 text-sm text-muted">{formatDateTime(spentAt)}</p>
+              {description ? <p className="mt-1 text-sm text-neutral-700">{description}</p> : null}
             </div>
-            <p className="mt-1 text-sm text-slate-500">{formatDateTime(expense.spentAt)}</p>
-            {expense.description ? <p className="mt-1 text-sm text-slate-700">{expense.description}</p> : null}
-          </div>
-          <Button
-            variant="danger"
-            disabled={deletingId === expense.id}
-            onClick={() => handleDelete(expense.id)}
-          >
-            {deletingId === expense.id ? "Deleting..." : "Delete"}
-          </Button>
-        </article>
-      ))}
+            <Button
+              variant="danger"
+              className="shrink-0"
+              disabled={deletingId === id}
+              onClick={() => handleDelete(id)}
+            >
+              {deletingId === id ? "Deleting..." : "Delete"}
+            </Button>
+          </Card>
+        );
+      })}
     </div>
   );
 }

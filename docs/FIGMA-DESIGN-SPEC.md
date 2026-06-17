@@ -9,14 +9,38 @@ After all screens are done, reply **"Design approved — implement"** and we mat
 
 ## Figma file structure
 
-Create these **pages** (top-level tabs in Figma):
+### Free plan (max 3 pages) — use this
+
+Figma Free allows **3 pages** only. Use exactly these:
+
+| Page | What to put inside |
+|------|-------------------|
+| **1 · Design System** | Color styles, text styles, Button, Input, Card, Badge components |
+| **2 · Desktop** | All 7 screens as frames (1440×900) in one canvas |
+| **3 · Mobile** | Same 7 screens as frames (375×812) — or skip until v2 |
+
+**7 screens:** Landing, Login, Register, Dashboard, Expenses, Reports, Notifications.
+
+Put screens as **frames on the canvas**, not as separate pages. You can fit all 7 on one page in a grid.
+
+```
+Page 2 · Desktop (one canvas)
+┌─────────┬─────────┬─────────┬─────────┐
+│ Landing │ Login   │Register │Dashboard│
+├─────────┼─────────┼─────────┼─────────┤
+│ Expenses│ Reports │ Notif.  │ (empty) │
+└─────────┴─────────┴─────────┴─────────┘
+```
+
+**Minimum for approval (phase 1):** Page 1 + Page 2 with all 7 **desktop** screens. Mobile (Page 3) comes after desktop is implemented in code.
+
+### Paid plan (optional later)
 
 | Page | Contents |
 |------|----------|
-| `🎨 Design System` | Colors, type, spacing, components |
-| `📱 Mobile` | 375×812 frames (iPhone 13 mini) |
-| `🖥 Desktop` | 1440×900 frames |
-| `📋 Handoff` | Notes for dev (optional) |
+| `Design System` | Colors, type, components |
+| `Mobile` | 375×812 frames |
+| `Desktop` | 1440×900 frames |
 
 ---
 

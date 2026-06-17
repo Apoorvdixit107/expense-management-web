@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthDivider, GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { api } from "@/lib/api";
 import { saveSession } from "@/lib/auth";
+import { postAuthPath } from "@/lib/navigation";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -25,7 +27,7 @@ export default function RegisterPage() {
     try {
       const auth = await api.register({ fullName, email, password });
       saveSession(auth);
-      router.push("/dashboard");
+      router.push(postAuthPath());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
@@ -34,11 +36,11 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-bold text-slate-900">Create account</h1>
-      <p className="mt-2 text-sm text-slate-500">Start tracking your expenses for free</p>
+    <Card className="!shadow-[var(--shadow-elevated)]" padding="lg">
+      <h1 className="text-[28px] font-bold text-ink">Create account</h1>
+      <p className="mt-2 text-sm text-muted">Optional during trial — save your progress across devices</p>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <GoogleSignInButton mode="signup" onError={setError} />
       </div>
 
@@ -69,17 +71,17 @@ export default function RegisterPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm text-error">{error}</p> : null}
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Creating..." : "Create account"}
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-slate-500">
+      <p className="mt-8 text-center text-sm text-muted">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-teal-700 hover:text-teal-600">
+        <Link href="/login" className="font-semibold text-brand hover:text-brand-hover">
           Sign in
         </Link>
       </p>
-    </div>
+    </Card>
   );
 }

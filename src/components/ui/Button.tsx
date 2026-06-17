@@ -5,17 +5,18 @@ type ButtonProps = {
   children: ReactNode;
   href?: string;
   type?: "button" | "submit";
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "outline";
   className?: string;
   disabled?: boolean;
   onClick?: () => void;
 };
 
 const variants = {
-  primary: "bg-teal-600 text-white hover:bg-teal-500",
-  secondary: "border border-slate-300 bg-white text-slate-900 hover:bg-slate-50",
-  ghost: "text-slate-600 hover:bg-slate-100",
-  danger: "bg-red-600 text-white hover:bg-red-500",
+  primary: "bg-brand text-white hover:bg-brand-hover",
+  secondary: "border border-border bg-white text-ink hover:bg-paper",
+  ghost: "text-muted hover:bg-paper hover:text-ink",
+  danger: "bg-error text-white hover:bg-red-700",
+  outline: "border-2 border-brand bg-white text-brand hover:bg-brand-light",
 };
 
 export function Button({
@@ -27,7 +28,7 @@ export function Button({
   disabled,
   onClick,
 }: ButtonProps) {
-  const classes = `inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${className}`;
+  const classes = `inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`;
 
   if (href) {
     return (

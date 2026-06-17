@@ -9,7 +9,7 @@ Where you are now and what comes next.
 | Area | Status |
 |------|--------|
 | Backend microservices | ✅ Running locally (Docker) |
-| API Gateway | ✅ Port 8080 |
+| API Gateway | ✅ Port 8081 |
 | Frontend MVP | ✅ All core screens |
 | Google sign-in | ✅ Working locally |
 | Figma design | 🔲 In progress — [Figma file](https://www.figma.com/design/GAtpyWWdxskVkPc7u7ol0R/ExpenseKit) |

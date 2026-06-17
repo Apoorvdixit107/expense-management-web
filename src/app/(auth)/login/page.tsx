@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthDivider, GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { api } from "@/lib/api";
 import { saveSession } from "@/lib/auth";
+import { postAuthPath } from "@/lib/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,7 +26,7 @@ export default function LoginPage() {
     try {
       const auth = await api.login({ email, password });
       saveSession(auth);
-      router.push("/dashboard");
+      router.push(postAuthPath());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -33,11 +35,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-      <p className="mt-2 text-sm text-slate-500">Sign in to manage your expenses</p>
+    <Card className="!shadow-[var(--shadow-elevated)]" padding="lg">
+      <h1 className="text-[28px] font-bold text-ink">Welcome back</h1>
+      <p className="mt-2 text-sm text-muted">Sign in to continue to ExpenseKit</p>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <GoogleSignInButton mode="signin" onError={setError} />
       </div>
 
@@ -60,17 +62,17 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm text-error">{error}</p> : null}
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Signing in..." : "Sign in"}
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-slate-500">
+      <p className="mt-8 text-center text-sm text-muted">
         New here?{" "}
-        <Link href="/register" className="font-semibold text-teal-700 hover:text-teal-600">
-          Create account
+        <Link href="/expenses" className="font-semibold text-brand hover:text-brand-hover">
+          Start free trial
         </Link>
       </p>
-    </div>
+    </Card>
   );
 }

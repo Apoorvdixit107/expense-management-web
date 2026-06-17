@@ -2,15 +2,19 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { api } from "@/lib/api";
+import { addGuestExpense } from "@/lib/guest";
+import { ensureTrialStarted } from "@/lib/trial";
 import { EXPENSE_CATEGORIES, type CreateExpenseRequest } from "@/lib/types";
 
 type ExpenseFormProps = {
+  mode: "api" | "guest";
   onCreated: () => void;
 };
 
-export function ExpenseForm({ onCreated }: ExpenseFormProps) {
+export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
   const [category, setCategory] = useState<string>(EXPENSE_CATEGORIES[0]);
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -31,7 +35,17 @@ export function ExpenseForm({ onCreated }: ExpenseFormProps) {
     };
 
     try {
-      await api.createExpense(payload);
+      if (mode === "guest") {
+        ensureTrialStarted();
+        addGuestExpense({
+          category: payload.category,
+          amount: payload.amount,
+          description: payload.description,
+          spentAt: payload.spentAt ?? new Date().toISOString(),
+        });
+      } else {
+        await api.createExpense(payload);
+      }
       setAmount("");
       setDescription("");
       setSpentAt(new Date().toISOString().slice(0, 16));
@@ -44,53 +58,55 @@ export function ExpenseForm({ onCreated }: ExpenseFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
-      <h2 className="text-lg font-bold text-slate-900">Add expense</h2>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium text-slate-700">Category</span>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-teal-500 focus:ring-2"
-          >
-            {EXPENSE_CATEGORIES.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Input
-          label="Amount (INR)"
-          name="amount"
-          type="number"
-          min="0.01"
-          step="0.01"
-          required
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <Input
-          label="Date & time"
-          name="spentAt"
-          type="datetime-local"
-          required
-          value={spentAt}
-          onChange={(e) => setSpentAt(e.target.value)}
-        />
-        <Input
-          label="Description"
-          name="description"
-          placeholder="Optional note"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      <Button type="submit" disabled={loading}>
-        {loading ? "Saving..." : "Save expense"}
-      </Button>
-    </form>
+    <Card>
+      <h2 className="text-xl font-bold text-ink">Add expense</h2>
+      <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <label className="block space-y-1.5">
+            <span className="text-sm font-medium text-ink">Category</span>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="h-11 w-full rounded-xl border border-border bg-white px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+            >
+              {EXPENSE_CATEGORIES.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Input
+            label="Amount (INR)"
+            name="amount"
+            type="number"
+            min="0.01"
+            step="0.01"
+            required
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+          <Input
+            label="Date & time"
+            name="spentAt"
+            type="datetime-local"
+            required
+            value={spentAt}
+            onChange={(e) => setSpentAt(e.target.value)}
+          />
+          <Input
+            label="Description"
+            name="description"
+            placeholder="Optional note"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+        {error ? <p className="text-sm text-error">{error}</p> : null}
+        <Button type="submit" disabled={loading}>
+          {loading ? "Saving..." : "Save expense"}
+        </Button>
+      </form>
+    </Card>
   );
 }

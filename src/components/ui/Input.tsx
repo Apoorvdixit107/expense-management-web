@@ -10,13 +10,13 @@ export function Input({ label, error, id, className = "", ...props }: InputProps
 
   return (
     <label className="block space-y-1.5">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="text-sm font-medium text-ink">{label}</span>
       <input
         id={inputId}
-        className={`w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-teal-500 focus:ring-2 ${className}`}
+        className={`h-11 w-full rounded-xl border border-border bg-white px-3 text-sm text-ink outline-none transition placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/20 ${className}`}
         {...props}
       />
-      {error ? <span className="text-xs text-red-600">{error}</span> : null}
+      {error ? <span className="text-xs text-error">{error}</span> : null}
     </label>
   );
 }

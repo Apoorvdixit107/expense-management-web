@@ -2,6 +2,7 @@ import type { AuthResponse } from "./types";
 
 const TOKEN_KEY = "ems_token";
 const USER_KEY = "ems_user";
+const ACCOUNT_CREATED_KEY = "ems_account_created";
 
 export type StoredUser = {
   userId: number;
@@ -16,6 +17,9 @@ export function saveSession(auth: AuthResponse) {
     USER_KEY,
     JSON.stringify({ userId: auth.userId, email: auth.email, fullName: auth.fullName })
   );
+  if (!localStorage.getItem(ACCOUNT_CREATED_KEY)) {
+    localStorage.setItem(ACCOUNT_CREATED_KEY, new Date().toISOString());
+  }
 }
 
 export function getToken(): string | null {

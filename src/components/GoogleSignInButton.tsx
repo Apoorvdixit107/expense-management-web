@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { api } from "@/lib/api";
 import { saveSession } from "@/lib/auth";
+import { postAuthPath } from "@/lib/navigation";
 
 type GoogleSignInButtonProps = {
   mode: "signin" | "signup";
@@ -33,7 +34,7 @@ export function GoogleSignInButton({ mode, onError }: GoogleSignInButtonProps) {
     try {
       const auth = await api.googleLogin(response.credential);
       saveSession(auth);
-      router.push("/dashboard");
+      router.push(postAuthPath());
     } catch (err) {
       onError?.(err instanceof Error ? err.message : "Google sign in failed");
     } finally {
@@ -76,12 +77,12 @@ export function GoogleSignInButton({ mode, onError }: GoogleSignInButtonProps) {
 
 export function AuthDivider() {
   return (
-    <div className="relative my-5">
+    <div className="relative my-6">
       <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-slate-200" />
+        <div className="w-full border-t border-border" />
       </div>
-      <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-white px-2 text-slate-400">or</span>
+      <div className="relative flex justify-center">
+        <span className="bg-white px-3 text-xs font-medium uppercase tracking-wider text-muted">or</span>
       </div>
     </div>
   );
