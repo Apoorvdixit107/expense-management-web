@@ -121,6 +121,24 @@ export type ShippingDetails = {
 export type CheckoutRequest = {
   planCode: PlanCode;
   shippingDetails: ShippingDetails;
+  sendInvoiceEmail: boolean;
+};
+
+export type BillingDetails = {
+  email: string | null;
+  name: string | null;
+  phone: string | null;
+  gst: string | null;
+  pan: string | null;
+  address: string | null;
+  pincode: string | null;
+  sendInvoiceByEmail: boolean;
+  saved: boolean;
+};
+
+export type UpdateBillingDetailsRequest = {
+  shippingDetails: ShippingDetails;
+  sendInvoiceByEmail: boolean;
 };
 
 export type BillingCompany = {

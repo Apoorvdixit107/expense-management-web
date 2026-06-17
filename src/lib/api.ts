@@ -2,6 +2,7 @@ import { clearSession, getToken } from "./auth";
 import type {
   AuthResponse,
   BillingCompany,
+  BillingDetails,
   CheckoutRequest,
   CheckoutSession,
   CreateExpenseRequest,
@@ -16,6 +17,7 @@ import type {
   RegisterRequest,
   ReportPeriod,
   Subscription,
+  UpdateBillingDetailsRequest,
   UpdateProfileRequest,
   UserProfile,
   VerifyPaymentRequest,
@@ -129,6 +131,14 @@ export const api = {
   listPlans: () => request<Plan[]>("/api/billing/plans", {}, false),
 
   getBillingCompany: () => request<BillingCompany>("/api/billing/company", {}, false),
+
+  getBillingDetails: () => request<BillingDetails>("/api/billing/details"),
+
+  updateBillingDetails: (body: UpdateBillingDetailsRequest) =>
+    request<BillingDetails>("/api/billing/details", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
 
   listInvoices: () => request<Invoice[]>("/api/billing/invoices"),
 

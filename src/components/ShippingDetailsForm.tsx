@@ -9,7 +9,7 @@ import { getUser } from "@/lib/auth";
 import type { BillingCompany, ShippingDetails } from "@/lib/types";
 
 type Props = {
-  onSubmit: (details: ShippingDetails) => void;
+  onSubmit: (details: ShippingDetails, sendInvoiceEmail: boolean) => void;
   onCancel: () => void;
   loading?: boolean;
   planLabel: string;
@@ -25,23 +25,40 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
   const [pan, setPan] = useState("");
   const [address, setAddress] = useState("");
   const [pincode, setPincode] = useState("");
+  const [sendInvoiceEmail, setSendInvoiceEmail] = useState(true);
 
   useEffect(() => {
     api.getBillingCompany().then(setBillingCompany).catch(() => setBillingCompany(null));
+    api
+      .getBillingDetails()
+      .then((data) => {
+        if (data.email) setEmail(data.email);
+        if (data.name) setName(data.name);
+        if (data.phone) setPhone(data.phone);
+        if (data.gst) setGst(data.gst);
+        if (data.pan) setPan(data.pan);
+        if (data.address) setAddress(data.address);
+        if (data.pincode) setPincode(data.pincode);
+        setSendInvoiceEmail(data.sendInvoiceByEmail);
+      })
+      .catch(() => undefined);
   }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
-    onSubmit({
-      email: email.trim(),
-      name: name.trim() || undefined,
-      phone: phone.trim() || undefined,
-      gst: gst.trim() || undefined,
-      pan: pan.trim() || undefined,
-      address: address.trim() || undefined,
-      pincode: pincode.trim() || undefined,
-    });
+    onSubmit(
+      {
+        email: email.trim(),
+        name: name.trim() || undefined,
+        phone: phone.trim() || undefined,
+        gst: gst.trim() || undefined,
+        pan: pan.trim() || undefined,
+        address: address.trim() || undefined,
+        pincode: pincode.trim() || undefined,
+      },
+      sendInvoiceEmail
+    );
   }
 
   return (
@@ -81,6 +98,21 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
           />
         </label>
         <Input label="Pincode" value={pincode} onChange={(e) => setPincode(e.target.value)} />
+
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-brand/30 bg-brand-light/40 p-4">
+          <input
+            type="checkbox"
+            checked={sendInvoiceEmail}
+            onChange={(e) => setSendInvoiceEmail(e.target.checked)}
+            className="mt-1 h-4 w-4 accent-brand"
+          />
+          <span>
+            <span className="block text-sm font-semibold text-ink">Send invoice to my email</span>
+            <span className="mt-0.5 block text-xs text-muted">
+              You can always download the PDF from Manage plan. Email is only sent if this is checked.
+            </span>
+          </span>
+        </label>
 
         <div className="flex flex-wrap gap-3 pt-2">
           <Button type="submit" disabled={loading}>

@@ -31,13 +31,17 @@ export function useRazorpayCheckout() {
   const [loadingPlan, setLoadingPlan] = useState<PlanCode | null>(null);
 
   const payForPlan = useCallback(
-    async (planCode: PlanCode, shippingDetails: ShippingDetails) => {
+    async (planCode: PlanCode, shippingDetails: ShippingDetails, sendInvoiceEmail: boolean) => {
       setLoadingPlan(planCode);
 
       try {
-        const checkout = await api.createCheckout({ planCode, shippingDetails });
+        const checkout = await api.createCheckout({ planCode, shippingDetails, sendInvoiceEmail });
         await openCheckout(checkout, shippingDetails, refresh);
-        toast.success("Payment successful. Invoice sent to your email.");
+        toast.success(
+          sendInvoiceEmail
+            ? "Payment successful. Invoice will be emailed to you."
+            : "Payment successful. Download your invoice from Manage plan."
+        );
       } catch (err) {
         const message = err instanceof Error ? err.message : "Payment failed";
         if (message !== "Payment cancelled") {

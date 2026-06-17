@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BillingDetailsCard } from "@/components/BillingDetailsCard";
 import { ShippingDetailsForm } from "@/components/ShippingDetailsForm";
 import { useRazorpayCheckout } from "@/hooks/useRazorpayCheckout";
 import { useSubscription } from "@/components/SubscriptionProvider";
@@ -67,8 +68,8 @@ export default function ManagePlanPage() {
           planLabel={checkoutPlan.name}
           loading={loadingPlan === checkoutPlan.code}
           onCancel={() => setCheckoutPlan(null)}
-          onSubmit={async (details: ShippingDetails) => {
-            await payForPlan(checkoutPlan.code, details);
+          onSubmit={async (details: ShippingDetails, sendInvoiceEmail: boolean) => {
+            await payForPlan(checkoutPlan.code, details, sendInvoiceEmail);
             setCheckoutPlan(null);
             await refresh();
             const updated = await api.listInvoices();
@@ -107,6 +108,8 @@ export default function ManagePlanPage() {
           </p>
         </Card>
       )}
+
+      <BillingDetailsCard />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {plans.map((plan) => {
@@ -169,7 +172,8 @@ export default function ManagePlanPage() {
                     {formatDateTime(invoice.issuedAt)}
                   </p>
                   <p className="text-xs text-muted">
-                    {invoice.emailed ? "Emailed to" : "Sent to"} {invoice.customerEmail}
+                    {invoice.emailed ? "Emailed to" : "Not emailed · available for download ·"}{" "}
+                    {invoice.customerEmail}
                   </p>
                 </div>
                 <Button variant="secondary" onClick={() => api.downloadInvoice(invoice.id)}>
