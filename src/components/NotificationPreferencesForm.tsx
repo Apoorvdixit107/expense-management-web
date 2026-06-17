@@ -11,6 +11,7 @@ import type { NotificationPreferences } from "@/lib/types";
 export function NotificationPreferencesForm() {
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     api
@@ -34,6 +35,20 @@ export function NotificationPreferencesForm() {
       toast.error(err instanceof Error ? err.message : "Failed to save preferences");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function sendTest() {
+    if (!prefs) return;
+    setTesting(true);
+    try {
+      await api.updateNotificationPreferences(prefs);
+      const result = await api.sendTestNotification();
+      toast.success(result.message);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send test notification");
+    } finally {
+      setTesting(false);
     }
   }
 
@@ -85,9 +100,14 @@ export function NotificationPreferencesForm() {
         />
       </div>
 
-      <Button className="mt-6" onClick={save} disabled={saving}>
-        {saving ? "Saving..." : "Save preferences"}
-      </Button>
+      <div className="mt-6 flex flex-wrap gap-2">
+        <Button onClick={save} disabled={saving}>
+          {saving ? "Saving..." : "Save preferences"}
+        </Button>
+        <Button variant="secondary" onClick={() => void sendTest()} disabled={testing || saving}>
+          {testing ? "Sending..." : "Send test notification"}
+        </Button>
+      </div>
     </Card>
   );
 }

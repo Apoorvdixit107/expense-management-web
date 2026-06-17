@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -19,10 +20,28 @@ function expenseType(expense: Expense | GuestExpense): ExpenseType {
   return expense.type ?? "OUT";
 }
 
+function EditIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0 0-3L16.5 4.5a2.1 2.1 0 0 0-3 0L4 14v6z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M13.5 6.5l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function ExpenseList(props: ExpenseListProps) {
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
+  const actionBusyRef = useRef(false);
 
   async function handleDelete(id: string | number) {
+    if (actionBusyRef.current) return;
+    actionBusyRef.current = true;
     setDeletingId(id);
     try {
       if (props.mode === "guest") {
@@ -37,13 +56,14 @@ export function ExpenseList(props: ExpenseListProps) {
       toast.error(err instanceof Error ? err.message : "Failed to delete transaction");
     } finally {
       setDeletingId(null);
+      actionBusyRef.current = false;
     }
   }
 
   if (props.expenses.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center text-sm text-muted">
-        No transactions yet. Add your first entry above.
+      <div className="rounded-2xl border border-dashed border-border bg-paper px-6 py-12 text-center text-sm text-muted">
+        No transactions in this date range.
       </div>
     );
   }
@@ -78,14 +98,25 @@ export function ExpenseList(props: ExpenseListProps) {
               <p className="mt-2 text-sm text-muted">{formatDateTime(spentAt)}</p>
               {description ? <p className="mt-1 text-sm text-neutral-700">{description}</p> : null}
             </div>
-            <Button
-              variant="danger"
-              className="shrink-0"
-              disabled={deletingId === id}
-              onClick={() => handleDelete(id)}
-            >
-              {deletingId === id ? "Deleting..." : "Delete"}
-            </Button>
+            <div className="flex shrink-0 items-center gap-2">
+              {props.mode === "api" ? (
+                <Link
+                  href={`/expenses/${id}/edit`}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-muted transition hover:border-brand hover:text-brand"
+                  aria-label="Edit transaction"
+                  title="Edit transaction"
+                >
+                  <EditIcon />
+                </Link>
+              ) : null}
+              <Button
+                variant="danger"
+                disabled={deletingId === id}
+                onClick={() => void handleDelete(id)}
+              >
+                {deletingId === id ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
           </Card>
         );
       })}

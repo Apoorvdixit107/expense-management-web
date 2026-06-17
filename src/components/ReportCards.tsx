@@ -2,6 +2,10 @@ import { formatCurrency } from "@/lib/format";
 import type { CategoryBreakdown, PeriodBreakdown } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 
+function periodAmount(item: PeriodBreakdown): number {
+  return item.totalAmount ?? item.amount ?? 0;
+}
+
 export function StatCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <Card padding="md">
@@ -45,22 +49,25 @@ export function PeriodBars({ items }: { items: PeriodBreakdown[] }) {
     return <p className="text-sm text-muted">No breakdown available.</p>;
   }
 
-  const max = Math.max(...items.map((item) => item.amount));
+  const max = Math.max(...items.map((item) => periodAmount(item)));
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {items.map((item) => (
+      {items.map((item) => {
+        const amount = periodAmount(item);
+        return (
         <div key={item.label} className="rounded-xl border border-border bg-paper p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">{item.label}</p>
-          <p className="mt-2 text-xl font-bold text-ink">{formatCurrency(item.amount)}</p>
+          <p className="mt-2 text-xl font-bold text-ink">{formatCurrency(amount)}</p>
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-surface">
             <div
               className="h-full rounded-full bg-brand-hover"
-              style={{ width: `${max ? (item.amount / max) * 100 : 0}%` }}
+              style={{ width: `${max ? (amount / max) * 100 : 0}%` }}
             />
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

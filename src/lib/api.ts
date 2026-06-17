@@ -6,6 +6,7 @@ import type {
   CheckoutRequest,
   CheckoutSession,
   CreateExpenseRequest,
+  UpdateExpenseRequest,
   Expense,
   ExpenseReport,
   Invoice,
@@ -128,8 +129,13 @@ export const api = {
       organizationId ? `/api/expenses?organizationId=${organizationId}` : "/api/expenses"
     ),
 
+  getExpense: (id: number) => request<Expense>(`/api/expenses/${id}`),
+
   createExpense: (body: CreateExpenseRequest) =>
     request<Expense>("/api/expenses", { method: "POST", body: JSON.stringify(body) }),
+
+  updateExpense: (id: number, body: UpdateExpenseRequest) =>
+    request<Expense>(`/api/expenses/${id}`, { method: "PUT", body: JSON.stringify(body) }),
 
   deleteExpense: (id: number) => request<void>(`/api/expenses/${id}`, { method: "DELETE" }),
 
@@ -269,5 +275,10 @@ export const api = {
     request<NotificationPreferences>("/api/notifications/preferences", {
       method: "PUT",
       body: JSON.stringify(body),
+    }),
+
+  sendTestNotification: () =>
+    request<{ status: string; message: string }>("/api/notifications/test", {
+      method: "POST",
     }),
 };

@@ -47,3 +47,7 @@ export function localDatetimeInputValue(date = new Date()): string {
 export function localDatetimeToISO(value: string): string {
   return new Date(value).toISOString();
 }
+
+export function isoToLocalDatetimeInput(iso: string): string {
+  return localDatetimeInputValue(new Date(iso));
+}

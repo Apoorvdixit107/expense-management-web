@@ -160,7 +160,9 @@ function reportFromExpenses(
   meta: { periodType: string; label: string; from: Date; to: Date }
 ): ExpenseReport {
   const outflows = expenses.filter(isOutflow);
+  const inflows = expenses.filter((e) => (e.type ?? "OUT") === "IN");
   const byCategory = new Map<string, { amount: number; transactionCount: number }>();
+  const byCategoryIn = new Map<string, { amount: number; transactionCount: number }>();
 
   for (const expense of outflows) {
     const current = byCategory.get(expense.category) ?? { amount: 0, transactionCount: 0 };
@@ -169,17 +171,31 @@ function reportFromExpenses(
     byCategory.set(expense.category, current);
   }
 
+  for (const expense of inflows) {
+    const current = byCategoryIn.get(expense.category) ?? { amount: 0, transactionCount: 0 };
+    current.amount += expense.amount;
+    current.transactionCount += 1;
+    byCategoryIn.set(expense.category, current);
+  }
+
   return {
     periodType: meta.periodType,
     label: meta.label,
     fromDate: meta.from.toISOString(),
     toDate: meta.to.toISOString(),
     totalAmount: outflows.reduce((sum, expense) => sum + expense.amount, 0),
-    transactionCount: outflows.length,
+    transactionCount: expenses.length,
     byCategory: [...byCategory.entries()]
       .map(([category, data]) => ({ category, ...data }))
       .sort((a, b) => b.amount - a.amount),
     breakdown: [],
+    totalInAmount: inflows.reduce((sum, expense) => sum + expense.amount, 0),
+    inTransactionCount: inflows.length,
+    outTransactionCount: outflows.length,
+    byCategoryIn: [...byCategoryIn.entries()]
+      .map(([category, data]) => ({ category, ...data }))
+      .sort((a, b) => b.amount - a.amount),
+    breakdownIn: [],
   };
 }
 
@@ -205,7 +221,7 @@ export function guestReportMonthly(year: number): ExpenseReport {
     );
     return {
       label,
-      amount: monthExpenses.reduce((sum, expense) => sum + expense.amount, 0),
+      totalAmount: monthExpenses.reduce((sum, expense) => sum + expense.amount, 0),
       transactionCount: monthExpenses.length,
     };
   });

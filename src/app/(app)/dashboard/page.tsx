@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import {
+  CashFlowTrendChart,
   CategoryDonutChart,
   DashboardChartCard,
   PeriodSelector,
-  SpendingTrendChart,
   TodayOverviewPanel,
   TopCategoriesChart,
 } from "@/components/charts/DashboardCharts";
@@ -78,8 +78,13 @@ export default function DashboardPage() {
   ]);
 
   const periodLabel = periodDescription(filter, summary?.label);
-  const trendItems =
+  const trendOutItems =
     filter.period === "TODAY" ? (weekTrend?.breakdown ?? []) : (summary?.breakdown ?? []);
+  const trendInItems =
+    filter.period === "TODAY" ? (weekTrend?.breakdownIn ?? []) : (summary?.breakdownIn ?? []);
+  const moneyIn = summary?.totalInAmount ?? 0;
+  const moneyOut = summary?.totalAmount ?? 0;
+  const netFlow = moneyIn - moneyOut;
 
   return (
     <SubscriberGuard>
@@ -88,20 +93,44 @@ export default function DashboardPage() {
           title="Dashboard"
           subtitle={
             currentOrg
-              ? `Spending insights for ${currentOrg.name}`
-              : "Your spending overview"
+              ? `Cash flow insights for ${currentOrg.name}`
+              : "Your cash flow overview"
           }
           action={<PeriodSelector filter={filter} onChange={setFilter} />}
         />
 
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            label={`Total spent (${periodStatLabel(filter)})`}
-            value={formatCurrency(summary?.totalAmount ?? 0)}
+            label={`Money in (${periodStatLabel(filter)})`}
+            value={formatCurrency(moneyIn)}
+          />
+          <StatCard
+            label={`Money out (${periodStatLabel(filter)})`}
+            value={formatCurrency(moneyOut)}
             highlight
           />
-          <StatCard label="Transactions" value={String(summary?.transactionCount ?? 0)} />
-          <StatCard label="Top category" value={summary?.byCategory[0]?.category ?? "—"} />
+          <StatCard
+            label={`Net flow (${periodStatLabel(filter)})`}
+            value={formatCurrency(netFlow)}
+            highlight={netFlow >= 0}
+          />
+          <StatCard
+            label="Transactions"
+            value={`${summary?.inTransactionCount ?? 0} in · ${summary?.outTransactionCount ?? 0} out`}
+          />
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <StatCard label="Top expense category" value={summary?.byCategory[0]?.category ?? "—"} />
+          <StatCard label="Top income category" value={summary?.byCategoryIn[0]?.category ?? "—"} />
+          <StatCard
+            label="Top category (any)"
+            value={
+              [summary?.byCategory[0], summary?.byCategoryIn[0]]
+                .filter(Boolean)
+                .sort((a, b) => (b?.amount ?? 0) - (a?.amount ?? 0))[0]?.category ?? "—"
+            }
+          />
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
@@ -125,25 +154,39 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <DashboardChartCard title="Today" subtitle="Live spending for today">
+          <DashboardChartCard title="Today" subtitle="Live cash flow for today">
             <TodayOverviewPanel report={todayReport} />
           </DashboardChartCard>
 
           <DashboardChartCard
-            title="Expense by category"
-            subtitle={`Share of spend for ${periodLabel}`}
+            title="Expenses by category"
+            subtitle={`Money out for ${periodLabel}`}
           >
             <CategoryDonutChart
               items={summary?.byCategory ?? []}
-              total={summary?.totalAmount ?? 0}
+              total={moneyOut}
+              emptyMessage="No expenses in this period."
+              centerLabel="Spent"
+            />
+          </DashboardChartCard>
+
+          <DashboardChartCard
+            title="Income by category"
+            subtitle={`Money in for ${periodLabel}`}
+          >
+            <CategoryDonutChart
+              items={summary?.byCategoryIn ?? []}
+              total={moneyIn}
+              emptyMessage="No income in this period."
+              centerLabel="Earned"
             />
           </DashboardChartCard>
 
           <DashboardChartCard title={trendChartTitle(filter)} subtitle={trendChartSubtitle(filter)}>
-            <SpendingTrendChart items={trendItems} title="" />
+            <CashFlowTrendChart outItems={trendOutItems} inItems={trendInItems} title="" />
           </DashboardChartCard>
 
-          <DashboardChartCard title="Top categories" subtitle={`Highest spend for ${periodLabel}`}>
+          <DashboardChartCard title="Top expense categories" subtitle={`Highest spend for ${periodLabel}`}>
             <TopCategoriesChart items={summary?.byCategory ?? []} />
           </DashboardChartCard>
         </div>

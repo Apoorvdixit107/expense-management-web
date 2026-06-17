@@ -98,6 +98,15 @@ export type CreateExpenseRequest = {
   spentAt?: string;
 };
 
+export type UpdateExpenseRequest = {
+  categoryId: number;
+  bankAccountId?: number;
+  type: ExpenseType;
+  amount: number;
+  description?: string;
+  spentAt?: string;
+};
+
 export type OrganizationType = "COMPANY" | "HOME" | "SHOP" | "OTHER" | "CUSTOM";
 
 export type Organization = {
@@ -191,8 +200,10 @@ export type CategoryBreakdown = {
 
 export type PeriodBreakdown = {
   label: string;
-  amount: number;
+  totalAmount: number;
   transactionCount: number;
+  /** @deprecated use totalAmount */
+  amount?: number;
 };
 
 export type ExpenseReport = {
@@ -204,6 +215,11 @@ export type ExpenseReport = {
   transactionCount: number;
   byCategory: CategoryBreakdown[];
   breakdown: PeriodBreakdown[];
+  totalInAmount: number;
+  inTransactionCount: number;
+  outTransactionCount: number;
+  byCategoryIn: CategoryBreakdown[];
+  breakdownIn: PeriodBreakdown[];
 };
 
 export type ReportPeriod =
