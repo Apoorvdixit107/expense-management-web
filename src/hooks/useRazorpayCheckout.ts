@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { useSubscription } from "@/components/SubscriptionProvider";
-import type { CheckoutSession, PlanCode } from "@/lib/types";
+import type { CheckoutSession, PlanCode, ShippingDetails } from "@/lib/types";
 
 declare global {
   interface Window {
@@ -31,13 +31,13 @@ export function useRazorpayCheckout() {
   const [loadingPlan, setLoadingPlan] = useState<PlanCode | null>(null);
 
   const payForPlan = useCallback(
-    async (planCode: PlanCode) => {
+    async (planCode: PlanCode, shippingDetails: ShippingDetails) => {
       setLoadingPlan(planCode);
 
       try {
-        const checkout = await api.createCheckout(planCode);
-        await openCheckout(checkout, refresh);
-        toast.success("Payment successful. Your plan is now active.");
+        const checkout = await api.createCheckout({ planCode, shippingDetails });
+        await openCheckout(checkout, shippingDetails, refresh);
+        toast.success("Payment successful. Invoice sent to your email.");
       } catch (err) {
         const message = err instanceof Error ? err.message : "Payment failed";
         if (message !== "Payment cancelled") {
@@ -55,12 +55,16 @@ export function useRazorpayCheckout() {
   return { payForPlan, loadingPlan };
 }
 
-async function openCheckout(checkout: CheckoutSession, onSuccess: () => Promise<void>) {
+async function openCheckout(
+  checkout: CheckoutSession,
+  shipping: ShippingDetails,
+  onSuccess: () => Promise<void>
+) {
   if (checkout.mock) {
     const confirmed = window.confirm(
       `Mock payment mode: confirm ${checkout.planName} plan for ₹${(checkout.amountPaise / 100).toFixed(0)}/month?`
     );
-    if (!confirmed) return;
+    if (!confirmed) throw new Error("Payment cancelled");
 
     await api.verifyPayment({
       razorpayOrderId: checkout.orderId,
@@ -84,6 +88,11 @@ async function openCheckout(checkout: CheckoutSession, onSuccess: () => Promise<
       name: "ExpenseKit",
       description: `${checkout.planName} — monthly plan`,
       order_id: checkout.orderId,
+      prefill: {
+        name: shipping.name ?? "",
+        email: shipping.email,
+        contact: shipping.phone ?? "",
+      },
       theme: { color: "#E85D04" },
       handler: async (response: {
         razorpay_payment_id: string;

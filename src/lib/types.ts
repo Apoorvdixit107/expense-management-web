@@ -108,6 +108,51 @@ export type VerifyPaymentRequest = {
   razorpaySignature: string;
 };
 
+export type ShippingDetails = {
+  email: string;
+  name?: string;
+  phone?: string;
+  gst?: string;
+  pan?: string;
+  address?: string;
+  pincode?: string;
+};
+
+export type CheckoutRequest = {
+  planCode: PlanCode;
+  shippingDetails: ShippingDetails;
+};
+
+export type BillingCompany = {
+  companyName: string;
+  location: string;
+  email: string;
+};
+
+export type Invoice = {
+  id: number;
+  invoiceNumber: string;
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  planCode: PlanCode;
+  planName: string;
+  amountPaise: number;
+  currency: string;
+  customerEmail: string;
+  customerName: string | null;
+  issuedAt: string;
+  emailed: boolean;
+};
+
+export type NotificationPreferences = {
+  email: string;
+  phone: string | null;
+  emailEnabled: boolean;
+  smsEnabled: boolean;
+  dailySummaryEnabled: boolean;
+  expenseAlertsEnabled: boolean;
+};
+
 export const EXPENSE_CATEGORIES = [
   "Food",
   "Transport",

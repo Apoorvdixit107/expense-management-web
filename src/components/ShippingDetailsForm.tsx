@@ -1,0 +1,96 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { api } from "@/lib/api";
+import { getUser } from "@/lib/auth";
+import type { BillingCompany, ShippingDetails } from "@/lib/types";
+
+type Props = {
+  onSubmit: (details: ShippingDetails) => void;
+  onCancel: () => void;
+  loading?: boolean;
+  planLabel: string;
+};
+
+export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: Props) {
+  const user = getUser();
+  const [billingCompany, setBillingCompany] = useState<BillingCompany | null>(null);
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [name, setName] = useState(user?.fullName ?? "");
+  const [phone, setPhone] = useState("");
+  const [gst, setGst] = useState("");
+  const [pan, setPan] = useState("");
+  const [address, setAddress] = useState("");
+  const [pincode, setPincode] = useState("");
+
+  useEffect(() => {
+    api.getBillingCompany().then(setBillingCompany).catch(() => setBillingCompany(null));
+  }, []);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    onSubmit({
+      email: email.trim(),
+      name: name.trim() || undefined,
+      phone: phone.trim() || undefined,
+      gst: gst.trim() || undefined,
+      pan: pan.trim() || undefined,
+      address: address.trim() || undefined,
+      pincode: pincode.trim() || undefined,
+    });
+  }
+
+  return (
+    <Card className="max-w-2xl">
+      <p className="text-sm font-semibold uppercase tracking-wide text-brand">Checkout — {planLabel}</p>
+      <h2 className="mt-2 text-xl font-bold text-ink">Billing & shipping details</h2>
+      <p className="mt-2 text-sm text-muted">
+        Email is required for your invoice. All other fields are optional.
+      </p>
+
+      {billingCompany ? (
+        <div className="mt-6 rounded-xl border border-border bg-paper p-4 text-sm">
+          <p className="font-semibold text-ink">Billed by</p>
+          <p className="mt-1 text-muted">{billingCompany.companyName}</p>
+          <p className="text-muted">{billingCompany.location}</p>
+          <p className="text-muted">{billingCompany.email}</p>
+        </div>
+      ) : null}
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <Input label="Email *" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91..." />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Input label="GST" value={gst} onChange={(e) => setGst(e.target.value)} />
+          <Input label="PAN" value={pan} onChange={(e) => setPan(e.target.value)} />
+        </div>
+        <label className="block space-y-1.5">
+          <span className="text-sm font-medium text-ink">Address</span>
+          <textarea
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className="min-h-[80px] w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+            rows={3}
+          />
+        </label>
+        <Input label="Pincode" value={pincode} onChange={(e) => setPincode(e.target.value)} />
+
+        <div className="flex flex-wrap gap-3 pt-2">
+          <Button type="submit" disabled={loading}>
+            {loading ? "Processing..." : "Continue to payment"}
+          </Button>
+          <Button type="button" variant="secondary" onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+}

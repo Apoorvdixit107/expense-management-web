@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { GuestActivityFeed } from "@/components/GuestActivityFeed";
 import { GuestContactForm } from "@/components/GuestContactForm";
+import { NotificationPreferencesForm } from "@/components/NotificationPreferencesForm";
 import { TrialGate } from "@/components/TrialGate";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
@@ -46,6 +47,7 @@ export default function NotificationsPage() {
     return (
       <div className="space-y-8">
         <PageHeader title="Notifications" subtitle="Email & SMS alerts for your account" />
+        <NotificationPreferencesForm />
         {items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center text-sm text-muted">
             No notifications yet.

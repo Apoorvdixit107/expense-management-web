@@ -1,12 +1,16 @@
 import { clearSession, getToken } from "./auth";
 import type {
   AuthResponse,
+  BillingCompany,
+  CheckoutRequest,
   CheckoutSession,
   CreateExpenseRequest,
   Expense,
   ExpenseReport,
+  Invoice,
   LoginRequest,
   Notification,
+  NotificationPreferences,
   Plan,
   PlanCode,
   RegisterRequest,
@@ -68,6 +72,12 @@ async function request<T>(path: string, init: RequestInit = {}, auth = true): Pr
   }
 
   if (response.status === 204) return undefined as T;
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/pdf")) {
+    return response.blob() as Promise<T>;
+  }
+
   return response.json() as Promise<T>;
 }
 
@@ -108,20 +118,42 @@ export const api = {
 
   listPlans: () => request<Plan[]>("/api/billing/plans", {}, false),
 
+  getBillingCompany: () => request<BillingCompany>("/api/billing/company", {}, false),
+
+  listInvoices: () => request<Invoice[]>("/api/billing/invoices"),
+
+  downloadInvoice: async (id: number) => {
+    const blob = await request<Blob>(`/api/billing/invoices/${id}/pdf`);
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `invoice-${id}.pdf`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  },
+
   getSubscription: () => request<Subscription>("/api/billing/subscription"),
 
   getSubscriptionStatus: () =>
     request<{ subscribed: boolean; subscription: Subscription }>("/api/billing/subscription/status"),
 
-  createCheckout: (planCode: PlanCode) =>
+  createCheckout: (body: CheckoutRequest) =>
     request<CheckoutSession>("/api/billing/checkout", {
       method: "POST",
-      body: JSON.stringify({ planCode }),
+      body: JSON.stringify(body),
     }),
 
   verifyPayment: (body: VerifyPaymentRequest) =>
     request<Subscription>("/api/billing/verify", {
       method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  getNotificationPreferences: () => request<NotificationPreferences>("/api/notifications/preferences"),
+
+  updateNotificationPreferences: (body: NotificationPreferences) =>
+    request<NotificationPreferences>("/api/notifications/preferences", {
+      method: "PUT",
       body: JSON.stringify(body),
     }),
 };

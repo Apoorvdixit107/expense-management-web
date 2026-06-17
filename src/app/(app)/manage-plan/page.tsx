@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ShippingDetailsForm } from "@/components/ShippingDetailsForm";
 import { useRazorpayCheckout } from "@/hooks/useRazorpayCheckout";
 import { useSubscription } from "@/components/SubscriptionProvider";
 import { Button } from "@/components/ui/Button";
@@ -12,7 +13,7 @@ import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { isAuthenticated } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
-import type { Plan, PlanCode } from "@/lib/types";
+import type { Invoice, Plan, PlanCode, ShippingDetails } from "@/lib/types";
 
 const features = [
   "Unlimited expenses",
@@ -27,6 +28,8 @@ export default function ManagePlanPage() {
   const { subscription, loading, refresh } = useSubscription();
   const { payForPlan, loadingPlan } = useRazorpayCheckout();
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [checkoutPlan, setCheckoutPlan] = useState<{ code: PlanCode; name: string } | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -37,10 +40,34 @@ export default function ManagePlanPage() {
       .listPlans()
       .then(setPlans)
       .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load plans"));
+    api
+      .listInvoices()
+      .then(setInvoices)
+      .catch(() => setInvoices([]));
   }, [router]);
 
   if (!isAuthenticated()) {
     return <div className="py-20 text-center text-muted">Redirecting to sign in...</div>;
+  }
+
+  if (checkoutPlan) {
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Manage plan" subtitle="Enter details before payment" />
+        <ShippingDetailsForm
+          planLabel={checkoutPlan.name}
+          loading={loadingPlan === checkoutPlan.code}
+          onCancel={() => setCheckoutPlan(null)}
+          onSubmit={async (details: ShippingDetails) => {
+            await payForPlan(checkoutPlan.code, details);
+            setCheckoutPlan(null);
+            await refresh();
+            const updated = await api.listInvoices();
+            setInvoices(updated);
+          }}
+        />
+      </div>
+    );
   }
 
   return (
@@ -103,9 +130,7 @@ export default function ManagePlanPage() {
                   className="w-full"
                   variant={isCurrent ? "secondary" : "primary"}
                   disabled={loadingPlan === plan.code}
-                  onClick={() => {
-                    payForPlan(plan.code as PlanCode).then(() => refresh());
-                  }}
+                  onClick={() => setCheckoutPlan({ code: plan.code as PlanCode, name: plan.name })}
                 >
                   {loadingPlan === plan.code
                     ? "Processing..."
@@ -120,6 +145,32 @@ export default function ManagePlanPage() {
           );
         })}
       </div>
+
+      {invoices.length > 0 ? (
+        <Card>
+          <h2 className="text-lg font-bold text-ink">Invoices</h2>
+          <p className="mt-1 text-sm text-muted">Download PDF invoices for your purchases.</p>
+          <div className="mt-4 divide-y divide-border">
+            {invoices.map((invoice) => (
+              <div key={invoice.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+                <div>
+                  <p className="font-semibold text-ink">{invoice.invoiceNumber}</p>
+                  <p className="text-sm text-muted">
+                    {invoice.planName} · ₹{(invoice.amountPaise / 100).toLocaleString("en-IN")} ·{" "}
+                    {formatDateTime(invoice.issuedAt)}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {invoice.emailed ? "Emailed to" : "Sent to"} {invoice.customerEmail}
+                  </p>
+                </div>
+                <Button variant="secondary" onClick={() => api.downloadInvoice(invoice.id)}>
+                  Download PDF
+                </Button>
+              </div>
+            ))}
+          </div>
+        </Card>
+      ) : null}
 
       <p className="text-center text-sm text-muted">
         Payments secured by Razorpay. Need help?{" "}
