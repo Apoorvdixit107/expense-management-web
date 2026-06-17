@@ -5,19 +5,32 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { ConfirmDeleteDialog, SOFT_DELETE_MESSAGE } from "@/components/ui/ConfirmDeleteDialog";
 import { TransactionAmount, TransactionTypeBadge } from "@/components/TransactionAmount";
 import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
 import { deleteGuestExpense, type GuestExpense } from "@/lib/guest";
 import { formatDateTime } from "@/lib/format";
-import type { Expense, ExpenseType } from "@/lib/types";
+import type { Expense, ExpenseType, PaymentMode } from "@/lib/types";
 
 type ExpenseListProps =
-  | { mode: "api"; expenses: Expense[]; onChanged: () => void }
+  | {
+      mode: "api";
+      expenses: Expense[];
+      onChanged: () => void;
+      showPaymentMode?: boolean;
+      view?: "active" | "deleted";
+    }
   | { mode: "guest"; expenses: GuestExpense[]; onChanged: () => void };
 
 function expenseType(expense: Expense | GuestExpense): ExpenseType {
   return expense.type ?? "OUT";
+}
+
+function paymentModeLabel(mode: PaymentMode): string {
+  if (mode === "ONLINE") return "Online";
+  if (mode === "BANK") return "Bank";
+  return "Cash";
 }
 
 function EditIcon() {
@@ -36,35 +49,75 @@ function EditIcon() {
 }
 
 export function ExpenseList(props: ExpenseListProps) {
-  const [deletingId, setDeletingId] = useState<string | number | null>(null);
+  const view = props.mode === "api" ? (props.view ?? "active") : "active";
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string | number;
+    label: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [restoringId, setRestoringId] = useState<number | null>(null);
   const actionBusyRef = useRef(false);
 
-  async function handleDelete(id: string | number) {
-    if (actionBusyRef.current) return;
+  async function confirmDelete() {
+    if (!deleteTarget || actionBusyRef.current) return;
     actionBusyRef.current = true;
-    setDeletingId(id);
+    setDeleting(true);
     try {
       if (props.mode === "guest") {
-        deleteGuestExpense(String(id));
+        deleteGuestExpense(String(deleteTarget.id));
         props.onChanged();
       } else {
-        await api.deleteExpense(id as number);
+        await api.deleteExpense(deleteTarget.id as number);
         props.onChanged();
       }
-      toast.success("Transaction deleted.");
+      toast.success("Transaction moved to Deleted.");
+      setDeleteTarget(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete transaction");
     } finally {
-      setDeletingId(null);
+      setDeleting(false);
+      actionBusyRef.current = false;
+    }
+  }
+
+  async function handleRestore(id: number) {
+    if (actionBusyRef.current) return;
+    actionBusyRef.current = true;
+    setRestoringId(id);
+    try {
+      await api.restoreExpense(id);
+      props.onChanged();
+      toast.success("Transaction recovered.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to recover transaction");
+    } finally {
+      setRestoringId(null);
       actionBusyRef.current = false;
     }
   }
 
   if (props.expenses.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-paper px-6 py-12 text-center text-sm text-muted">
-        No transactions in this date range.
-      </div>
+      <>
+        <div className="rounded-2xl border border-dashed border-border bg-paper px-6 py-12 text-center text-sm text-muted">
+          {view === "deleted"
+            ? "No deleted transactions. Deleted items appear here and can be recovered."
+            : "No transactions in this date range."}
+        </div>
+        {view === "active" ? (
+          <ConfirmDeleteDialog
+            open={deleteTarget != null}
+            onClose={() => {
+              if (!deleting) setDeleteTarget(null);
+            }}
+            onConfirm={confirmDelete}
+            title="Delete transaction"
+            itemName={deleteTarget?.label}
+            message={SOFT_DELETE_MESSAGE}
+            loading={deleting}
+          />
+        ) : null}
+      </>
     );
   }
 
@@ -80,26 +133,40 @@ export function ExpenseList(props: ExpenseListProps) {
           props.mode === "guest"
             ? (expense as GuestExpense).description
             : (expense as Expense).description;
+        const paymentMode =
+          props.mode === "api" ? (expense as Expense).paymentMode ?? "CASH" : null;
+        const deletedAt = props.mode === "api" ? (expense as Expense).deletedAt : null;
 
         return (
           <Card
             key={id}
             padding="sm"
             className={`flex flex-col gap-4 border-l-4 sm:flex-row sm:items-center sm:justify-between ${
-              type === "IN" ? "border-l-emerald-500" : "border-l-red-500"
+              view === "deleted"
+                ? "border-l-neutral-400 opacity-90"
+                : type === "IN"
+                  ? "border-l-emerald-500"
+                  : "border-l-red-500"
             }`}
           >
             <div>
               <div className="flex flex-wrap items-center gap-3">
                 <Badge>{category}</Badge>
                 <TransactionTypeBadge type={type} />
+                {view === "deleted" ? <Badge variant="neutral">Deleted</Badge> : null}
+                {props.mode === "api" && props.showPaymentMode && paymentMode ? (
+                  <Badge variant="neutral">{paymentModeLabel(paymentMode)}</Badge>
+                ) : null}
                 <TransactionAmount type={type} amount={amount} />
               </div>
               <p className="mt-2 text-sm text-muted">{formatDateTime(spentAt)}</p>
+              {deletedAt ? (
+                <p className="mt-1 text-xs text-muted">Deleted {formatDateTime(deletedAt)}</p>
+              ) : null}
               {description ? <p className="mt-1 text-sm text-neutral-700">{description}</p> : null}
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              {props.mode === "api" ? (
+              {props.mode === "api" && view === "active" ? (
                 <Link
                   href={`/expenses/${id}/edit`}
                   className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-muted transition hover:border-brand hover:text-brand"
@@ -109,17 +176,45 @@ export function ExpenseList(props: ExpenseListProps) {
                   <EditIcon />
                 </Link>
               ) : null}
-              <Button
-                variant="danger"
-                disabled={deletingId === id}
-                onClick={() => void handleDelete(id)}
-              >
-                {deletingId === id ? "Deleting..." : "Delete"}
-              </Button>
+              {props.mode === "api" && view === "deleted" ? (
+                <Button
+                  variant="primary"
+                  disabled={restoringId === id}
+                  onClick={() => void handleRestore(id as number)}
+                >
+                  {restoringId === id ? "Recovering..." : "Recover"}
+                </Button>
+              ) : (
+                <Button
+                  variant="danger"
+                  disabled={deleting && deleteTarget?.id === id}
+                  onClick={() =>
+                    setDeleteTarget({
+                      id,
+                      label: `${category} · ${formatDateTime(spentAt)}`,
+                    })
+                  }
+                >
+                  Delete
+                </Button>
+              )}
             </div>
           </Card>
         );
       })}
+      {view === "active" ? (
+        <ConfirmDeleteDialog
+          open={deleteTarget != null}
+          onClose={() => {
+            if (!deleting) setDeleteTarget(null);
+          }}
+          onConfirm={confirmDelete}
+          title="Delete transaction"
+          itemName={deleteTarget?.label}
+          message={SOFT_DELETE_MESSAGE}
+          loading={deleting}
+        />
+      ) : null}
     </div>
   );
 }

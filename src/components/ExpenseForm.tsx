@@ -18,6 +18,7 @@ import {
   type Expense,
   type ExpenseCategory,
   type ExpenseType,
+  type PaymentMode,
   type UpdateExpenseRequest,
 } from "@/lib/types";
 
@@ -35,6 +36,7 @@ function defaultFormState(type: ExpenseType = "OUT") {
     type,
     categoryId: "" as number | "",
     bankAccountId: "" as number | "",
+    paymentMode: "CASH" as PaymentMode,
     amount: "",
     description: "",
     spentAt: localDatetimeInputValue(),
@@ -57,6 +59,7 @@ export function ExpenseForm({
   const [type, setType] = useState<ExpenseType>("OUT");
   const [categoryId, setCategoryId] = useState<number | "">("");
   const [bankAccountId, setBankAccountId] = useState<number | "">("");
+  const [paymentMode, setPaymentMode] = useState<PaymentMode>("CASH");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [spentAt, setSpentAt] = useState(() => localDatetimeInputValue());
@@ -73,6 +76,7 @@ export function ExpenseForm({
     setType(defaults.type);
     setCategoryId(defaults.categoryId);
     setBankAccountId(defaults.bankAccountId);
+    setPaymentMode(defaults.paymentMode);
     setAmount(defaults.amount);
     setDescription(defaults.description);
     setSpentAt(defaults.spentAt);
@@ -91,6 +95,7 @@ export function ExpenseForm({
     setType(editingExpense.type);
     setCategoryId(editingExpense.categoryId ?? "");
     setBankAccountId(editingExpense.bankAccountId ?? "");
+    setPaymentMode(editingExpense.paymentMode ?? "CASH");
     setAmount(String(editingExpense.amount));
     setDescription(editingExpense.description ?? "");
     setSpentAt(isoToLocalDatetimeInput(editingExpense.spentAt));
@@ -176,6 +181,7 @@ export function ExpenseForm({
           categoryId: Number(categoryId),
           bankAccountId: bankAccountId === "" ? undefined : Number(bankAccountId),
           type,
+          paymentMode: bankAccountId !== "" ? "BANK" : paymentMode,
           amount: Number(amount),
           description: description.trim() || undefined,
           spentAt: localDatetimeToISO(spentAt),
@@ -196,6 +202,7 @@ export function ExpenseForm({
         setAmount("");
         setDescription("");
         setBankAccountId("");
+        setPaymentMode("CASH");
         setSpentAt(localDatetimeInputValue());
       }
 
@@ -342,12 +349,34 @@ export function ExpenseForm({
               </div>
             ) : null}
           </div>
+          {mode === "api" ? (
+            <label className="block space-y-1.5">
+              <span className="text-sm font-medium text-ink">Payment type</span>
+              <select
+                value={bankAccountId !== "" ? "BANK" : paymentMode}
+                onChange={(e) => setPaymentMode(e.target.value as PaymentMode)}
+                disabled={loading || bankAccountId !== ""}
+                className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:opacity-60"
+              >
+                <option value="CASH">Cash</option>
+                <option value="ONLINE">Online</option>
+                <option value="BANK">Bank</option>
+              </select>
+              {bankAccountId !== "" ? (
+                <p className="text-xs text-muted">Payment type is Bank when a bank account is selected.</p>
+              ) : null}
+            </label>
+          ) : null}
           {mode === "api" && bankAccounts.length > 0 ? (
             <label className="block space-y-1.5">
               <span className="text-sm font-medium text-ink">Bank account (optional)</span>
               <select
                 value={bankAccountId}
-                onChange={(e) => setBankAccountId(e.target.value ? Number(e.target.value) : "")}
+                onChange={(e) => {
+                  const value = e.target.value ? Number(e.target.value) : "";
+                  setBankAccountId(value);
+                  if (value !== "") setPaymentMode("BANK");
+                }}
                 disabled={loading}
                 className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
               >

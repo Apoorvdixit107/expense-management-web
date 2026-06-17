@@ -1,75 +1,68 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { BankAccountsSubNav } from "@/components/BankAccountsSubNav";
+import { ExpenseList } from "@/components/ExpenseList";
+import { ReportDateFilter as ReportDateFilterBar } from "@/components/reports/ReportDateFilter";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Badge } from "@/components/ui/Badge";
-import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
-import type { BankAccount, BankAccountType } from "@/lib/types";
+import { api } from "@/lib/api";
+import {
+  createDefaultReportDateFilter,
+  resolveReportDateRange,
+  type ReportDateFilter,
+} from "@/lib/reports";
+import type { Expense, PaymentMode } from "@/lib/types";
 
-export default function BankAccountsPage() {
+function expenseInRange(spentAt: string, fromDate: string, toDate: string): boolean {
+  const local = new Date(spentAt);
+  const y = local.getFullYear();
+  const m = String(local.getMonth() + 1).padStart(2, "0");
+  const d = String(local.getDate()).padStart(2, "0");
+  const date = `${y}-${m}-${d}`;
+  return date >= fromDate && date <= toDate;
+}
+
+const PAYMENT_MODE_OPTIONS: { value: "" | PaymentMode; label: string }[] = [
+  { value: "", label: "All payment types" },
+  { value: "CASH", label: "Cash" },
+  { value: "ONLINE", label: "Online" },
+  { value: "BANK", label: "Bank" },
+];
+
+export default function CashAndBankPage() {
   const { currentOrg, currentOrgId } = useOrganization();
-  const [accounts, setAccounts] = useState<BankAccount[]>([]);
-  const [bankName, setBankName] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [lastFour, setLastFour] = useState("");
-  const [ifsc, setIfsc] = useState("");
-  const [accountType, setAccountType] = useState<BankAccountType>("SAVINGS");
-  const [connectNow, setConnectNow] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [paymentMode, setPaymentMode] = useState<"" | PaymentMode>("");
+  const [dateFilter, setDateFilter] = useState<ReportDateFilter>(createDefaultReportDateFilter);
+  const [ready, setReady] = useState(false);
 
-  const loadAccounts = useCallback(() => {
+  const { fromDate, toDate } = useMemo(() => resolveReportDateRange(dateFilter), [dateFilter]);
+
+  const loadLedger = useCallback(() => {
     if (!currentOrgId) return;
     api
-      .listBankAccounts(currentOrgId)
-      .then(setAccounts)
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load accounts"));
-  }, [currentOrgId]);
+      .listExpenses(currentOrgId, {
+        cashAndBankOnly: true,
+        paymentMode: paymentMode || undefined,
+      })
+      .then(setExpenses)
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load ledger"));
+  }, [currentOrgId, paymentMode]);
 
   useEffect(() => {
-    loadAccounts();
-  }, [loadAccounts]);
+    if (currentOrgId) loadLedger();
+    setReady(true);
+  }, [currentOrgId, loadLedger]);
 
-  async function handleConnect(e: React.FormEvent) {
-    e.preventDefault();
-    if (!currentOrgId || !bankName.trim() || !nickname.trim()) return;
-    setLoading(true);
-    try {
-      await api.connectBankAccount(currentOrgId, {
-        bankName: bankName.trim(),
-        accountNickname: nickname.trim(),
-        accountLastFour: lastFour.trim() || undefined,
-        ifscCode: ifsc.trim() || undefined,
-        accountType,
-        connectNow,
-      });
-      setBankName("");
-      setNickname("");
-      setLastFour("");
-      setIfsc("");
-      loadAccounts();
-      toast.success(connectNow ? "Bank account connected." : "Bank account saved.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to connect account");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const filteredExpenses = useMemo(() => {
+    if (fromDate > toDate) return [];
+    return expenses.filter((expense) => expenseInRange(expense.spentAt, fromDate, toDate));
+  }, [expenses, fromDate, toDate]);
 
-  async function handleDelete(id: number) {
-    if (!currentOrgId || !confirm("Remove this bank account?")) return;
-    try {
-      await api.deleteBankAccount(currentOrgId, id);
-      loadAccounts();
-      toast.success("Bank account removed.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to remove account");
-    }
+  if (!ready) {
+    return <div className="py-20 text-center text-muted">Loading...</div>;
   }
 
   if (!currentOrg) {
@@ -80,93 +73,35 @@ export default function BankAccountsPage() {
     <div className="space-y-8">
       <PageHeader
         title="Cash & Bank"
-        subtitle={`Linked accounts for ${currentOrg.name}. Connect a bank to tag expenses to an account.`}
+        subtitle={`Cash, online, and bank transactions for ${currentOrg.name}`}
       />
 
-      <Card>
-        <h2 className="text-lg font-bold text-ink">Connect bank account</h2>
-        <p className="mt-1 text-sm text-muted">
-          Add your bank details for this organization. Full account linking via your bank&apos;s API can be added later.
-        </p>
-        <form onSubmit={handleConnect} className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Input label="Bank name" value={bankName} onChange={(e) => setBankName(e.target.value)} required />
-          <Input
-            label="Account nickname"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder="e.g. Business current"
-            required
-          />
-          <Input
-            label="Last 4 digits"
-            value={lastFour}
-            onChange={(e) => setLastFour(e.target.value.replace(/\D/g, "").slice(0, 4))}
-            maxLength={4}
-          />
-          <Input label="IFSC code" value={ifsc} onChange={(e) => setIfsc(e.target.value.toUpperCase())} />
-          <label className="block space-y-1.5">
-            <span className="text-sm font-medium text-ink">Account type</span>
-            <select
-              value={accountType}
-              onChange={(e) => setAccountType(e.target.value as BankAccountType)}
-              className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-            >
-              <option value="SAVINGS">Savings</option>
-              <option value="CURRENT">Current</option>
-            </select>
-          </label>
-          <label className="flex cursor-pointer items-center gap-2 self-end text-sm text-ink">
-            <input
-              type="checkbox"
-              checked={connectNow}
-              onChange={(e) => setConnectNow(e.target.checked)}
-              className="h-4 w-4 accent-brand"
-            />
-            Mark as connected
-          </label>
-          <div className="sm:col-span-2">
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Connect account"}
-            </Button>
-          </div>
-        </form>
-      </Card>
+      <BankAccountsSubNav />
 
-      <div className="space-y-3">
-        {accounts.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border px-6 py-10 text-center text-sm text-muted">
-            No bank accounts yet for {currentOrg.name}.
-          </div>
-        ) : (
-          accounts.map((account) => (
-            <Card key={account.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-semibold text-ink">{account.accountNickname}</p>
-                  <Badge variant={account.status === "CONNECTED" ? "brand" : "neutral"}>
-                    {account.status === "CONNECTED" ? "Connected" : "Manual"}
-                  </Badge>
-                </div>
-                <p className="mt-1 text-sm text-muted">
-                  {account.bankName}
-                  {account.accountLastFour ? ` · •••• ${account.accountLastFour}` : ""}
-                  {account.ifscCode ? ` · ${account.ifscCode}` : ""}
-                </p>
-              </div>
-              <Button variant="danger" onClick={() => handleDelete(account.id)}>
-                Remove
-              </Button>
-            </Card>
-          ))
-        )}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <label className="block space-y-1.5">
+          <span className="text-sm font-medium text-ink">Payment type</span>
+          <select
+            value={paymentMode}
+            onChange={(e) => setPaymentMode(e.target.value as "" | PaymentMode)}
+            className="h-11 w-full min-w-[200px] rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+          >
+            {PAYMENT_MODE_OPTIONS.map((option) => (
+              <option key={option.value || "all"} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <ReportDateFilterBar filter={dateFilter} onChange={setDateFilter} />
       </div>
 
-      <p className="text-sm text-muted">
-        Need another organization?{" "}
-        <Link href="/organizations" className="font-semibold text-brand hover:text-brand-hover">
-          Manage organizations
-        </Link>
-      </p>
+      <ExpenseList
+        mode="api"
+        expenses={filteredExpenses}
+        onChanged={loadLedger}
+        showPaymentMode
+      />
     </div>
   );
 }

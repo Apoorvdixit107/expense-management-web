@@ -11,6 +11,14 @@ const ALLOWED_TYPES = new Set([
   "application/pdf",
 ]);
 
+export function stripDataUrlPrefix(contentBase64: string): string {
+  const trimmed = contentBase64.trim();
+  if (!trimmed.startsWith("data:")) return trimmed.replace(/\s/g, "");
+  const comma = trimmed.indexOf(",");
+  if (comma < 0) return trimmed;
+  return trimmed.substring(comma + 1).replace(/\s/g, "");
+}
+
 export type PreparedBillFile = {
   fileName: string;
   mimeType: string;

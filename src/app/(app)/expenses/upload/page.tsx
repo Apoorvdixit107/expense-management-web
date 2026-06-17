@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
-import { prepareBillFile, type PreparedBillFile } from "@/lib/bill-image";
+import { prepareBillFile, stripDataUrlPrefix, type PreparedBillFile } from "@/lib/bill-image";
 import { formatCurrency } from "@/lib/format";
 import type { BillScanPrefill, ExpenseType, ScanBillResponse } from "@/lib/types";
 
@@ -53,7 +53,7 @@ export default function UploadBillPage() {
         type,
         fileName: preparedFile.fileName,
         mimeType: preparedFile.mimeType,
-        contentBase64: preparedFile.contentBase64,
+        contentBase64: stripDataUrlPrefix(preparedFile.contentBase64),
       });
       setScanResult(result);
       setPrefill({

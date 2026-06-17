@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
 import { PremiumStarButton } from "@/components/PremiumStarButton";
+import { PremiumStarIcon } from "@/components/ExpensesSubNav";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { useUserPreferences } from "@/components/UserPreferencesProvider";
 import { Logo } from "@/components/brand/Logo";
@@ -19,11 +20,14 @@ type NavLink = {
   href: string;
   label: string;
   icon: string;
+  premium?: boolean;
 };
 
 const memberLinks: NavLink[] = [
   { href: "/expenses", label: "Expenses", icon: "₹" },
+  { href: "/expenses/upload", label: "Upload Bill", icon: "↑", premium: true },
   { href: "/bank-accounts", label: "Cash & Bank", icon: "◇" },
+  { href: "/bank-accounts/connect", label: "Connect Bank", icon: "⧉", premium: true },
   { href: "/organizations", label: "Organizations", icon: "▣" },
   { href: "/reports", label: "Reports", icon: "▤" },
   { href: "/notifications", label: "Notifications", icon: "◔" },
@@ -35,7 +39,9 @@ const memberLinks: NavLink[] = [
 const subscriberLinks: NavLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: "◉" },
   { href: "/expenses", label: "Expenses", icon: "₹" },
+  { href: "/expenses/upload", label: "Upload Bill", icon: "↑", premium: true },
   { href: "/bank-accounts", label: "Cash & Bank", icon: "◇" },
+  { href: "/bank-accounts/connect", label: "Connect Bank", icon: "⧉", premium: true },
   { href: "/organizations", label: "Organizations", icon: "▣" },
   { href: "/reports", label: "Reports", icon: "▤" },
   { href: "/notifications", label: "Notifications", icon: "◔" },
@@ -83,6 +89,7 @@ function SidebarNav({
               {link.icon}
             </span>
             <span className="truncate">{link.label}</span>
+            {link.premium ? <PremiumStarIcon className="ml-0.5 shrink-0" /> : null}
             {showBadge ? (
               <span className="ml-auto rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-white">
                 {unread}

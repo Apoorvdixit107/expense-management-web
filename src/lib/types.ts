@@ -74,6 +74,8 @@ export type OrganizationReport = {
 
 export type ExpenseType = "IN" | "OUT";
 
+export type PaymentMode = "CASH" | "ONLINE" | "BANK";
+
 export type Expense = {
   id: number;
   userId: number;
@@ -82,10 +84,12 @@ export type Expense = {
   bankAccountId: number | null;
   category: string;
   type: ExpenseType;
+  paymentMode: PaymentMode;
   amount: number;
   description: string | null;
   spentAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 };
 
 export type CreateExpenseRequest = {
@@ -93,6 +97,7 @@ export type CreateExpenseRequest = {
   categoryId: number;
   bankAccountId?: number;
   type: ExpenseType;
+  paymentMode?: PaymentMode;
   amount: number;
   description?: string;
   spentAt?: string;
@@ -102,6 +107,7 @@ export type UpdateExpenseRequest = {
   categoryId: number;
   bankAccountId?: number;
   type: ExpenseType;
+  paymentMode?: PaymentMode;
   amount: number;
   description?: string;
   spentAt?: string;
@@ -167,7 +173,7 @@ export type ExpenseCategory = {
 };
 
 export type BankAccountType = "SAVINGS" | "CURRENT";
-export type BankAccountStatus = "MANUAL" | "CONNECTED";
+export type BankAccountStatus = "MANUAL" | "CONNECTED" | "NET_BANKING";
 
 export type BankAccount = {
   id: number;
@@ -178,7 +184,15 @@ export type BankAccount = {
   ifscCode: string | null;
   accountType: BankAccountType;
   status: BankAccountStatus;
+  primaryAccount: boolean;
+  lastSyncedAt: string | null;
   connectedAt: string;
+};
+
+export type BankSyncResponse = {
+  importedCount: number;
+  transactions: Expense[];
+  mock: boolean;
 };
 
 export type ConnectBankAccountRequest = {

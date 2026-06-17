@@ -35,6 +35,8 @@ import type {
   OrganizationBalanceRange,
   OrganizationReport,
   OrganizationReportType,
+  PaymentMode,
+  BankSyncResponse,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
@@ -82,8 +84,12 @@ async function request<T>(path: string, init: RequestInit = {}, auth = true): Pr
     }
     if (!message) {
       if (response.status === 401) message = "Invalid email or password";
-      else if (response.status === 403) message = "Access denied. Try Google sign-in or create a new account.";
-      else if (response.status === 409) message = "Email already registered";
+      else if (response.status === 403) {
+        message =
+          "Access denied. Sign in again, or ensure the backend allows your site origin and bill scan is deployed.";
+      } else if (response.status === 413) {
+        message = "Bill file is too large. Try a smaller image or PDF.";
+      } else if (response.status === 409) message = "Email already registered";
       else message = `Request failed (${response.status})`;
     }
     throw new ApiError(message, response.status);
@@ -126,10 +132,18 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
-  listExpenses: (organizationId?: number) =>
-    request<Expense[]>(
-      organizationId ? `/api/expenses?organizationId=${organizationId}` : "/api/expenses"
-    ),
+  listExpenses: (
+    organizationId?: number,
+    options?: { paymentMode?: PaymentMode; cashAndBankOnly?: boolean; deletedOnly?: boolean }
+  ) => {
+    const params = new URLSearchParams();
+    if (organizationId !== undefined) params.set("organizationId", String(organizationId));
+    if (options?.paymentMode) params.set("paymentMode", options.paymentMode);
+    if (options?.cashAndBankOnly) params.set("cashAndBankOnly", "true");
+    if (options?.deletedOnly) params.set("deletedOnly", "true");
+    const query = params.toString();
+    return request<Expense[]>(`/api/expenses${query ? `?${query}` : ""}`);
+  },
 
   getExpense: (id: number) => request<Expense>(`/api/expenses/${id}`),
 
@@ -146,6 +160,9 @@ export const api = {
     request<Expense>(`/api/expenses/${id}`, { method: "PUT", body: JSON.stringify(body) }),
 
   deleteExpense: (id: number) => request<void>(`/api/expenses/${id}`, { method: "DELETE" }),
+
+  restoreExpense: (id: number) =>
+    request<Expense>(`/api/expenses/${id}/restore`, { method: "POST" }),
 
   listOrganizations: () => request<Organization[]>("/api/organizations"),
 
@@ -202,6 +219,24 @@ export const api = {
     request<void>(`/api/organizations/${organizationId}/bank-accounts/${bankAccountId}`, {
       method: "DELETE",
     }),
+
+  setPrimaryBankAccount: (organizationId: number, bankAccountId: number) =>
+    request<BankAccount>(
+      `/api/organizations/${organizationId}/bank-accounts/${bankAccountId}/primary`,
+      { method: "PATCH" }
+    ),
+
+  connectNetBanking: (organizationId: number, bankAccountId: number) =>
+    request<BankAccount>(
+      `/api/organizations/${organizationId}/bank-accounts/${bankAccountId}/connect-net-banking`,
+      { method: "POST" }
+    ),
+
+  syncBankAccount: (organizationId: number, bankAccountId: number) =>
+    request<BankSyncResponse>(
+      `/api/organizations/${organizationId}/bank-accounts/${bankAccountId}/sync`,
+      { method: "POST" }
+    ),
 
   listNotifications: () => request<Notification[]>("/api/notifications"),
 

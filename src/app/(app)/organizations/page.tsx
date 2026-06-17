@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { ConfirmDeleteDialog } from "@/components/ui/ConfirmDeleteDialog";
 import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
 import {
@@ -25,6 +26,8 @@ export default function OrganizationsPage() {
   const [customTypeLabel, setCustomTypeLabel] = useState("");
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<Organization | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Organization | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     refreshOrgs().catch(() => undefined);
@@ -84,14 +87,18 @@ export default function OrganizationsPage() {
     }
   }
 
-  async function handleDelete(org: Organization) {
-    if (!confirm(`Delete "${org.name}"? This cannot be undone.`)) return;
+  async function confirmDeleteOrganization() {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await api.deleteOrganization(org.id);
+      await api.deleteOrganization(deleteTarget.id);
       await refreshOrgs();
       toast.success("Organization deleted.");
+      setDeleteTarget(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -179,13 +186,29 @@ export default function OrganizationsPage() {
               <Button variant="secondary" onClick={() => startEdit(org)}>
                 Edit
               </Button>
-              <Button variant="danger" onClick={() => handleDelete(org)}>
+              <Button variant="danger" onClick={() => setDeleteTarget(org)}>
                 Delete
               </Button>
             </div>
           </Card>
         ))}
       </div>
+
+      <ConfirmDeleteDialog
+        open={deleteTarget != null}
+        onClose={() => {
+          if (!deleting) setDeleteTarget(null);
+        }}
+        onConfirm={confirmDeleteOrganization}
+        title="Delete organization"
+        itemName={deleteTarget?.name}
+        message={
+          deleteTarget
+            ? `You will lose all expenses, categories, and bank data for "${deleteTarget.name}" and will not be able to retrieve it. Do you still want to delete?`
+            : undefined
+        }
+        loading={deleting}
+      />
     </div>
   );
 }

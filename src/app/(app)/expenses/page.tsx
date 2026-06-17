@@ -32,6 +32,8 @@ export default function ExpensesPage() {
   const { currentOrg, currentOrgId, refreshOrgs } = useOrganization();
   const [subscriber, setSubscriber] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [deletedExpenses, setDeletedExpenses] = useState<Expense[]>([]);
+  const [listView, setListView] = useState<"active" | "deleted">("active");
   const [dateFilter, setDateFilter] = useState<ReportDateFilter>(createDefaultReportDateFilter);
   const [ready, setReady] = useState(false);
 
@@ -42,10 +44,24 @@ export default function ExpensesPage() {
     return expenses.filter((expense) => expenseInRange(expense.spentAt, fromDate, toDate));
   }, [expenses, fromDate, toDate]);
 
+  const filteredDeletedExpenses = useMemo(() => {
+    if (fromDate > toDate) return [];
+    return deletedExpenses.filter((expense) =>
+      expenseInRange(expense.deletedAt ?? expense.spentAt, fromDate, toDate)
+    );
+  }, [deletedExpenses, fromDate, toDate]);
+
   const loadExpenses = useCallback(() => {
     if (!currentOrgId) return;
-    Promise.all([api.listExpenses(currentOrgId), refreshOrgs()])
-      .then(([items]) => setExpenses(items))
+    Promise.all([
+      api.listExpenses(currentOrgId),
+      api.listExpenses(currentOrgId, { deletedOnly: true }),
+      refreshOrgs(),
+    ])
+      .then(([items, deleted]) => {
+        setExpenses(items);
+        setDeletedExpenses(deleted);
+      })
       .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load expenses"));
   }, [currentOrgId, refreshOrgs]);
 
@@ -121,19 +137,48 @@ export default function ExpensesPage() {
       ) : null}
 
       <Card className="space-y-4">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-bold text-ink">Transaction history</h2>
             <p className="mt-1 text-sm text-muted">
-              {filteredExpenses.length} transaction{filteredExpenses.length === 1 ? "" : "s"} in selected range
+              {listView === "active"
+                ? `${filteredExpenses.length} transaction${filteredExpenses.length === 1 ? "" : "s"} in selected range`
+                : `${filteredDeletedExpenses.length} deleted transaction${filteredDeletedExpenses.length === 1 ? "" : "s"} in selected range`}
             </p>
+          </div>
+          <div className="flex rounded-xl border border-border bg-paper p-1">
+            <button
+              type="button"
+              onClick={() => setListView("active")}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                listView === "active" ? "bg-surface text-brand shadow-sm" : "text-muted hover:text-ink"
+              }`}
+            >
+              Active
+            </button>
+            <button
+              type="button"
+              onClick={() => setListView("deleted")}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                listView === "deleted" ? "bg-surface text-brand shadow-sm" : "text-muted hover:text-ink"
+              }`}
+            >
+              Deleted{deletedExpenses.length > 0 ? ` (${deletedExpenses.length})` : ""}
+            </button>
           </div>
         </div>
         <ReportDateFilterBar filter={dateFilter} onChange={setDateFilter} />
         {fromDate > toDate ? (
           <p className="text-sm text-error">End date must be on or after start date.</p>
+        ) : listView === "active" ? (
+          <ExpenseList mode="api" expenses={filteredExpenses} onChanged={loadExpenses} view="active" />
         ) : (
-          <ExpenseList mode="api" expenses={filteredExpenses} onChanged={loadExpenses} />
+          <ExpenseList
+            mode="api"
+            expenses={filteredDeletedExpenses}
+            onChanged={loadExpenses}
+            view="deleted"
+          />
         )}
       </Card>
 
