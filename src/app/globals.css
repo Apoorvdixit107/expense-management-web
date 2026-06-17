@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --brand-primary: #e85d04;
   --brand-primary-hover: #c2410c;
@@ -17,6 +19,18 @@
   --shadow-elevated: 0 8px 30px rgba(232, 93, 4, 0.12);
 }
 
+.dark {
+  --brand-primary-light: #3d2814;
+  --neutral-900: #fff7ed;
+  --neutral-700: #e7e5e4;
+  --neutral-500: #a8a29e;
+  --neutral-200: #44403c;
+  --neutral-50: #1c1410;
+  --surface-card: #292018;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
 @theme inline {
   --color-brand: var(--brand-primary);
   --color-brand-hover: var(--brand-primary-hover);
@@ -25,6 +39,7 @@
   --color-muted: var(--neutral-500);
   --color-border: var(--neutral-200);
   --color-paper: var(--neutral-50);
+  --color-surface: var(--surface-card);
   --color-error: var(--semantic-error);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --radius-md: 12px;

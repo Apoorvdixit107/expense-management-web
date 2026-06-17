@@ -47,7 +47,7 @@ export default function ReportsPage() {
                   className={`h-11 rounded-xl px-5 text-sm font-semibold transition ${
                     period === item.value
                       ? "bg-brand text-white shadow-sm"
-                      : "border border-border bg-white text-neutral-700 hover:bg-paper"
+                      : "border border-border bg-surface text-ink hover:bg-paper"
                   }`}
                 >
                   {item.label}

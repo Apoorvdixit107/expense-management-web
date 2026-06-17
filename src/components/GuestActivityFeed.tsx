@@ -43,7 +43,7 @@ export function GuestActivityFeed({ onEditContact }: GuestActivityFeedProps) {
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-white px-6 py-12 text-center text-sm text-muted">
+        <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center text-sm text-muted">
           No activity yet. Add an expense to see updates here.
         </div>
       ) : (

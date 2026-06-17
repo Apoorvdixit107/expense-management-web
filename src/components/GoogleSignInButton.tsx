@@ -82,7 +82,7 @@ export function AuthDivider() {
         <div className="w-full border-t border-border" />
       </div>
       <div className="relative flex justify-center">
-        <span className="bg-white px-3 text-xs font-medium uppercase tracking-wider text-muted">or</span>
+        <span className="bg-surface px-3 text-xs font-medium uppercase tracking-wider text-muted">or</span>
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ export function ExpenseList(props: ExpenseListProps) {
 
   if (props.expenses.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-white px-6 py-12 text-center text-sm text-muted">
+      <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center text-sm text-muted">
         No expenses yet. Add your first expense above.
       </div>
     );

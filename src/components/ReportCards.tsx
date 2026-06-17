@@ -53,7 +53,7 @@ export function PeriodBars({ items }: { items: PeriodBreakdown[] }) {
         <div key={item.label} className="rounded-xl border border-border bg-paper p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">{item.label}</p>
           <p className="mt-2 text-xl font-bold text-ink">{formatCurrency(item.amount)}</p>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-white">
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-surface">
             <div
               className="h-full rounded-full bg-brand-hover"
               style={{ width: `${max ? (item.amount / max) * 100 : 0}%` }}

@@ -67,7 +67,7 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="h-11 w-full rounded-xl border border-border bg-white px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
             >
               {EXPENSE_CATEGORIES.map((item) => (
                 <option key={item} value={item}>

@@ -59,7 +59,7 @@ export default function ExpensesPage() {
       ) : (
         <>
           <ExpenseList mode="guest" expenses={guestExpenses} onChanged={loadExpenses} />
-          <div className="rounded-2xl border border-dashed border-border bg-white p-5 text-center text-sm text-muted">
+          <div className="rounded-2xl border border-dashed border-border bg-surface p-5 text-center text-sm text-muted">
             Data stored locally during trial.{" "}
             <Link href="/register" className="font-semibold text-brand hover:text-brand-hover">
               Create account

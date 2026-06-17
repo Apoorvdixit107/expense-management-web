@@ -48,7 +48,7 @@ export default function NotificationsPage() {
         <PageHeader title="Notifications" subtitle="Email & SMS alerts for your account" />
         {error ? <p className="text-sm text-error">{error}</p> : null}
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-white px-6 py-12 text-center text-sm text-muted">
+          <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center text-sm text-muted">
             No notifications yet.
           </div>
         ) : (
@@ -57,7 +57,7 @@ export default function NotificationsPage() {
               <article
                 key={item.id}
                 className={`rounded-2xl border px-5 py-5 ${
-                  item.read ? "border-border bg-white" : "border-brand/30 bg-brand-light/50"
+                  item.read ? "border-border bg-surface" : "border-brand/30 bg-brand-light/50"
                 }`}
                 style={item.read ? { boxShadow: "var(--shadow-card)" } : undefined}
               >
