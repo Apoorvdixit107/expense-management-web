@@ -2,31 +2,21 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { activateSubscription } from "@/lib/subscription";
 import { isAuthenticated } from "@/lib/auth";
-import { isSubscriber } from "@/lib/navigation";
-import { useEffect } from "react";
+import { isSubscribed } from "@/lib/subscription";
 
 export default function SubscribePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (isSubscriber()) {
+    if (isAuthenticated() && isSubscribed()) {
       router.replace("/dashboard");
     }
   }, [router]);
-
-  function handleSubscribe() {
-    activateSubscription();
-    if (isAuthenticated()) {
-      router.push("/dashboard");
-    } else {
-      router.push("/register");
-    }
-  }
 
   return (
     <div className="min-h-screen bg-paper">
@@ -40,55 +30,35 @@ export default function SubscribePage() {
         <ThemeToggle />
       </header>
 
-      <div className="mx-auto max-w-[900px] px-6 py-16 text-center">
+      <div className="mx-auto max-w-lg px-6 py-16 text-center">
         <span className="inline-block rounded-full bg-error px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white">
           Trial ended
         </span>
-        <h1 className="mt-6 text-4xl font-extrabold text-ink">Subscribe to keep your expenses</h1>
-        <p className="mx-auto mt-4 max-w-lg text-muted">
-          Your 7-day trial is over. Subscribe to continue tracking and sync your data. Unsubscribed account data is
-          deleted after 3 months from account creation.
+        <h1 className="mt-6 text-3xl font-extrabold text-ink">Continue with a paid plan</h1>
+        <p className="mx-auto mt-4 text-muted">
+          Your 7-day free trial has ended. Sign in and choose Pro or Beast to keep tracking expenses with cloud
+          sync and reports.
         </p>
 
-        <div className="mt-12 grid gap-6 text-left lg:grid-cols-2">
-          <Card className="p-8">
-            <p className="font-semibold text-muted">Free trial</p>
-            <p className="mt-2 text-3xl font-extrabold text-ink">Expired</p>
-            <ul className="mt-6 space-y-2 text-sm text-muted">
-              <li>· Local data only</li>
-              <li>· 7 days access</li>
-              <li>· No cloud sync</li>
-            </ul>
-          </Card>
-
-          <Card className="relative border-2 border-brand p-8">
-            <span className="absolute -top-3 left-6 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">
-              Recommended
-            </span>
-            <p className="font-semibold text-brand">Pro</p>
-            <p className="mt-2 text-3xl font-extrabold text-ink">
-              ₹149<span className="text-base font-medium text-muted">/month</span>
-            </p>
-            <ul className="mt-6 space-y-2 text-sm text-muted">
-              <li>✓ Unlimited expenses</li>
-              <li>✓ Cloud sync & reports</li>
-              <li>✓ Email & SMS notifications</li>
-              <li>✓ Data kept while subscribed</li>
-            </ul>
-            <div className="mt-8">
-              <Button className="w-full" onClick={handleSubscribe}>
-                Subscribe now
+        <Card className="mt-10 p-8 text-left">
+          <p className="font-semibold text-ink">Pro & Beast — monthly plans</p>
+          <p className="mt-2 text-sm text-muted">Same features today. Feature differences coming soon.</p>
+          <ul className="mt-4 space-y-2 text-sm text-muted">
+            <li>✓ Unlimited expenses</li>
+            <li>✓ Dashboard & reports</li>
+            <li>✓ Secure Razorpay checkout</li>
+          </ul>
+          <div className="mt-8 space-y-3">
+            <Button href={isAuthenticated() ? "/manage-plan" : "/login?next=/manage-plan"} className="w-full">
+              {isAuthenticated() ? "Manage plan" : "Sign in to buy a plan"}
+            </Button>
+            {!isAuthenticated() ? (
+              <Button href="/register?next=/manage-plan" variant="secondary" className="w-full">
+                Create account
               </Button>
-            </div>
-          </Card>
-        </div>
-
-        <p className="mt-8 text-sm text-muted">
-          Already have an account?{" "}
-          <Link href="/login" className="font-semibold text-brand hover:text-brand-hover">
-            Sign in
-          </Link>
-        </p>
+            ) : null}
+          </div>
+        </Card>
       </div>
     </div>
   );

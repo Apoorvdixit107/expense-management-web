@@ -5,6 +5,7 @@ import { CategoryBars, PeriodBars, StatCard } from "@/components/ReportCards";
 import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import type { ExpenseReport, ReportPeriod } from "@/lib/types";
@@ -18,17 +19,15 @@ export default function ReportsPage() {
   const [period, setPeriod] = useState<ReportPeriod>("LAST_7_DAYS");
   const [summary, setSummary] = useState<ExpenseReport | null>(null);
   const [monthly, setMonthly] = useState<ExpenseReport | null>(null);
-  const [error, setError] = useState("");
   const year = new Date().getFullYear();
 
   useEffect(() => {
-    setError("");
     Promise.all([api.reportSummary(period), api.reportMonthly(year)])
       .then(([summaryReport, monthlyReport]) => {
         setSummary(summaryReport);
         setMonthly(monthlyReport);
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load reports"));
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load reports"));
   }, [period, year]);
 
   return (
@@ -56,8 +55,6 @@ export default function ReportsPage() {
             </div>
           }
         />
-
-        {error ? <p className="text-sm text-error">{error}</p> : null}
 
         <div className="grid gap-5 sm:grid-cols-2">
           <StatCard label={summary?.label ?? "Summary"} value={formatCurrency(summary?.totalAmount ?? 0)} highlight />

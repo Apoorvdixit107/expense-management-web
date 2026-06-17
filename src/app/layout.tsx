@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SubscriptionProvider } from "@/components/SubscriptionProvider";
+import { ToastProvider } from "@/components/toast";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
@@ -23,8 +25,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className="min-h-screen bg-paper font-sans text-ink">
         <ThemeProvider>
-          {children}
-          <WhatsAppButton />
+          <ToastProvider>
+            <SubscriptionProvider>
+              {children}
+              <WhatsAppButton />
+            </SubscriptionProvider>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

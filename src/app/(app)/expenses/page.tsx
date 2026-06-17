@@ -6,6 +6,7 @@ import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseList } from "@/components/ExpenseList";
 import { TrialGate } from "@/components/TrialGate";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { listGuestExpenses, type GuestExpense } from "@/lib/guest";
 import { isSubscriber } from "@/lib/navigation";
@@ -16,7 +17,6 @@ export default function ExpensesPage() {
   const [subscriber, setSubscriber] = useState(false);
   const [apiExpenses, setApiExpenses] = useState<Expense[]>([]);
   const [guestExpenses, setGuestExpenses] = useState<GuestExpense[]>([]);
-  const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
 
   const loadExpenses = useCallback(() => {
@@ -24,7 +24,7 @@ export default function ExpensesPage() {
       api
         .listExpenses()
         .then(setApiExpenses)
-        .catch((err) => setError(err instanceof Error ? err.message : "Failed to load expenses"));
+        .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load expenses"));
     } else {
       ensureTrialStarted();
       setGuestExpenses(listGuestExpenses());
@@ -52,7 +52,6 @@ export default function ExpensesPage() {
             : "No sign-up required. Your 7-day free trial starts now — add your first expense below."
         }
       />
-      {error ? <p className="text-sm text-error">{error}</p> : null}
       <ExpenseForm mode={subscriber ? "api" : "guest"} onCreated={loadExpenses} />
       {subscriber ? (
         <ExpenseList mode="api" expenses={apiExpenses} onChanged={loadExpenses} />
@@ -65,7 +64,7 @@ export default function ExpensesPage() {
               Create account
             </Link>{" "}
             or{" "}
-            <Link href="/subscribe" className="font-semibold text-brand hover:text-brand-hover">
+            <Link href="/manage-plan" className="font-semibold text-brand hover:text-brand-hover">
               subscribe
             </Link>{" "}
             to sync across devices.

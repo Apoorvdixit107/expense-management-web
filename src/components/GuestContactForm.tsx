@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { toast } from "@/components/toast";
 import { saveGuestContact } from "@/lib/guest";
 
 type GuestContactFormProps = {
@@ -14,16 +15,15 @@ type GuestContactFormProps = {
 export function GuestContactForm({ onSaved }: GuestContactFormProps) {
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
-  const [error, setError] = useState("");
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    setError("");
     if (!email.trim()) {
-      setError("Email is required");
+      toast.warning("Email is required");
       return;
     }
     saveGuestContact({ email: email.trim(), mobile: mobile.trim() || undefined });
+    toast.success("Contact details saved.");
     onSaved();
   }
 
@@ -57,7 +57,6 @@ export function GuestContactForm({ onSaved }: GuestContactFormProps) {
             onChange={(e) => setMobile(e.target.value)}
           />
           <p className="text-xs text-muted">Mobile is optional — used for SMS alerts.</p>
-          {error ? <p className="text-sm text-error">{error}</p> : null}
           <Button type="submit" className="w-full">
             Save & view activity
           </Button>

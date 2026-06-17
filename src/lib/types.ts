@@ -69,6 +69,45 @@ export type ExpenseReport = {
 
 export type ReportPeriod = "LAST_7_DAYS" | "LAST_30_DAYS" | "MONTH" | "YEAR";
 
+export type PlanCode = "PRO" | "BEAST";
+
+export type SubscriptionStatus = "ACTIVE" | "EXPIRED" | "CANCELLED";
+
+export type Plan = {
+  code: PlanCode;
+  name: string;
+  description: string;
+  amountPaise: number;
+  currency: string;
+  billingInterval: string;
+};
+
+export type Subscription = {
+  subscribed: boolean;
+  planCode: PlanCode | null;
+  planName: string | null;
+  status: SubscriptionStatus | null;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  canRenew: boolean;
+};
+
+export type CheckoutSession = {
+  keyId: string;
+  orderId: string;
+  amountPaise: number;
+  currency: string;
+  planCode: PlanCode;
+  planName: string;
+  mock: boolean;
+};
+
+export type VerifyPaymentRequest = {
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+};
+
 export const EXPENSE_CATEGORIES = [
   "Food",
   "Transport",

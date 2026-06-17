@@ -5,13 +5,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { TrialBanner } from "@/components/TrialBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useSubscription } from "@/components/SubscriptionProvider";
 import { api } from "@/lib/api";
 import { clearSession, getUser } from "@/lib/auth";
+import { clearSubscriptionState } from "@/lib/subscription";
 import { isSubscriber } from "@/lib/navigation";
 
 const guestLinks = [
   { href: "/expenses", label: "Expenses" },
   { href: "/notifications", label: "Notifications" },
+  { href: "/manage-plan", label: "Manage plan" },
 ];
 
 const subscriberLinks = [
@@ -19,6 +22,7 @@ const subscriberLinks = [
   { href: "/expenses", label: "Expenses" },
   { href: "/reports", label: "Reports" },
   { href: "/notifications", label: "Notifications" },
+  { href: "/manage-plan", label: "Manage plan" },
 ];
 
 function Logo() {
@@ -35,13 +39,10 @@ function Logo() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [subscriber, setSubscriber] = useState(false);
+  const { subscription } = useSubscription();
+  const subscriber = isSubscriber();
   const [unread, setUnread] = useState(0);
   const user = getUser();
-
-  useEffect(() => {
-    setSubscriber(isSubscriber());
-  }, [pathname]);
 
   useEffect(() => {
     if (!subscriber) return;
@@ -59,6 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   function logout() {
     clearSession();
+    clearSubscriptionState();
     router.push("/expenses");
   }
 
@@ -71,7 +73,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
           {subscriber ? (
             <div className="hidden items-center gap-4 lg:flex">
-              <span className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">Pro</span>
+              <span className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">
+                {subscription.planName ?? "Pro"}
+              </span>
               <span className="text-sm text-muted">{user?.fullName}</span>
               <button
                 type="button"

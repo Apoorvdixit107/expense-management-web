@@ -1,13 +1,18 @@
 import { clearSession, getToken } from "./auth";
 import type {
   AuthResponse,
+  CheckoutSession,
   CreateExpenseRequest,
   Expense,
   ExpenseReport,
   LoginRequest,
   Notification,
+  Plan,
+  PlanCode,
   RegisterRequest,
   ReportPeriod,
+  Subscription,
+  VerifyPaymentRequest,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
@@ -100,4 +105,23 @@ export const api = {
   reportMonthly: (year: number) => request<ExpenseReport>(`/api/reports/monthly?year=${year}`),
 
   reportYearly: (years = 5) => request<ExpenseReport>(`/api/reports/yearly?years=${years}`),
+
+  listPlans: () => request<Plan[]>("/api/billing/plans", {}, false),
+
+  getSubscription: () => request<Subscription>("/api/billing/subscription"),
+
+  getSubscriptionStatus: () =>
+    request<{ subscribed: boolean; subscription: Subscription }>("/api/billing/subscription/status"),
+
+  createCheckout: (planCode: PlanCode) =>
+    request<CheckoutSession>("/api/billing/checkout", {
+      method: "POST",
+      body: JSON.stringify({ planCode }),
+    }),
+
+  verifyPayment: (body: VerifyPaymentRequest) =>
+    request<Subscription>("/api/billing/verify", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 };

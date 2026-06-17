@@ -5,6 +5,7 @@ import { CategoryBars, StatCard } from "@/components/ReportCards";
 import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import type { ExpenseReport, Notification } from "@/lib/types";
@@ -12,7 +13,6 @@ import type { ExpenseReport, Notification } from "@/lib/types";
 export default function DashboardPage() {
   const [summary, setSummary] = useState<ExpenseReport | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     Promise.all([api.reportSummary("LAST_7_DAYS"), api.listNotifications()])
@@ -20,14 +20,13 @@ export default function DashboardPage() {
         setSummary(report);
         setNotifications(items.slice(0, 5));
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load dashboard"));
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load dashboard"));
   }, []);
 
   return (
     <SubscriberGuard>
       <div className="space-y-8">
         <PageHeader title="Dashboard" subtitle="Your spending overview for the last 7 days" />
-        {error ? <p className="text-sm text-error">{error}</p> : null}
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           <StatCard label="Total spent (7 days)" value={formatCurrency(summary?.totalAmount ?? 0)} highlight />

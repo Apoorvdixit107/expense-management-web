@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { api } from "@/lib/api";
+import { toast } from "@/components/toast";
 import { addGuestExpense } from "@/lib/guest";
 import { ensureTrialStarted } from "@/lib/trial";
 import { EXPENSE_CATEGORIES, type CreateExpenseRequest } from "@/lib/types";
@@ -19,12 +20,10 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [spentAt, setSpentAt] = useState(() => new Date().toISOString().slice(0, 16));
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    setError("");
     setLoading(true);
 
     const payload: CreateExpenseRequest = {
@@ -49,9 +48,10 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
       setAmount("");
       setDescription("");
       setSpentAt(new Date().toISOString().slice(0, 16));
+      toast.success("Expense saved successfully.");
       onCreated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add expense");
+      toast.error(err instanceof Error ? err.message : "Failed to add expense");
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,6 @@ export function ExpenseForm({ mode, onCreated }: ExpenseFormProps) {
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
-        {error ? <p className="text-sm text-error">{error}</p> : null}
         <Button type="submit" disabled={loading}>
           {loading ? "Saving..." : "Save expense"}
         </Button>

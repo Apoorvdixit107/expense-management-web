@@ -4,15 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { api } from "@/lib/api";
+import { toast } from "@/components/toast";
 import { saveSession } from "@/lib/auth";
 import { postAuthPath } from "@/lib/navigation";
 
 type GoogleSignInButtonProps = {
   mode: "signin" | "signup";
-  onError?: (message: string) => void;
+  redirectTo?: string;
 };
 
-export function GoogleSignInButton({ mode, onError }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ mode, redirectTo }: GoogleSignInButtonProps) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [buttonWidth, setButtonWidth] = useState<number | null>(null);
@@ -26,7 +27,7 @@ export function GoogleSignInButton({ mode, onError }: GoogleSignInButtonProps) {
 
   async function handleSuccess(response: CredentialResponse) {
     if (!response.credential) {
-      onError?.("Google sign in failed");
+      toast.error("Google sign in failed");
       return;
     }
 
@@ -34,9 +35,9 @@ export function GoogleSignInButton({ mode, onError }: GoogleSignInButtonProps) {
     try {
       const auth = await api.googleLogin(response.credential);
       saveSession(auth);
-      router.push(postAuthPath());
+      router.push(redirectTo || postAuthPath());
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Google sign in failed");
+      toast.error(err instanceof Error ? err.message : "Google sign in failed");
     } finally {
       setLoading(false);
     }
@@ -62,7 +63,7 @@ export function GoogleSignInButton({ mode, onError }: GoogleSignInButtonProps) {
         <div className="flex justify-center [&>div]:w-full">
           <GoogleLogin
             onSuccess={handleSuccess}
-            onError={() => onError?.("Google sign in failed")}
+            onError={() => toast.error("Google sign in failed")}
             theme="outline"
             size="large"
             width={buttonWidth}

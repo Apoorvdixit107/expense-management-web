@@ -6,6 +6,7 @@ import { GuestActivityFeed } from "@/components/GuestActivityFeed";
 import { GuestContactForm } from "@/components/GuestContactForm";
 import { TrialGate } from "@/components/TrialGate";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { getGuestContact } from "@/lib/guest";
 import { isSubscriber } from "@/lib/navigation";
@@ -17,13 +18,12 @@ export default function NotificationsPage() {
   const [guestReady, setGuestReady] = useState(false);
   const [hasContact, setHasContact] = useState(false);
   const [items, setItems] = useState<Notification[]>([]);
-  const [error, setError] = useState("");
 
   const loadApi = useCallback(() => {
     api
       .listNotifications()
       .then(setItems)
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load notifications"));
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load notifications"));
   }, []);
 
   useEffect(() => {
@@ -46,7 +46,6 @@ export default function NotificationsPage() {
     return (
       <div className="space-y-8">
         <PageHeader title="Notifications" subtitle="Email & SMS alerts for your account" />
-        {error ? <p className="text-sm text-error">{error}</p> : null}
         {items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center text-sm text-muted">
             No notifications yet.

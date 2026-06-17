@@ -2,24 +2,36 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSubscription } from "@/components/SubscriptionProvider";
 import { isAuthenticated } from "@/lib/auth";
 import { isSubscribed } from "@/lib/subscription";
 
 export function SubscriberGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { loading, refresh } = useSubscription();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (loading) return;
+
     if (!isAuthenticated()) {
-      router.replace("/login");
+      router.replace("/login?next=/dashboard");
       return;
     }
+
     if (!isSubscribed()) {
-      router.replace("/subscribe");
+      refresh().finally(() => {
+        if (!isSubscribed()) {
+          router.replace("/manage-plan");
+        } else {
+          setReady(true);
+        }
+      });
       return;
     }
+
     setReady(true);
-  }, [router]);
+  }, [loading, router, refresh]);
 
   if (!ready) {
     return (

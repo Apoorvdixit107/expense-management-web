@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { api } from "@/lib/api";
+import { toast } from "@/components/toast";
 import { deleteGuestExpense, type GuestExpense } from "@/lib/guest";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import type { Expense } from "@/lib/types";
@@ -15,10 +16,8 @@ type ExpenseListProps =
 
 export function ExpenseList(props: ExpenseListProps) {
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
-  const [error, setError] = useState("");
 
   async function handleDelete(id: string | number) {
-    setError("");
     setDeletingId(id);
     try {
       if (props.mode === "guest") {
@@ -28,8 +27,9 @@ export function ExpenseList(props: ExpenseListProps) {
         await api.deleteExpense(id as number);
         props.onChanged();
       }
+      toast.success("Expense deleted.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete expense");
+      toast.error(err instanceof Error ? err.message : "Failed to delete expense");
     } finally {
       setDeletingId(null);
     }
@@ -45,7 +45,6 @@ export function ExpenseList(props: ExpenseListProps) {
 
   return (
     <div className="space-y-4">
-      {error ? <p className="text-sm text-error">{error}</p> : null}
       {props.expenses.map((expense) => {
         const id = props.mode === "guest" ? (expense as GuestExpense).id : (expense as Expense).id;
         const category = expense.category;

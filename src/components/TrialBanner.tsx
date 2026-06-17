@@ -18,9 +18,9 @@ export function TrialBanner() {
           <Button href="/register" variant="outline" className="h-9 px-4 text-xs">
             Create account
           </Button>
-          <Button href="/subscribe" className="h-9 px-4 text-xs">
-            Subscribe
-          </Button>
+        <Button href="/manage-plan" className="h-9 px-4 text-xs">
+          Subscribe
+        </Button>
         </div>
       </div>
     </div>
