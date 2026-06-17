@@ -8,6 +8,7 @@ export type StoredUser = {
   userId: number;
   email: string;
   fullName: string;
+  phone?: string | null;
 };
 
 export function saveSession(auth: AuthResponse) {
@@ -36,6 +37,13 @@ export function getUser(): StoredUser | null {
   } catch {
     return null;
   }
+}
+
+export function updateStoredUser(patch: Partial<StoredUser>) {
+  if (typeof window === "undefined") return;
+  const current = getUser();
+  if (!current) return;
+  localStorage.setItem(USER_KEY, JSON.stringify({ ...current, ...patch }));
 }
 
 export function clearSession() {

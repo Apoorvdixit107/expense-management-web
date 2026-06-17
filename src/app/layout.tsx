@@ -16,8 +16,12 @@ export const metadata: Metadata = {
   title: "ExpenseKit | Expense Management",
   description: "Track expenses, view reports, and manage your spending. Sign in to get started.",
   icons: {
-    icon: [{ url: "/icon-32.png", sizes: "32x32", type: "image/png" }],
-    apple: [{ url: "/favicon.png", sizes: "192x192", type: "image/png" }],
+    icon: [
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/icon-32.png",
   },
 };
 

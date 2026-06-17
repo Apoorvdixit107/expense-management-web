@@ -1,16 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
 
-/** Full logo asset aspect ratio (1536×1024). */
-const LOGO_ASPECT = 1.5;
+const SOURCES = {
+  full: { src: "/brand/logo.png", aspect: 1.5 },
+  transparent: { src: "/brand/logo-transparent.png", aspect: 1.5 },
+  icon: { src: "/brand/logo-icon.png", aspect: 1 },
+} as const;
+
+export type LogoVariant = keyof typeof SOURCES;
 
 type LogoProps = {
   href?: string | null;
   height?: number;
   className?: string;
   onClick?: () => void;
-  /** Light padded frame — use on dark backgrounds (sidebar). */
+  /** @deprecated Use variant="sidebar" instead */
   framed?: boolean;
+  variant?: LogoVariant;
+  /** Show wordmark beside icon (sidebar). */
+  showWordmark?: boolean;
 };
 
 export function Logo({
@@ -19,12 +27,16 @@ export function Logo({
   className = "",
   onClick,
   framed = false,
+  variant = "full",
+  showWordmark = false,
 }: LogoProps) {
-  const width = Math.round(height * LOGO_ASPECT);
+  const resolvedVariant = framed ? "full" : variant;
+  const { src, aspect } = SOURCES[resolvedVariant];
+  const width = Math.round(height * aspect);
 
   const image = (
     <Image
-      src="/brand/logo.png"
+      src={src}
       alt="ExpenseKit"
       width={width}
       height={height}
@@ -33,11 +45,17 @@ export function Logo({
     />
   );
 
-  const content = framed ? (
-    <span className="inline-flex rounded-xl bg-white px-2 py-1.5 shadow-sm">{image}</span>
-  ) : (
-    image
-  );
+  const content =
+    showWordmark && resolvedVariant === "icon" ? (
+      <span className="inline-flex items-center gap-2.5">
+        {image}
+        <span className="text-base font-bold text-white">ExpenseKit</span>
+      </span>
+    ) : framed ? (
+      <span className="inline-flex rounded-xl bg-white px-2 py-1.5 shadow-sm">{image}</span>
+    ) : (
+      image
+    );
 
   if (href) {
     return (

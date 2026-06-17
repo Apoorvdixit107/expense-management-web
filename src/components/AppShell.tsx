@@ -22,6 +22,7 @@ const memberLinks: NavLink[] = [
   { href: "/reports", label: "Reports", icon: "▤" },
   { href: "/notifications", label: "Notifications", icon: "◔" },
   { href: "/manage-plan", label: "Manage plan", icon: "◆" },
+  { href: "/profile", label: "Profile", icon: "◎" },
 ];
 
 const subscriberLinks: NavLink[] = [
@@ -30,6 +31,7 @@ const subscriberLinks: NavLink[] = [
   { href: "/reports", label: "Reports", icon: "▤" },
   { href: "/notifications", label: "Notifications", icon: "◔" },
   { href: "/manage-plan", label: "Manage plan", icon: "◆" },
+  { href: "/profile", label: "Profile", icon: "◎" },
 ];
 
 function SidebarNav({
@@ -105,14 +107,18 @@ function Sidebar({
   return (
     <div className="flex h-full flex-col bg-sidebar text-[var(--sidebar-text)]">
       <div className="border-b border-sidebar-border px-4 py-4">
-        <Logo href="/expenses" height={36} framed onClick={onNavigate} />
+        <Logo href="/expenses" height={40} variant="icon" showWordmark onClick={onNavigate} />
       </div>
 
       <SidebarNav links={links} pathname={pathname} unread={unread} onNavigate={onNavigate} />
 
       <div className="mt-auto border-t border-sidebar-border p-4">
         {loggedIn && user ? (
-          <div className="mb-3 rounded-lg bg-white/5 px-3 py-2.5">
+          <Link
+            href="/profile"
+            onClick={onNavigate}
+            className="mb-3 block rounded-lg bg-white/5 px-3 py-2.5 transition hover:bg-white/10"
+          >
             <p className="truncate text-sm font-semibold text-white">{user.fullName}</p>
             <p className="truncate text-xs text-[var(--sidebar-text)]">{user.email}</p>
             {subscriber && subscription.planName ? (
@@ -120,7 +126,7 @@ function Sidebar({
                 {subscription.planName}
               </span>
             ) : null}
-          </div>
+          </Link>
         ) : null}
 
         <div className="flex items-center gap-2">
@@ -215,7 +221,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Logo href="/expenses" height={28} className="lg:hidden" />
+          <Logo href="/expenses" height={32} variant="icon" className="lg:hidden" />
         </header>
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">

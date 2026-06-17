@@ -153,6 +153,20 @@ export type NotificationPreferences = {
   expenseAlertsEnabled: boolean;
 };
 
+export type UserProfile = {
+  userId: number;
+  email: string;
+  fullName: string;
+  phone: string | null;
+  authProvider: "LOCAL" | "GOOGLE";
+  updatedAt: string | null;
+};
+
+export type UpdateProfileRequest = {
+  fullName: string;
+  phone?: string;
+};
+
 export const EXPENSE_CATEGORIES = [
   "Food",
   "Transport",

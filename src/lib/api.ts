@@ -16,6 +16,8 @@ import type {
   RegisterRequest,
   ReportPeriod,
   Subscription,
+  UpdateProfileRequest,
+  UserProfile,
   VerifyPaymentRequest,
 } from "./types";
 
@@ -90,6 +92,14 @@ export const api = {
 
   googleLogin: (idToken: string) =>
     request<AuthResponse>("/api/auth/google", { method: "POST", body: JSON.stringify({ idToken }) }, false),
+
+  getProfile: () => request<UserProfile>("/api/auth/profile"),
+
+  updateProfile: (body: UpdateProfileRequest) =>
+    request<UserProfile>("/api/auth/profile", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
 
   listExpenses: () => request<Expense[]>("/api/expenses"),
 
