@@ -28,20 +28,27 @@ function ReportsContent() {
   const [reportType, setReportType] = useState<OrganizationReportType>("ORGANIZATION_BALANCE");
   const [dateFilter, setDateFilter] = useState<ReportDateFilterState>(createDefaultReportDateFilter);
   const [report, setReport] = useState<OrganizationReport | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
 
   const { fromDate, toDate } = useMemo(() => resolveReportDateRange(dateFilter), [dateFilter]);
 
   useEffect(() => {
-    if (!currentOrgId) return;
+    if (!currentOrgId) {
+      setReport(null);
+      setReportLoading(false);
+      return;
+    }
     if (fromDate > toDate) {
       toast.error("End date must be on or after start date.");
       return;
     }
 
+    setReportLoading(true);
     api
       .getOrganizationReport(currentOrgId, reportType, fromDate, toDate)
       .then((data) => setReport(data))
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load report"));
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load report"))
+      .finally(() => setReportLoading(false));
   }, [currentOrgId, reportType, fromDate, toDate]);
 
   return (
@@ -101,7 +108,16 @@ function ReportsContent() {
           {fromDate === toDate ? `For ${fromDate}` : `${fromDate} to ${toDate}`}
         </p>
         <div className="mt-6">
-          <ReportTable report={report} />
+          {!currentOrgId ? (
+            <p className="rounded-xl border border-dashed border-border bg-paper px-6 py-12 text-center text-sm text-muted">
+              <Link href="/select-account" className="font-semibold text-brand hover:underline">
+                Select an organization
+              </Link>{" "}
+              to view reports.
+            </p>
+          ) : (
+            <ReportTable report={report} loading={reportLoading} />
+          )}
         </div>
       </Card>
     </div>

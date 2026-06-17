@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { toast } from "@/components/toast";
 import {
   getCurrentOrgId,
   getRememberOrgChoice,
@@ -65,8 +66,13 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
         } else if (!SKIP_ORG_ROUTES.includes(pathname)) {
           router.replace("/select-account");
         }
-      } catch {
-        if (!cancelled) setOrganizations([]);
+      } catch (err) {
+        if (!cancelled) {
+          setOrganizations([]);
+          toast.error(
+            err instanceof Error ? err.message : "Could not load organizations. Check that the backend is running."
+          );
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -77,6 +83,13 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
       cancelled = true;
     };
   }, [pathname, router, switchOrg]);
+
+  useEffect(() => {
+    if (loading || SKIP_ORG_ROUTES.includes(pathname)) return;
+    if (organizations.length > 1 && !currentOrgId) {
+      router.replace("/select-account");
+    }
+  }, [loading, organizations, currentOrgId, pathname, router]);
 
   const currentOrg = useMemo(
     () => organizations.find((o) => o.id === currentOrgId) ?? null,

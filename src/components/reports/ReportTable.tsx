@@ -20,9 +20,23 @@ function FlowSign({ flow, amount }: { flow: "IN" | "OUT"; amount: number }) {
   );
 }
 
-export function ReportTable({ report }: { report: OrganizationReport | null }) {
-  if (!report) {
+export function ReportTable({
+  report,
+  loading = false,
+}: {
+  report: OrganizationReport | null;
+  loading?: boolean;
+}) {
+  if (loading) {
     return <p className="py-12 text-center text-sm text-muted">Loading report...</p>;
+  }
+
+  if (!report) {
+    return (
+      <p className="rounded-xl border border-dashed border-border bg-paper px-6 py-12 text-center text-sm text-muted">
+        No report data available.
+      </p>
+    );
   }
 
   if (report.rows.length === 0) {

@@ -18,14 +18,25 @@ export function OrganizationSwitcher({ onNavigate }: { onNavigate?: () => void }
   const { organizations, currentOrg, switchOrg } = useOrganization();
   const [open, setOpen] = useState(false);
 
-  if (!currentOrg) return null;
+  if (!currentOrg) {
+    if (organizations.length === 0) return null;
+    return (
+      <Link
+        href="/select-account"
+        onClick={onNavigate}
+        className="mb-3 block rounded-lg border border-brand/40 bg-brand/10 px-3 py-2.5 text-center text-sm font-semibold text-brand transition hover:bg-brand/15"
+      >
+        Select organization
+      </Link>
+    );
+  }
 
   return (
     <div className="relative mb-3">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border bg-white/5 px-3 py-2.5 text-left transition hover:bg-white/10"
+        className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border bg-[var(--sidebar-profile-bg)] px-3 py-2.5 text-left transition hover:bg-[var(--sidebar-profile-hover)]"
       >
         <span
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${TYPE_COLORS[currentOrg.type] ?? TYPE_COLORS.OTHER}`}
@@ -33,7 +44,7 @@ export function OrganizationSwitcher({ onNavigate }: { onNavigate?: () => void }
           {currentOrg.name.slice(0, 2).toUpperCase()}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold text-white">{currentOrg.name}</span>
+          <span className="block truncate text-sm font-semibold text-[var(--sidebar-text-active)]">{currentOrg.name}</span>
           <span className="block truncate text-xs text-[var(--sidebar-text)]">
             {organizationTypeLabel(currentOrg)}
           </span>
@@ -64,8 +75,10 @@ export function OrganizationSwitcher({ onNavigate }: { onNavigate?: () => void }
                   setOpen(false);
                   onNavigate?.();
                 }}
-                className={`flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition hover:bg-white/10 ${
-                  org.id === currentOrg.id ? "bg-white/10 text-white" : "text-[var(--sidebar-text)]"
+                className={`flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition hover:bg-[var(--sidebar-profile-hover)] ${
+                  org.id === currentOrg.id
+                    ? "bg-[var(--sidebar-profile-bg)] text-[var(--sidebar-text-active)]"
+                    : "text-[var(--sidebar-text)]"
                 }`}
               >
                 <span className="truncate font-medium">{org.name}</span>
