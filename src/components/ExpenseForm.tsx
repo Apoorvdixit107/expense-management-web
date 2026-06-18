@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { isoToLocalDatetimeInput, localDatetimeInputValue, localDatetimeToISO } from "@/lib/format";
 import { addGuestExpense } from "@/lib/guest";
 import { ensureTrialStarted } from "@/lib/trial";
@@ -150,7 +151,7 @@ export function ExpenseForm({
       setShowAddCategory(false);
       toast.success(`Category "${created.name}" added.`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to add category");
+      showApiError(err, "Failed to add category");
     } finally {
       setAddingCategory(false);
     }
@@ -215,7 +216,7 @@ export function ExpenseForm({
       );
       onCreated();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save transaction");
+      showApiError(err, "Failed to save transaction");
     } finally {
       submittingRef.current = false;
       setLoading(false);

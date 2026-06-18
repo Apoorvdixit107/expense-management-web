@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import type { Expense } from "@/lib/types";
 
@@ -27,7 +28,7 @@ export default function EditExpensePage() {
       .getExpense(expenseId)
       .then((item) => setExpense(item))
       .catch((err) => {
-        toast.error(err instanceof Error ? err.message : "Failed to load transaction");
+        showApiError(err, "Failed to load transaction");
         router.replace("/expenses");
       })
       .finally(() => setLoading(false));

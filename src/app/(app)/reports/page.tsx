@@ -11,6 +11,7 @@ import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import { isSubscriber } from "@/lib/navigation";
@@ -47,7 +48,7 @@ function ReportsContent() {
     api
       .getOrganizationReport(currentOrgId, reportType, fromDate, toDate)
       .then((data) => setReport(data))
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load report"))
+      .catch((err) => showApiError(err, "Failed to load report"))
       .finally(() => setReportLoading(false));
   }, [currentOrgId, reportType, fromDate, toDate]);
 

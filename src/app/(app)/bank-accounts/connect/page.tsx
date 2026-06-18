@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/Badge";
 import { ConfirmDeleteDialog } from "@/components/ui/ConfirmDeleteDialog";
 import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import type { BankAccount, BankAccountType } from "@/lib/types";
 
 function statusLabel(status: BankAccount["status"]) {
@@ -46,7 +47,7 @@ export default function ConnectBankAccountPage() {
     api
       .listBankAccounts(currentOrgId)
       .then(setAccounts)
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load accounts"));
+      .catch((err) => showApiError(err, "Failed to load accounts"));
   }, [currentOrgId]);
 
   useEffect(() => {
@@ -73,7 +74,7 @@ export default function ConnectBankAccountPage() {
       loadAccounts();
       toast.success(connectNow ? "Bank account connected." : "Bank account saved.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to connect account");
+      showApiError(err, "Failed to connect account");
     } finally {
       setLoading(false);
     }
@@ -88,7 +89,7 @@ export default function ConnectBankAccountPage() {
       toast.success("Bank account removed.");
       setDeleteTarget(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to remove account");
+      showApiError(err, "Failed to remove account");
     } finally {
       setDeleting(false);
     }
@@ -101,7 +102,7 @@ export default function ConnectBankAccountPage() {
       loadAccounts();
       toast.success("Primary bank account updated.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to set primary account");
+      showApiError(err, "Failed to set primary account");
     }
   }
 
@@ -112,7 +113,7 @@ export default function ConnectBankAccountPage() {
       loadAccounts();
       toast.success("Net banking connected. Sync to import transactions.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to connect net banking");
+      showApiError(err, "Failed to connect net banking");
     }
   }
 
@@ -128,7 +129,7 @@ export default function ConnectBankAccountPage() {
           : "Sync complete. No new transactions."
       );
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to sync account");
+      showApiError(err, "Failed to sync account");
     } finally {
       setSyncingId(null);
     }

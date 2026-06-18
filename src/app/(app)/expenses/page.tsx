@@ -10,6 +10,7 @@ import { useOrganization } from "@/components/OrganizationProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { isSubscriber } from "@/lib/navigation";
 import {
@@ -62,7 +63,7 @@ export default function ExpensesPage() {
         setExpenses(items);
         setDeletedExpenses(deleted);
       })
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load expenses"));
+      .catch((err) => showApiError(err, "Failed to load expenses"));
   }, [currentOrgId, refreshOrgs]);
 
   useEffect(() => {

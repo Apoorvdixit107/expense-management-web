@@ -9,6 +9,7 @@ import { CookieSettingsLink } from "@/components/CookieSettingsLink";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { useUserPreferences } from "@/components/UserPreferencesProvider";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { updateStoredUser } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
@@ -52,7 +53,7 @@ export default function ProfilePage() {
           preferredLanguage: data.preferredLanguage,
         });
       })
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load profile"));
+      .catch((err) => showApiError(err, "Failed to load profile"));
   }, [updateLocalPreferences]);
 
   async function handleImageSelect(event: React.ChangeEvent<HTMLInputElement>) {
@@ -66,7 +67,7 @@ export default function ProfilePage() {
       setProfileImageUrl(dataUrl);
       toast.success("Photo ready — save changes to apply.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to process image");
+      showApiError(err, "Failed to process image");
     } finally {
       setUploading(false);
     }
@@ -102,7 +103,7 @@ export default function ProfilePage() {
       await refreshPreferences();
       toast.success("Profile updated.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update profile");
+      showApiError(err, "Failed to update profile");
     } finally {
       setSaving(false);
     }

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import type { ChatMessage } from "@/lib/types";
 
@@ -59,7 +60,7 @@ export function AssistantChat() {
         toast.info("Demo AI mode — add GEMINI_API_KEY on backend for full answers.");
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to get AI reply");
+      showApiError(err, "Failed to get AI reply");
       setMessages((prev) => prev.slice(0, -1));
       setInput(trimmed);
     } finally {

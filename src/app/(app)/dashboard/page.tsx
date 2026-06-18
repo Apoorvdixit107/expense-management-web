@@ -15,6 +15,7 @@ import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import {
   createDefaultDashboardFilter,
@@ -67,7 +68,7 @@ export default function DashboardPage() {
         setWeekTrend(week);
         setNotifications(items.slice(0, 5));
       })
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load dashboard"));
+      .catch((err) => showApiError(err, "Failed to load dashboard"));
   }, [
     currentOrgId,
     filter.period,

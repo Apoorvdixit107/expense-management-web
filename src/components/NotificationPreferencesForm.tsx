@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import type { NotificationPreferences } from "@/lib/types";
 
@@ -17,7 +18,7 @@ export function NotificationPreferencesForm() {
     api
       .getNotificationPreferences()
       .then(setPrefs)
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load preferences"));
+      .catch((err) => showApiError(err, "Failed to load preferences"));
   }, []);
 
   if (!prefs) {
@@ -32,7 +33,7 @@ export function NotificationPreferencesForm() {
       setPrefs(updated);
       toast.success("Notification preferences saved.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save preferences");
+      showApiError(err, "Failed to save preferences");
     } finally {
       setSaving(false);
     }
@@ -46,7 +47,7 @@ export function NotificationPreferencesForm() {
       const result = await api.sendTestNotification();
       toast.success(result.message);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to send test notification");
+      showApiError(err, "Failed to send test notification");
     } finally {
       setTesting(false);
     }

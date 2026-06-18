@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import {
   getCurrentOrgId,
   getRememberOrgChoice,
@@ -69,9 +69,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
       } catch (err) {
         if (!cancelled) {
           setOrganizations([]);
-          toast.error(
-            err instanceof Error ? err.message : "Could not load organizations. Check that the backend is running."
-          );
+          showApiError(err, "Could not load organizations. Check that the backend is running.");
         }
       } finally {
         if (!cancelled) setLoading(false);

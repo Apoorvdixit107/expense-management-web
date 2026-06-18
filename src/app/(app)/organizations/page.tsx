@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ConfirmDeleteDialog } from "@/components/ui/ConfirmDeleteDialog";
 import { api } from "@/lib/api";
+import { showApiError, showApiSuccess } from "@/lib/apiErrors";
 import { toast } from "@/components/toast";
 import {
   ORGANIZATION_TYPE_LABELS,
@@ -56,9 +57,9 @@ export default function OrganizationsPage() {
       setTypeChoice("HOME");
       setCustomTypeLabel("");
       await refreshOrgs();
-      toast.success("Organization created with default expense categories.");
+      showApiSuccess("Organization created with default expense categories.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create organization");
+      showApiError(err, "Failed to create organization");
     } finally {
       setLoading(false);
     }
@@ -79,9 +80,9 @@ export default function OrganizationsPage() {
       setTypeChoice("HOME");
       setCustomTypeLabel("");
       await refreshOrgs();
-      toast.success("Organization updated.");
+      showApiSuccess("Organization updated.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update");
+      showApiError(err, "Failed to update organization");
     } finally {
       setLoading(false);
     }
@@ -89,14 +90,19 @@ export default function OrganizationsPage() {
 
   async function confirmDeleteOrganization() {
     if (!deleteTarget) return;
+    if (organizations.length <= 1) {
+      toast.error("You need at least one organization. Create another before deleting this one.");
+      setDeleteTarget(null);
+      return;
+    }
     setDeleting(true);
     try {
       await api.deleteOrganization(deleteTarget.id);
       await refreshOrgs();
-      toast.success("Organization deleted.");
+      showApiSuccess("Organization deleted.");
       setDeleteTarget(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete");
+      showApiError(err, "Could not delete this organization. Try again.");
     } finally {
       setDeleting(false);
     }
@@ -171,12 +177,15 @@ export default function OrganizationsPage() {
       </Card>
 
       <div className="space-y-3">
-        {organizations.map((org) => (
+        {organizations.map((org) => {
+          const isLastOrg = organizations.length <= 1;
+          return (
           <Card key={org.id} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-semibold text-ink">{org.name}</p>
               <p className="text-sm text-muted">
                 {organizationTypeLabel(org)} · default categories included
+                {isLastOrg ? " · cannot delete your only organization" : ""}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -186,12 +195,17 @@ export default function OrganizationsPage() {
               <Button variant="secondary" onClick={() => startEdit(org)}>
                 Edit
               </Button>
-              <Button variant="danger" onClick={() => setDeleteTarget(org)}>
+              <Button
+                variant="danger"
+                disabled={isLastOrg}
+                onClick={() => setDeleteTarget(org)}
+              >
                 Delete
               </Button>
             </div>
           </Card>
-        ))}
+        );
+        })}
       </div>
 
       <ConfirmDeleteDialog

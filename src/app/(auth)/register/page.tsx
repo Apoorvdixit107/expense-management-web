@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
-import { getAuthErrorMessage } from "@/lib/authErrors";
+import { showAuthError } from "@/lib/authErrors";
 import { saveSession } from "@/lib/auth";
 import { postAuthPath } from "@/lib/navigation";
 import { clearReferralCode, getReferralCode } from "@/lib/referral";
@@ -41,7 +41,7 @@ export default function RegisterPage() {
       saveSession(auth);
       router.push(postAuthPath());
     } catch (err) {
-      toast.error(getAuthErrorMessage(err, "register"));
+      showAuthError(err, "register");
     } finally {
       setLoading(false);
     }

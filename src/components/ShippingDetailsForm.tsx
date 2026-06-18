@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
+import { showBillingError } from "@/lib/billingErrors";
 import { getUser } from "@/lib/auth";
 import type { BillingCompany, ShippingDetails } from "@/lib/types";
 
@@ -47,11 +48,18 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim()) {
+      toast.error("Email is required for checkout.");
+      return;
+    }
+    if (!name.trim()) {
+      toast.error("Full name is required for payment.");
+      return;
+    }
 
     const details: ShippingDetails = {
       email: email.trim(),
-      name: name.trim() || undefined,
+      name: name.trim(),
       phone: phone.trim() || undefined,
       gst: gst.trim() || undefined,
       pan: pan.trim() || undefined,
@@ -64,7 +72,7 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
       await api.updateBillingDetails({ shippingDetails: details, sendInvoiceByEmail: sendInvoiceEmail });
       await onSubmit(details, sendInvoiceEmail);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save billing details");
+      showBillingError(err);
     } finally {
       setSaving(false);
     }
@@ -88,8 +96,8 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <Input label="Email *" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
-          <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91..." />
+          <Input label="Full name *" required value={name} onChange={(e) => setName(e.target.value)} />
+          <Input label="Phone (10 digits, recommended)" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="9876543210" inputMode="numeric" />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Input label="GST" value={gst} onChange={(e) => setGst(e.target.value)} />

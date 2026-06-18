@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import {
   downloadReportExcel,
   downloadReportPdf,
@@ -37,7 +38,7 @@ export function ReportExportBar({
       await downloadReportPdf(organizationId, reportType, fromDate, toDate);
       toast.success("PDF downloaded.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "PDF download failed");
+      showApiError(err, "PDF download failed");
     } finally {
       setLoadingPdf(false);
     }

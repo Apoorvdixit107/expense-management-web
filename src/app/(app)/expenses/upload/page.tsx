@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { prepareBillFile, stripDataUrlPrefix, type PreparedBillFile } from "@/lib/bill-image";
 import { formatCurrency } from "@/lib/format";
@@ -35,7 +36,7 @@ export default function UploadBillPage() {
       setScanResult(null);
       setPrefill(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to read bill");
+      showApiError(err, "Failed to read bill");
     } finally {
       event.target.value = "";
     }
@@ -72,7 +73,7 @@ export default function UploadBillPage() {
         toast.success("Bill scanned — verify details below.");
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Bill scan failed");
+      showApiError(err, "Bill scan failed");
     } finally {
       setScanning(false);
     }

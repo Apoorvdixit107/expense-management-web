@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import type { BillingDetails, ShippingDetails } from "@/lib/types";
@@ -61,7 +62,7 @@ export function BillingDetailsCard({ onSaved }: Props) {
       toast.success("Billing details saved.");
       onSaved?.();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save billing details");
+      showApiError(err, "Failed to save billing details");
     } finally {
       setSaving(false);
     }

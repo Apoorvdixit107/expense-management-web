@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { NotificationPreferencesForm } from "@/components/NotificationPreferencesForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 import type { Notification } from "@/lib/types";
@@ -16,7 +17,7 @@ export default function NotificationsPage() {
     api
       .listNotifications()
       .then(setItems)
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load notifications"));
+      .catch((err) => showApiError(err, "Failed to load notifications"));
   }, []);
 
   useEffect(() => {

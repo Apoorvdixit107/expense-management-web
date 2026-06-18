@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import { formatPaise } from "@/lib/referral";
@@ -66,7 +67,7 @@ export function WalletWithdrawModal({
       onSuccess();
       onClose();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to submit withdrawal");
+      showApiError(err, "Failed to submit withdrawal");
     } finally {
       setSubmitting(false);
     }

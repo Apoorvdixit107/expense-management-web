@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { api } from "@/lib/api";
-import { getAuthErrorMessage } from "@/lib/authErrors";
+import { showAuthError } from "@/lib/authErrors";
 import { toast } from "@/components/toast";
 import { saveSession, updateStoredUser } from "@/lib/auth";
 import { postAuthPath } from "@/lib/navigation";
@@ -30,7 +30,7 @@ export function GoogleSignInButton({ mode, redirectTo }: GoogleSignInButtonProps
 
   async function handleSuccess(response: CredentialResponse) {
     if (!response.credential) {
-      toast.error(getAuthErrorMessage(null, "google"));
+      showAuthError(null, "google");
       return;
     }
 
@@ -52,7 +52,7 @@ export function GoogleSignInButton({ mode, redirectTo }: GoogleSignInButtonProps
       }
       router.push(redirectTo || postAuthPath());
     } catch (err) {
-      toast.error(getAuthErrorMessage(err, "google"));
+      showAuthError(err, "google");
     } finally {
       setLoading(false);
     }
@@ -78,7 +78,7 @@ export function GoogleSignInButton({ mode, redirectTo }: GoogleSignInButtonProps
         <div className="flex justify-center [&>div]:w-full">
           <GoogleLogin
             onSuccess={handleSuccess}
-            onError={() => toast.error(getAuthErrorMessage(null, "google"))}
+            onError={() => showAuthError(null, "google")}
             theme="outline"
             size="large"
             width={buttonWidth}

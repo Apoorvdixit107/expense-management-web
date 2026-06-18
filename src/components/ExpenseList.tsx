@@ -9,6 +9,7 @@ import { ConfirmDeleteDialog, SOFT_DELETE_MESSAGE } from "@/components/ui/Confir
 import { TransactionAmount, TransactionTypeBadge } from "@/components/TransactionAmount";
 import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { deleteGuestExpense, type GuestExpense } from "@/lib/guest";
 import { formatDateTime } from "@/lib/format";
 import type { Expense, ExpenseType, PaymentMode } from "@/lib/types";
@@ -73,7 +74,7 @@ export function ExpenseList(props: ExpenseListProps) {
       toast.success("Transaction moved to Deleted.");
       setDeleteTarget(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete transaction");
+      showApiError(err, "Failed to delete transaction");
     } finally {
       setDeleting(false);
       actionBusyRef.current = false;
@@ -89,7 +90,7 @@ export function ExpenseList(props: ExpenseListProps) {
       props.onChanged();
       toast.success("Transaction recovered.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to recover transaction");
+      showApiError(err, "Failed to recover transaction");
     } finally {
       setRestoringId(null);
       actionBusyRef.current = false;

@@ -1,4 +1,5 @@
 import { ApiError } from "./api";
+import { toast } from "@/components/toast";
 
 export type AuthAction = "login" | "register" | "google";
 
@@ -84,4 +85,12 @@ export function getAuthErrorMessage(err: unknown, action: AuthAction): string {
   }
 
   return message;
+}
+
+/** Status-aware toast for sign-in / sign-up failures. */
+export function showAuthError(err: unknown, action: AuthAction): void {
+  const message = getAuthErrorMessage(err, action);
+  const status = err instanceof ApiError ? err.status : -1;
+  const variant = status === 429 ? "warning" : "error";
+  toast[variant](message);
 }

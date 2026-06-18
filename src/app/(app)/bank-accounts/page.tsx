@@ -7,6 +7,7 @@ import { ReportDateFilter as ReportDateFilterBar } from "@/components/reports/Re
 import { useOrganization } from "@/components/OrganizationProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import {
   createDefaultReportDateFilter,
@@ -48,7 +49,7 @@ export default function CashAndBankPage() {
         paymentMode: paymentMode || undefined,
       })
       .then(setExpenses)
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load ledger"));
+      .catch((err) => showApiError(err, "Failed to load ledger"));
   }, [currentOrgId, paymentMode]);
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { WalletWithdrawModal } from "@/components/WalletWithdrawModal";
 import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import { formatPaise } from "@/lib/referral";
@@ -19,7 +20,7 @@ export default function ReferAndEarnPage() {
     api
       .getReferralProfile()
       .then(setProfile)
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load referral profile"));
+      .catch((err) => showApiError(err, "Failed to load referral profile"));
   }, []);
 
   useEffect(() => {

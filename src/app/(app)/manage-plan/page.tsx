@@ -10,7 +10,7 @@ import { useSubscription } from "@/components/SubscriptionProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { toast } from "@/components/toast";
+import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { isAuthenticated } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
@@ -40,16 +40,7 @@ export default function ManagePlanPage() {
     api
       .listPlans()
       .then(setPlans)
-      .catch((err) => {
-        const message = err instanceof Error ? err.message : "Failed to load plans";
-        if (message.includes("404") || message.includes("Not Found")) {
-          toast.error(
-            "Billing API is unavailable. Restart backend with: bash scripts/start-tunnel.sh --build"
-          );
-        } else {
-          toast.error(message);
-        }
-      });
+      .catch((err) => showApiError(err, "Failed to load plans"));
     api
       .listInvoices()
       .then(setInvoices)

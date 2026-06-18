@@ -54,21 +54,33 @@ export class ApiError extends Error {
   }
 }
 
+import { isGenericHttpMessage } from "./apiErrors";
+
 function parseErrorMessage(body: string, status: number): string {
   let message = body;
   try {
     const json = JSON.parse(body) as { detail?: string; message?: string; error?: string; title?: string };
-    message = json.detail ?? json.message ?? json.title ?? json.error ?? body;
+    const detail = json.detail ?? json.message;
+    const title =
+      json.title && !isGenericHttpMessage(json.title) ? json.title : undefined;
+    message = detail ?? json.error ?? title ?? body;
   } catch {
     // plain text error body
   }
-  if (!message) {
+  if (!message || isGenericHttpMessage(message)) {
+    if (status === 400) return "Invalid request. Please check your input and try again.";
     if (status === 401) return "Invalid email or password";
     if (status === 403) {
       return "Access denied. Sign in again, or ensure the backend allows your site origin and bill scan is deployed.";
     }
-    if (status === 413) return "Bill file is too large. Try a smaller image or PDF.";
+    if (status === 404) return "The requested item was not found.";
     if (status === 409) return "Email already registered";
+    if (status === 413) return "Bill file is too large. Try a smaller image or PDF.";
+    if (status === 429) return "Too many requests. Please wait a moment and try again.";
+    if (status === 503 || status === 502 || status === 504) {
+      return "Service is temporarily unavailable. Please try again shortly.";
+    }
+    if (status >= 500) return "Something went wrong on our side. Please try again.";
     return `Request failed (${status})`;
   }
   return message;

@@ -1,5 +1,5 @@
 const CACHE_NAME = "expensekit-shell-v1";
-const PRECACHE_URLS = ["/", "/favicon.png", "/icon-512.png"];
+const PRECACHE_URLS = ["/", "/favicon.png", "/icon-512.png", "/icon-maskable-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

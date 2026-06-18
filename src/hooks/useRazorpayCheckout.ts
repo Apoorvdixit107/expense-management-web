@@ -3,12 +3,16 @@
 import { useCallback, useState } from "react";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
+import { buildRazorpayPrefill, showBillingError } from "@/lib/billingErrors";
 import { useSubscription } from "@/components/SubscriptionProvider";
 import type { CheckoutSession, PlanCode, ShippingDetails } from "@/lib/types";
 
 declare global {
   interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+    Razorpay?: new (options: Record<string, unknown>) => {
+      open: () => void;
+      on: (event: string, handler: (response: { error?: { description?: string } }) => void) => void;
+    };
   }
 }
 
@@ -43,12 +47,7 @@ export function useRazorpayCheckout() {
             : "Payment successful. Download your invoice from Manage plan."
         );
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Payment failed";
-        if (message !== "Payment cancelled") {
-          toast.error(message);
-        } else {
-          toast.info("Payment cancelled.");
-        }
+        showBillingError(err);
       } finally {
         setLoadingPlan(null);
       }
@@ -79,25 +78,27 @@ async function openCheckout(
     return;
   }
 
+  if (!checkout.keyId?.trim() || !checkout.orderId?.trim()) {
+    throw new Error("Payment could not be started. Razorpay is not configured correctly.");
+  }
+
   await loadRazorpayScript();
   if (!window.Razorpay) {
     throw new Error("Razorpay checkout is unavailable");
   }
 
+  const prefill = buildRazorpayPrefill(shipping);
+
   return new Promise<void>((resolve, reject) => {
-    const options = {
+    const options: Record<string, unknown> = {
       key: checkout.keyId,
-      amount: checkout.amountPaise,
       currency: checkout.currency,
       name: "ExpenseKit",
-      description: `${checkout.planName} — monthly plan`,
+      description: `${checkout.planName} monthly plan`,
       order_id: checkout.orderId,
-      prefill: {
-        name: shipping.name ?? "",
-        email: shipping.email,
-        contact: shipping.phone ?? "",
-      },
+      prefill,
       theme: { color: "#FF6C37" },
+      retry: { enabled: true, max_count: 3 },
       handler: async (response: {
         razorpay_payment_id: string;
         razorpay_order_id: string;
@@ -121,6 +122,10 @@ async function openCheckout(
     };
 
     const razorpay = new window.Razorpay!(options);
+    razorpay.on("payment.failed", (response) => {
+      const description = response.error?.description;
+      reject(new Error(description || "Payment failed. Please try again."));
+    });
     razorpay.open();
   });
 }

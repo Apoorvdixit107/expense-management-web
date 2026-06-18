@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ExpenseKit">
+  <rect width="512" height="512" rx="108" fill="#FF6C37"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="112" y="152" width="288" height="208" rx="34"/>
+    <path d="M112 192h288"/>
+    <circle cx="332" cy="256" r="34" fill="#FFFFFF" stroke="none"/>
+  </g>
+  <path fill="#FF6C37" d="M318 238h28v8h-20v12h18v8h-18v14h-8v-42zm-20 0h8v42h-8v-42zm-28 0c12 0 20 8 20 20s-8 20-20 20h-12v-40h12zm-4 32h8c6 0 10-4 10-12s-4-12-10-12h-8v24z"/>
+</svg>
