@@ -54,6 +54,30 @@ export class ApiError extends Error {
   }
 }
 
+function parseErrorMessage(body: string, status: number): string {
+  let message = body;
+  try {
+    const json = JSON.parse(body) as { detail?: string; message?: string; error?: string; title?: string };
+    message = json.detail ?? json.message ?? json.title ?? json.error ?? body;
+  } catch {
+    // plain text error body
+  }
+  if (!message) {
+    if (status === 401) return "Invalid email or password";
+    if (status === 403) {
+      return "Access denied. Sign in again, or ensure the backend allows your site origin and bill scan is deployed.";
+    }
+    if (status === 413) return "Bill file is too large. Try a smaller image or PDF.";
+    if (status === 409) return "Email already registered";
+    return `Request failed (${status})`;
+  }
+  return message;
+}
+
+function isAuthPath(path: string): boolean {
+  return path.startsWith("/api/auth/");
+}
+
 async function request<T>(path: string, init: RequestInit = {}, auth = true): Promise<T> {
   const headers = new Headers(init.headers);
   if (!headers.has("Content-Type") && init.body) {
@@ -67,7 +91,9 @@ async function request<T>(path: string, init: RequestInit = {}, auth = true): Pr
 
   const response = await fetch(`${API_URL}${path}`, { ...init, headers }).catch(() => {
     throw new ApiError(
-      "Cannot reach the API. Start the backend: cd ExpenseManagementSystem && docker compose up (gateway on :8081)",
+      isAuthPath(path)
+        ? "Cannot reach the server."
+        : "Cannot reach the API. Start the backend: cd ExpenseManagementSystem && docker compose up (gateway on :8081)",
       0
     );
   });
@@ -79,23 +105,7 @@ async function request<T>(path: string, init: RequestInit = {}, auth = true): Pr
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    let message = body;
-    try {
-      const json = JSON.parse(body) as { detail?: string; message?: string };
-      message = json.detail ?? json.message ?? body;
-    } catch {
-      // plain text error body
-    }
-    if (!message) {
-      if (response.status === 401) message = "Invalid email or password";
-      else if (response.status === 403) {
-        message =
-          "Access denied. Sign in again, or ensure the backend allows your site origin and bill scan is deployed.";
-      } else if (response.status === 413) {
-        message = "Bill file is too large. Try a smaller image or PDF.";
-      } else if (response.status === 409) message = "Email already registered";
-      else message = `Request failed (${response.status})`;
-    }
+    const message = parseErrorMessage(body, response.status);
     throw new ApiError(message, response.status);
   }
 
