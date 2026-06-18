@@ -445,6 +445,22 @@ export type WalletWithdrawalResponse = {
   walletBalancePaise: number;
 };
 
+export type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type AssistantChatRequest = {
+  organizationId: number;
+  message: string;
+  history?: ChatMessage[];
+};
+
+export type AssistantChatResponse = {
+  reply: string;
+  mock: boolean;
+};
+
 export const EXPENSE_CATEGORIES = [
   "Food",
   "Transport",

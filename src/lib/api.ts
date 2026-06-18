@@ -34,6 +34,8 @@ import type {
   ReferralProfile,
   WithdrawWalletRequest,
   WalletWithdrawalResponse,
+  AssistantChatRequest,
+  AssistantChatResponse,
   OrganizationBalanceRange,
   OrganizationReport,
   OrganizationReportType,
@@ -160,6 +162,12 @@ export const api = {
 
   scanBill: (body: ScanBillRequest) =>
     request<ScanBillResponse>("/api/expenses/scan-bill", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  assistantChat: (body: AssistantChatRequest) =>
+    request<AssistantChatResponse>("/api/expenses/assistant/chat", {
       method: "POST",
       body: JSON.stringify(body),
     }),

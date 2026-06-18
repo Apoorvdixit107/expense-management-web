@@ -26,6 +26,7 @@ type NavLink = {
 const memberLinks: NavLink[] = [
   { href: "/expenses", label: "Expenses", icon: "₹" },
   { href: "/expenses/upload", label: "Upload Bill", icon: "↑", premium: true },
+  { href: "/assistant", label: "AI Assistant", icon: "✦", premium: true },
   { href: "/bank-accounts", label: "Cash & Bank", icon: "◇" },
   { href: "/bank-accounts/connect", label: "Connect Bank", icon: "⧉", premium: true },
   { href: "/organizations", label: "Organizations", icon: "▣" },
@@ -40,6 +41,7 @@ const subscriberLinks: NavLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: "◉" },
   { href: "/expenses", label: "Expenses", icon: "₹" },
   { href: "/expenses/upload", label: "Upload Bill", icon: "↑", premium: true },
+  { href: "/assistant", label: "AI Assistant", icon: "✦", premium: true },
   { href: "/bank-accounts", label: "Cash & Bank", icon: "◇" },
   { href: "/bank-accounts/connect", label: "Connect Bank", icon: "⧉", premium: true },
   { href: "/organizations", label: "Organizations", icon: "▣" },
