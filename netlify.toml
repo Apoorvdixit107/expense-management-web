@@ -6,6 +6,7 @@
   NODE_VERSION = "22"
   NEXT_PUBLIC_SITE_URL = "https://expensekit17.netlify.app"
   NEXT_PUBLIC_GOOGLE_CLIENT_ID = "168225096795-jnu9evr9lqpkgnvc3ubkuebqkauhf473.apps.googleusercontent.com"
+  NEXT_PUBLIC_RAZORPAY_KEY_ID = "rzp_test_T2lds9Cil2gYJb"
   # Set NEXT_PUBLIC_API_URL in Netlify UI → Environment variables (tunnel URL changes each session)
 
 [[plugins]]

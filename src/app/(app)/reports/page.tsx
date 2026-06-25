@@ -13,7 +13,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatPercent } from "@/lib/format";
 import { isSubscriber } from "@/lib/navigation";
 import {
   createDefaultReportDateFilter,
@@ -32,6 +32,9 @@ function ReportsContent() {
   const [reportLoading, setReportLoading] = useState(false);
 
   const { fromDate, toDate } = useMemo(() => resolveReportDateRange(dateFilter), [dateFilter]);
+  const periodProfit = (report?.periodTotalIn ?? 0) - (report?.periodTotalOut ?? 0);
+  const periodMargin =
+    (report?.periodTotalIn ?? 0) > 0 ? (periodProfit / (report?.periodTotalIn ?? 1)) * 100 : 0;
 
   useEffect(() => {
     if (!currentOrgId) {
@@ -92,7 +95,7 @@ function ReportsContent() {
         />
       ) : null}
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         <StatCard label="Opening balance" value={formatCurrency(report?.periodOpeningBalance ?? 0)} />
         <StatCard
           label="Closing balance"
@@ -101,6 +104,12 @@ function ReportsContent() {
         />
         <StatCard label="Money in" value={formatCurrency(report?.periodTotalIn ?? 0)} />
         <StatCard label="Money out" value={formatCurrency(report?.periodTotalOut ?? 0)} />
+        <StatCard
+          label="Profit"
+          value={formatCurrency(periodProfit)}
+          highlight={periodProfit >= 0}
+        />
+        <StatCard label="Profit margin" value={formatPercent(periodMargin)} highlight={periodMargin >= 0} />
       </div>
 
       <Card>

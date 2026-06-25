@@ -13,6 +13,15 @@ export function formatCurrency(amount: number, currency?: string) {
   }).format(amount);
 }
 
+export function formatPercent(value: number, digits = 1) {
+  const locale = getLocale();
+  return new Intl.NumberFormat(locale, {
+    style: "percent",
+    maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
+  }).format(value / 100);
+}
+
 export function formatDate(value: string, language?: AppLanguage) {
   const locale = language ? languageToLocale(language) : getLocale();
   return new Intl.DateTimeFormat(locale, {

@@ -86,6 +86,10 @@ export type Expense = {
   type: ExpenseType;
   paymentMode: PaymentMode;
   amount: number;
+  taxCategoryId?: number | null;
+  gstRate?: number | null;
+  taxableAmount?: number | null;
+  taxAmount?: number | null;
   description: string | null;
   spentAt: string;
   createdAt: string;
@@ -101,6 +105,8 @@ export type CreateExpenseRequest = {
   amount: number;
   description?: string;
   spentAt?: string;
+  taxCategoryId?: number;
+  gstRate?: number;
 };
 
 export type UpdateExpenseRequest = {
@@ -111,6 +117,57 @@ export type UpdateExpenseRequest = {
   amount: number;
   description?: string;
   spentAt?: string;
+  taxCategoryId?: number;
+  gstRate?: number;
+};
+
+export type GstTaxCategory = {
+  id: number;
+  organizationId: number;
+  name: string;
+  rate: number;
+  sortOrder: number;
+  createdAt: string;
+};
+
+export type CreateGstTaxCategoryRequest = {
+  name: string;
+  rate: number;
+};
+
+export type GstTrendGroup = "MONTH" | "QUARTER" | "YEAR";
+
+export type GstRateBreakdown = {
+  rate: number;
+  inputTax: number;
+  outputTax: number;
+  taxableIn: number;
+  taxableOut: number;
+  transactionCount: number;
+};
+
+export type GstPeriodTrend = {
+  periodLabel: string;
+  inputTax: number;
+  outputTax: number;
+  netGstPayable: number;
+  transactionCount: number;
+};
+
+export type GstSummaryReport = {
+  organizationId: number;
+  fromDate: string;
+  toDate: string;
+  groupBy: GstTrendGroup;
+  totalInputTax: number;
+  totalOutputTax: number;
+  netGstPayable: number;
+  totalTaxableIn: number;
+  totalTaxableOut: number;
+  totalGrossAmount: number;
+  transactionCount: number;
+  byRate: GstRateBreakdown[];
+  trend: GstPeriodTrend[];
 };
 
 export type ScanBillRequest = {
@@ -266,6 +323,84 @@ export type ExpenseReport = {
   outTransactionCount: number;
   byCategoryIn: CategoryBreakdown[];
   breakdownIn: PeriodBreakdown[];
+};
+
+export type ProfitPeriodPoint = {
+  label: string;
+  fromDate: string;
+  toDate: string;
+  income: number;
+  expenses: number;
+  profit: number;
+  profitMarginPercent: number;
+};
+
+export type OrganizationProfitRow = {
+  organizationId: number | null;
+  totalIncome: number;
+  totalExpenses: number;
+  profit: number;
+  profitMarginPercent: number;
+};
+
+export type ProfitabilityReport = {
+  periodType: string;
+  label: string;
+  fromDate: string;
+  toDate: string;
+  organizationId: number | null;
+  totalIncome: number;
+  totalExpenses: number;
+  profit: number;
+  profitMarginPercent: number;
+  trend: ProfitPeriodPoint[];
+  organizationComparison: OrganizationProfitRow[];
+  topExpenseCategories: CategoryBreakdown[];
+};
+
+export type BudgetPeriodType = "MONTHLY" | "QUARTERLY" | "YEARLY";
+
+export type Budget = {
+  id: number;
+  organizationId: number;
+  categoryId: number | null;
+  categoryName: string;
+  periodType: BudgetPeriodType;
+  year: number;
+  month: number | null;
+  quarter: number | null;
+  periodLabel: string;
+  fromDate: string;
+  toDate: string;
+  budgetAmount: number;
+  actualSpent: number;
+  remainingAmount: number;
+  utilizationPercent: number;
+  overBudget: boolean;
+};
+
+export type CreateBudgetRequest = {
+  periodType: BudgetPeriodType;
+  year: number;
+  month?: number;
+  quarter?: number;
+  categoryId?: number;
+  amount: number;
+};
+
+export type UpdateBudgetRequest = {
+  amount: number;
+};
+
+export type BudgetPerformanceReport = {
+  organizationId: number;
+  year: number;
+  totalBudgetAmount: number;
+  totalActualSpent: number;
+  totalRemainingAmount: number;
+  averageUtilizationPercent: number;
+  budgetsOverLimit: number;
+  budgets: Budget[];
 };
 
 export type ReportPeriod =

@@ -41,6 +41,15 @@ import type {
   OrganizationReportType,
   PaymentMode,
   BankSyncResponse,
+  ProfitabilityReport,
+  Budget,
+  BudgetPerformanceReport,
+  CreateBudgetRequest,
+  UpdateBudgetRequest,
+  GstTaxCategory,
+  CreateGstTaxCategoryRequest,
+  GstSummaryReport,
+  GstTrendGroup,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
@@ -124,7 +133,7 @@ async function request<T>(path: string, init: RequestInit = {}, auth = true): Pr
   if (response.status === 204) return undefined as T;
 
   const contentType = response.headers.get("content-type") ?? "";
-  if (contentType.includes("application/pdf")) {
+  if (contentType.includes("application/pdf") || contentType.includes("text/csv")) {
     return response.blob() as Promise<T>;
   }
 
@@ -244,6 +253,77 @@ export const api = {
       method: "DELETE",
     }),
 
+  listBudgets: (organizationId: number, year?: number) => {
+    const params = year !== undefined ? `?year=${year}` : "";
+    return request<Budget[]>(`/api/organizations/${organizationId}/budgets${params}`);
+  },
+
+  getBudgetPerformance: (organizationId: number, year: number) =>
+    request<BudgetPerformanceReport>(
+      `/api/organizations/${organizationId}/budgets/performance?year=${year}`
+    ),
+
+  createBudget: (organizationId: number, body: CreateBudgetRequest) =>
+    request<Budget>(`/api/organizations/${organizationId}/budgets`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  updateBudget: (organizationId: number, budgetId: number, body: UpdateBudgetRequest) =>
+    request<Budget>(`/api/organizations/${organizationId}/budgets/${budgetId}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+
+  deleteBudget: (organizationId: number, budgetId: number) =>
+    request<void>(`/api/organizations/${organizationId}/budgets/${budgetId}`, {
+      method: "DELETE",
+    }),
+
+  listTaxCategories: (organizationId: number) =>
+    request<GstTaxCategory[]>(`/api/organizations/${organizationId}/tax/categories`),
+
+  createTaxCategory: (organizationId: number, body: CreateGstTaxCategoryRequest) =>
+    request<GstTaxCategory>(`/api/organizations/${organizationId}/tax/categories`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  deleteTaxCategory: (organizationId: number, categoryId: number) =>
+    request<void>(`/api/organizations/${organizationId}/tax/categories/${categoryId}`, {
+      method: "DELETE",
+    }),
+
+  getGstSummary: (
+    organizationId: number,
+    fromDate: string,
+    toDate: string,
+    groupBy: GstTrendGroup = "MONTH"
+  ) => {
+    const params = new URLSearchParams({ fromDate, toDate, groupBy });
+    return request<GstSummaryReport>(
+      `/api/organizations/${organizationId}/tax/gst-summary?${params}`
+    );
+  },
+
+  downloadGstSummaryCsv: async (
+    organizationId: number,
+    fromDate: string,
+    toDate: string,
+    groupBy: GstTrendGroup = "MONTH"
+  ) => {
+    const params = new URLSearchParams({ fromDate, toDate, groupBy });
+    const blob = await request<Blob>(
+      `/api/organizations/${organizationId}/tax/gst-summary/export?${params}`
+    );
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `gst-summary-${fromDate}-to-${toDate}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  },
+
   listBankAccounts: (organizationId: number) =>
     request<BankAccount[]>(`/api/organizations/${organizationId}/bank-accounts`),
 
@@ -307,6 +387,20 @@ export const api = {
     const params = new URLSearchParams({ years: String(years) });
     if (organizationId !== undefined) params.set("organizationId", String(organizationId));
     return request<ExpenseReport>(`/api/reports/yearly?${params}`);
+  },
+
+  reportProfitability: (
+    period: ReportPeriod,
+    organizationId?: number,
+    options?: ReportSummaryOptions
+  ) => {
+    const params = new URLSearchParams({ period });
+    if (organizationId !== undefined) params.set("organizationId", String(organizationId));
+    if (options?.year !== undefined) params.set("year", String(options.year));
+    if (options?.month !== undefined) params.set("month", String(options.month));
+    if (options?.fromDate) params.set("fromDate", options.fromDate);
+    if (options?.toDate) params.set("toDate", options.toDate);
+    return request<ProfitabilityReport>(`/api/reports/profitability?${params}`);
   },
 
   listPlans: () => request<Plan[]>("/api/billing/plans", {}, false),

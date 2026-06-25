@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -8,7 +8,8 @@ import { useOrganization } from "@/components/OrganizationProvider";
 import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
-import { isoToLocalDatetimeInput, localDatetimeInputValue, localDatetimeToISO } from "@/lib/format";
+import { isoToLocalDatetimeInput, localDatetimeInputValue, localDatetimeToISO, formatCurrency } from "@/lib/format";
+import { splitInclusiveGst } from "@/lib/gst";
 import { addGuestExpense } from "@/lib/guest";
 import { ensureTrialStarted } from "@/lib/trial";
 import {
@@ -19,6 +20,7 @@ import {
   type Expense,
   type ExpenseCategory,
   type ExpenseType,
+  type GstTaxCategory,
   type PaymentMode,
   type UpdateExpenseRequest,
 } from "@/lib/types";
@@ -42,6 +44,7 @@ function defaultFormState(type: ExpenseType = "OUT") {
     description: "",
     spentAt: localDatetimeInputValue(),
     guestCategory: EXPENSE_CATEGORIES[0],
+    taxCategoryId: "" as number | "",
   };
 }
 
@@ -56,6 +59,7 @@ export function ExpenseForm({
   const { currentOrg, currentOrgId } = useOrganization();
   const submittingRef = useRef(false);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+  const [taxCategories, setTaxCategories] = useState<GstTaxCategory[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [type, setType] = useState<ExpenseType>("OUT");
   const [categoryId, setCategoryId] = useState<number | "">("");
@@ -69,8 +73,20 @@ export function ExpenseForm({
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
+  const [taxCategoryId, setTaxCategoryId] = useState<number | "">("");
 
   const isEditing = mode === "api" && editingExpense != null;
+
+  const selectedGstRate =
+    taxCategoryId !== ""
+      ? taxCategories.find((c) => c.id === taxCategoryId)?.rate ?? 0
+      : 0;
+
+  const taxPreview = useMemo(() => {
+    const total = Number(amount);
+    if (!total || total <= 0 || selectedGstRate <= 0) return null;
+    return splitInclusiveGst(total, selectedGstRate);
+  }, [amount, selectedGstRate]);
 
   const resetForm = useCallback(() => {
     const defaults = defaultFormState(defaultType);
@@ -82,6 +98,7 @@ export function ExpenseForm({
     setDescription(defaults.description);
     setSpentAt(defaults.spentAt);
     setGuestCategory(defaults.guestCategory);
+    setTaxCategoryId(defaults.taxCategoryId);
     setShowAddCategory(false);
     setNewCategoryName("");
   }, [defaultType]);
@@ -100,6 +117,7 @@ export function ExpenseForm({
     setAmount(String(editingExpense.amount));
     setDescription(editingExpense.description ?? "");
     setSpentAt(isoToLocalDatetimeInput(editingExpense.spentAt));
+    setTaxCategoryId(editingExpense.taxCategoryId ?? "");
   }, [editingExpense]);
 
   useEffect(() => {
@@ -132,11 +150,15 @@ export function ExpenseForm({
 
   useEffect(() => {
     if (mode !== "api" || !currentOrgId) return;
-    Promise.all([loadCategories(), api.listBankAccounts(currentOrgId)])
-      .then(([, banks]) => setBankAccounts(banks))
+    Promise.all([loadCategories(), api.listBankAccounts(currentOrgId), api.listTaxCategories(currentOrgId)])
+      .then(([, banks, taxCats]) => {
+        setBankAccounts(banks);
+        setTaxCategories(taxCats);
+      })
       .catch(() => {
         setCategories([]);
         setBankAccounts([]);
+        setTaxCategories([]);
       });
   }, [mode, currentOrgId, loadCategories]);
 
@@ -186,6 +208,7 @@ export function ExpenseForm({
           amount: Number(amount),
           description: description.trim() || undefined,
           spentAt: localDatetimeToISO(spentAt),
+          taxCategoryId: taxCategoryId === "" ? undefined : Number(taxCategoryId),
         };
 
         if (isEditing && editingExpense) {
@@ -204,6 +227,7 @@ export function ExpenseForm({
         setDescription("");
         setBankAccountId("");
         setPaymentMode("CASH");
+        setTaxCategoryId("");
         setSpentAt(localDatetimeInputValue());
       }
 
@@ -401,6 +425,32 @@ export function ExpenseForm({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
+          {mode === "api" && taxCategories.length > 0 ? (
+            <label className="block space-y-1.5">
+              <span className="text-sm font-medium text-ink">GST category (optional)</span>
+              <select
+                value={taxCategoryId}
+                onChange={(e) =>
+                  setTaxCategoryId(e.target.value ? Number(e.target.value) : "")
+                }
+                disabled={loading}
+                className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+              >
+                <option value="">No GST</option>
+                {taxCategories.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+              {taxPreview ? (
+                <p className="text-xs text-muted">
+                  Taxable {formatCurrency(taxPreview.taxableAmount)} + GST{" "}
+                  {formatCurrency(taxPreview.taxAmount)} ({selectedGstRate}% inclusive)
+                </p>
+              ) : null}
+            </label>
+          ) : null}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-medium text-ink">Date & time</span>

@@ -9,6 +9,10 @@ import {
   TodayOverviewPanel,
   TopCategoriesChart,
 } from "@/components/charts/DashboardCharts";
+import {
+  OrganizationProfitTable,
+  ProfitTrendChart,
+} from "@/components/charts/ProfitabilityCharts";
 import { StatCard } from "@/components/ReportCards";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { SubscriberGuard } from "@/components/SubscriberGuard";
@@ -27,16 +31,17 @@ import {
   trendChartTitle,
   type DashboardFilter,
 } from "@/lib/dashboard-period";
-import { formatCurrency } from "@/lib/format";
-import type { ExpenseReport, Notification, OrganizationBalanceRange } from "@/lib/types";
+import { formatCurrency, formatPercent } from "@/lib/format";
+import type { ExpenseReport, Notification, OrganizationBalanceRange, ProfitabilityReport } from "@/lib/types";
 
 export default function DashboardPage() {
-  const { currentOrg, currentOrgId } = useOrganization();
+  const { currentOrg, currentOrgId, organizations } = useOrganization();
   const [filter, setFilter] = useState<DashboardFilter>(createDefaultDashboardFilter);
   const [summary, setSummary] = useState<ExpenseReport | null>(null);
   const [todayReport, setTodayReport] = useState<ExpenseReport | null>(null);
   const [weekTrend, setWeekTrend] = useState<ExpenseReport | null>(null);
   const [balanceSummary, setBalanceSummary] = useState<OrganizationBalanceRange | null>(null);
+  const [profitability, setProfitability] = useState<ProfitabilityReport | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
@@ -50,10 +55,12 @@ export default function DashboardPage() {
     const options = filterToSummaryOptions(filter);
     const { fromDate, toDate } = filterToDateRange(filter);
     const summaryRequest = api.reportSummary(filter.period, currentOrgId, options);
+    const profitabilityRequest = api.reportProfitability(filter.period, currentOrgId, options);
     const balanceRequest = api.getOrganizationBalanceSummary(currentOrgId, fromDate, toDate);
 
     Promise.all([
       summaryRequest,
+      profitabilityRequest,
       balanceRequest,
       api.reportSummary("TODAY", currentOrgId),
       filter.period === "TODAY"
@@ -61,8 +68,9 @@ export default function DashboardPage() {
         : Promise.resolve(null),
       api.listNotifications(),
     ])
-      .then(([periodReport, balance, today, week, items]) => {
+      .then(([periodReport, profitReport, balance, today, week, items]) => {
         setSummary(periodReport);
+        setProfitability(profitReport);
         setBalanceSummary(balance);
         setTodayReport(today);
         setWeekTrend(week);
@@ -85,7 +93,8 @@ export default function DashboardPage() {
     filter.period === "TODAY" ? (weekTrend?.breakdownIn ?? []) : (summary?.breakdownIn ?? []);
   const moneyIn = summary?.totalInAmount ?? 0;
   const moneyOut = summary?.totalAmount ?? 0;
-  const netFlow = moneyIn - moneyOut;
+  const profit = profitability?.profit ?? moneyIn - moneyOut;
+  const profitMargin = profitability?.profitMarginPercent ?? 0;
 
   return (
     <SubscriberGuard>
@@ -111,26 +120,27 @@ export default function DashboardPage() {
             highlight
           />
           <StatCard
-            label={`Net flow (${periodStatLabel(filter)})`}
-            value={formatCurrency(netFlow)}
-            highlight={netFlow >= 0}
+            label={`Profit (${periodStatLabel(filter)})`}
+            value={formatCurrency(profit)}
+            highlight={profit >= 0}
           />
+          <StatCard
+            label={`Profit margin (${periodStatLabel(filter)})`}
+            value={formatPercent(profitMargin)}
+            highlight={profitMargin >= 0}
+          />
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             label="Transactions"
             value={`${summary?.inTransactionCount ?? 0} in · ${summary?.outTransactionCount ?? 0} out`}
           />
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           <StatCard label="Top expense category" value={summary?.byCategory[0]?.category ?? "—"} />
           <StatCard label="Top income category" value={summary?.byCategoryIn[0]?.category ?? "—"} />
           <StatCard
-            label="Top category (any)"
-            value={
-              [summary?.byCategory[0], summary?.byCategoryIn[0]]
-                .filter(Boolean)
-                .sort((a, b) => (b?.amount ?? 0) - (a?.amount ?? 0))[0]?.category ?? "—"
-            }
+            label="Largest profit drain"
+            value={profitability?.topExpenseCategories[0]?.category ?? "—"}
           />
         </div>
 
@@ -190,6 +200,26 @@ export default function DashboardPage() {
           <DashboardChartCard title="Top expense categories" subtitle={`Highest spend for ${periodLabel}`}>
             <TopCategoriesChart items={summary?.byCategory ?? []} />
           </DashboardChartCard>
+
+          <DashboardChartCard
+            title="Profit trend"
+            subtitle={`Income minus expenses for ${periodLabel}`}
+          >
+            <ProfitTrendChart items={profitability?.trend ?? []} />
+          </DashboardChartCard>
+
+          <div className="lg:col-span-2">
+            <DashboardChartCard
+              title="Profit by organization"
+              subtitle="Compare profitability across your organizations"
+            >
+              <OrganizationProfitTable
+                rows={profitability?.organizationComparison ?? []}
+                organizations={organizations}
+                currentOrgId={currentOrgId}
+              />
+            </DashboardChartCard>
+          </div>
         </div>
 
         <Card>
