@@ -16,14 +16,12 @@ import {
 import { StatCard } from "@/components/ReportCards";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { SubscriberGuard } from "@/components/SubscriberGuard";
-import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import {
   createDefaultDashboardFilter,
-  filterToDateRange,
   filterToSummaryOptions,
   periodDescription,
   periodStatLabel,
@@ -32,7 +30,7 @@ import {
   type DashboardFilter,
 } from "@/lib/dashboard-period";
 import { formatCurrency, formatPercent } from "@/lib/format";
-import type { ExpenseReport, Notification, OrganizationBalanceRange, ProfitabilityReport } from "@/lib/types";
+import type { ExpenseReport, ProfitabilityReport } from "@/lib/types";
 
 export default function DashboardPage() {
   const { currentOrg, currentOrgId, organizations } = useOrganization();
@@ -40,9 +38,7 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<ExpenseReport | null>(null);
   const [todayReport, setTodayReport] = useState<ExpenseReport | null>(null);
   const [weekTrend, setWeekTrend] = useState<ExpenseReport | null>(null);
-  const [balanceSummary, setBalanceSummary] = useState<OrganizationBalanceRange | null>(null);
   const [profitability, setProfitability] = useState<ProfitabilityReport | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
     if (!currentOrgId) return;
@@ -53,28 +49,20 @@ export default function DashboardPage() {
     }
 
     const options = filterToSummaryOptions(filter);
-    const { fromDate, toDate } = filterToDateRange(filter);
-    const summaryRequest = api.reportSummary(filter.period, currentOrgId, options);
-    const profitabilityRequest = api.reportProfitability(filter.period, currentOrgId, options);
-    const balanceRequest = api.getOrganizationBalanceSummary(currentOrgId, fromDate, toDate);
 
     Promise.all([
-      summaryRequest,
-      profitabilityRequest,
-      balanceRequest,
+      api.reportSummary(filter.period, currentOrgId, options),
+      api.reportProfitability(filter.period, currentOrgId, options),
       api.reportSummary("TODAY", currentOrgId),
       filter.period === "TODAY"
         ? api.reportSummary("LAST_7_DAYS", currentOrgId)
         : Promise.resolve(null),
-      api.listNotifications(),
     ])
-      .then(([periodReport, profitReport, balance, today, week, items]) => {
+      .then(([periodReport, profitReport, today, week]) => {
         setSummary(periodReport);
         setProfitability(profitReport);
-        setBalanceSummary(balance);
         setTodayReport(today);
         setWeekTrend(week);
-        setNotifications(items.slice(0, 5));
       })
       .catch((err) => showApiError(err, "Failed to load dashboard"));
   }, [
@@ -91,9 +79,9 @@ export default function DashboardPage() {
     filter.period === "TODAY" ? (weekTrend?.breakdown ?? []) : (summary?.breakdown ?? []);
   const trendInItems =
     filter.period === "TODAY" ? (weekTrend?.breakdownIn ?? []) : (summary?.breakdownIn ?? []);
-  const moneyIn = summary?.totalInAmount ?? 0;
-  const moneyOut = summary?.totalAmount ?? 0;
-  const profit = profitability?.profit ?? moneyIn - moneyOut;
+  const totalIn = summary?.totalInAmount ?? 0;
+  const totalOut = summary?.totalAmount ?? 0;
+  const profit = profitability?.profit ?? totalIn - totalOut;
   const profitMargin = profitability?.profitMarginPercent ?? 0;
 
   return (
@@ -112,11 +100,11 @@ export default function DashboardPage() {
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             label={`Money in (${periodStatLabel(filter)})`}
-            value={formatCurrency(moneyIn)}
+            value={formatCurrency(totalIn)}
           />
           <StatCard
             label={`Money out (${periodStatLabel(filter)})`}
-            value={formatCurrency(moneyOut)}
+            value={formatCurrency(totalOut)}
             highlight
           />
           <StatCard
@@ -131,39 +119,6 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label="Transactions"
-            value={`${summary?.inTransactionCount ?? 0} in · ${summary?.outTransactionCount ?? 0} out`}
-          />
-          <StatCard label="Top expense category" value={summary?.byCategory[0]?.category ?? "—"} />
-          <StatCard label="Top income category" value={summary?.byCategoryIn[0]?.category ?? "—"} />
-          <StatCard
-            label="Largest profit drain"
-            value={profitability?.topExpenseCategories[0]?.category ?? "—"}
-          />
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label={`Opening balance (${periodStatLabel(filter)})`}
-            value={formatCurrency(balanceSummary?.openingBalance ?? 0)}
-          />
-          <StatCard
-            label={`Closing balance (${periodStatLabel(filter)})`}
-            value={formatCurrency(balanceSummary?.closingBalance ?? 0)}
-            highlight
-          />
-          <StatCard
-            label="Money in (period)"
-            value={formatCurrency(balanceSummary?.periodTotalIn ?? 0)}
-          />
-          <StatCard
-            label="Money out (period)"
-            value={formatCurrency(balanceSummary?.periodTotalOut ?? 0)}
-          />
-        </div>
-
         <div className="grid gap-6 lg:grid-cols-2">
           <DashboardChartCard title="Today" subtitle="Live cash flow for today">
             <TodayOverviewPanel report={todayReport} />
@@ -175,7 +130,7 @@ export default function DashboardPage() {
           >
             <CategoryDonutChart
               items={summary?.byCategory ?? []}
-              total={moneyOut}
+              total={totalOut}
               emptyMessage="No expenses in this period."
               centerLabel="Spent"
             />
@@ -187,7 +142,7 @@ export default function DashboardPage() {
           >
             <CategoryDonutChart
               items={summary?.byCategoryIn ?? []}
-              total={moneyIn}
+              total={totalIn}
               emptyMessage="No income in this period."
               centerLabel="Earned"
             />
@@ -221,24 +176,6 @@ export default function DashboardPage() {
             </DashboardChartCard>
           </div>
         </div>
-
-        <Card>
-          <h2 className="text-lg font-bold text-ink">Recent notifications</h2>
-          <div className="mt-4 space-y-3">
-            {notifications.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-border bg-paper px-4 py-8 text-center text-sm text-muted">
-                No notifications yet.
-              </p>
-            ) : (
-              notifications.map((item) => (
-                <div key={item.id} className="rounded-xl border border-border bg-paper px-4 py-4">
-                  <p className="font-semibold text-ink">{item.title}</p>
-                  <p className="mt-1 text-sm text-muted">{item.message}</p>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
       </div>
     </SubscriberGuard>
   );
