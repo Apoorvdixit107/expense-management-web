@@ -30,9 +30,8 @@ import {
   type DashboardFilter,
 } from "@/lib/dashboard-period";
 import { formatCurrency, formatPercent } from "@/lib/format";
-import type { ExpenseReport, ProfitabilityReport, SpendOverviewStats } from "@/lib/types";
+import type { Expense, ExpenseReport, ProfitabilityReport, SpendOverviewStats } from "@/lib/types";
 import Link from "next/link";
-import { formatCurrency } from "@/lib/format";
 
 export default function DashboardPage() {
   const { currentOrg, currentOrgId, organizations } = useOrganization();
@@ -42,9 +41,7 @@ export default function DashboardPage() {
   const [weekTrend, setWeekTrend] = useState<ExpenseReport | null>(null);
   const [profitability, setProfitability] = useState<ProfitabilityReport | null>(null);
   const [spendOverview, setSpendOverview] = useState<SpendOverviewStats | null>(null);
-  const [pendingApprovals, setPendingApprovals] = useState<
-    import("@/lib/types").Expense[]
-  >([]);
+  const [pendingApprovals, setPendingApprovals] = useState<Expense[]>([]);
 
   useEffect(() => {
     if (!currentOrgId) return;
