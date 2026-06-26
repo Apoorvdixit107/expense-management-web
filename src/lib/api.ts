@@ -50,6 +50,13 @@ import type {
   CreateGstTaxCategoryRequest,
   GstSummaryReport,
   GstTrendGroup,
+  SpendStatus,
+  SpendPolicy,
+  CreateSpendPolicyRequest,
+  SpendOverviewStats,
+  OrganizationMember,
+  OrganizationInvite,
+  CreateOrganizationInviteRequest,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
@@ -175,13 +182,19 @@ export const api = {
 
   listExpenses: (
     organizationId?: number,
-    options?: { paymentMode?: PaymentMode; cashAndBankOnly?: boolean; deletedOnly?: boolean }
+    options?: {
+      paymentMode?: PaymentMode;
+      cashAndBankOnly?: boolean;
+      deletedOnly?: boolean;
+      spendStatus?: SpendStatus;
+    }
   ) => {
     const params = new URLSearchParams();
     if (organizationId !== undefined) params.set("organizationId", String(organizationId));
     if (options?.paymentMode) params.set("paymentMode", options.paymentMode);
     if (options?.cashAndBankOnly) params.set("cashAndBankOnly", "true");
     if (options?.deletedOnly) params.set("deletedOnly", "true");
+    if (options?.spendStatus) params.set("spendStatus", options.spendStatus);
     const query = params.toString();
     return request<Expense[]>(`/api/expenses${query ? `?${query}` : ""}`);
   },
@@ -210,6 +223,80 @@ export const api = {
 
   restoreExpense: (id: number) =>
     request<Expense>(`/api/expenses/${id}/restore`, { method: "POST" }),
+
+  submitExpense: (id: number) =>
+    request<Expense>(`/api/expenses/${id}/submit`, { method: "POST" }),
+
+  voidExpense: (id: number) =>
+    request<Expense>(`/api/expenses/${id}/void`, { method: "POST" }),
+
+  getSpendOverview: (organizationId: number, fromDate: string, toDate: string) => {
+    const params = new URLSearchParams({ fromDate, toDate });
+    return request<SpendOverviewStats>(
+      `/api/organizations/${organizationId}/spend/overview?${params}`
+    );
+  },
+
+  listPendingApprovals: (organizationId: number) =>
+    request<Expense[]>(`/api/organizations/${organizationId}/approvals/pending`),
+
+  approveSpend: (organizationId: number, expenseId: number, comment?: string) =>
+    request<Expense>(`/api/organizations/${organizationId}/approvals/${expenseId}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ comment: comment ?? null }),
+    }),
+
+  rejectSpend: (organizationId: number, expenseId: number, comment?: string) =>
+    request<Expense>(`/api/organizations/${organizationId}/approvals/${expenseId}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ comment: comment ?? null }),
+    }),
+
+  listSpendPolicies: (organizationId: number) =>
+    request<SpendPolicy[]>(`/api/organizations/${organizationId}/policies`),
+
+  createSpendPolicy: (organizationId: number, body: CreateSpendPolicyRequest) =>
+    request<SpendPolicy>(`/api/organizations/${organizationId}/policies`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  updateSpendPolicy: (
+    organizationId: number,
+    policyId: number,
+    body: CreateSpendPolicyRequest
+  ) =>
+    request<SpendPolicy>(`/api/organizations/${organizationId}/policies/${policyId}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+
+  deleteSpendPolicy: (organizationId: number, policyId: number) =>
+    request<void>(`/api/organizations/${organizationId}/policies/${policyId}`, {
+      method: "DELETE",
+    }),
+
+  listTeamMembers: (organizationId: number) =>
+    request<OrganizationMember[]>(`/api/organizations/${organizationId}/team/members`),
+
+  listTeamInvites: (organizationId: number) =>
+    request<OrganizationInvite[]>(`/api/organizations/${organizationId}/team/invites`),
+
+  inviteTeamMember: (organizationId: number, body: CreateOrganizationInviteRequest) =>
+    request<OrganizationInvite>(`/api/organizations/${organizationId}/team/invites`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  revokeTeamInvite: (organizationId: number, inviteId: number) =>
+    request<void>(`/api/organizations/${organizationId}/team/invites/${inviteId}`, {
+      method: "DELETE",
+    }),
+
+  acceptTeamInvite: (token: string) =>
+    request<OrganizationMember>(`/api/organizations/team/invites/accept?token=${encodeURIComponent(token)}`, {
+      method: "POST",
+    }),
 
   listOrganizations: () => request<Organization[]>("/api/organizations"),
 

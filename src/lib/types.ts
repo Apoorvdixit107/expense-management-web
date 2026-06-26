@@ -72,6 +72,15 @@ export type OrganizationReport = {
   rows: OrganizationReportRow[];
 };
 
+export type SpendStatus =
+  | "DRAFT"
+  | "PENDING_APPROVAL"
+  | "APPROVED"
+  | "POSTED"
+  | "REJECTED";
+
+export type OrgMemberRole = "OWNER" | "FINANCE" | "MEMBER";
+
 export type ExpenseType = "IN" | "OUT";
 
 export type PaymentMode = "CASH" | "ONLINE" | "BANK";
@@ -94,6 +103,14 @@ export type Expense = {
   spentAt: string;
   createdAt: string;
   deletedAt?: string | null;
+  spendStatus?: SpendStatus;
+  policyViolation?: boolean;
+  policyMessage?: string | null;
+  submittedAt?: string | null;
+  approvedByUserId?: number | null;
+  approvedAt?: string | null;
+  rejectionComment?: string | null;
+  voidedAt?: string | null;
 };
 
 export type CreateExpenseRequest = {
@@ -107,6 +124,8 @@ export type CreateExpenseRequest = {
   spentAt?: string;
   taxCategoryId?: number;
   gstRate?: number;
+  saveAsDraft?: boolean;
+  hasReceipt?: boolean;
 };
 
 export type UpdateExpenseRequest = {
@@ -209,6 +228,10 @@ export type Organization = {
   name: string;
   type: OrganizationType;
   customTypeLabel: string | null;
+  gstin?: string | null;
+  industry?: string | null;
+  fyStartMonth?: number | null;
+  currentUserRole?: OrgMemberRole | null;
   balance: number;
   createdAt: string;
 };
@@ -217,9 +240,61 @@ export type CreateOrganizationRequest = {
   name: string;
   type: OrganizationType;
   customTypeLabel?: string;
+  gstin?: string;
+  industry?: string;
+  fyStartMonth?: number;
 };
 
 export type UpdateOrganizationRequest = CreateOrganizationRequest;
+
+export type SpendPolicy = {
+  id: number;
+  organizationId: number;
+  name: string;
+  maxAmountPerTransaction: number | null;
+  receiptRequiredAbove: number | null;
+  allowedCategoryIds: string | null;
+  blockOnViolation: boolean;
+  active: boolean;
+  createdAt: string;
+};
+
+export type CreateSpendPolicyRequest = {
+  name: string;
+  maxAmountPerTransaction?: number;
+  receiptRequiredAbove?: number;
+  allowedCategoryIds?: string;
+  blockOnViolation?: boolean;
+};
+
+export type SpendOverviewStats = {
+  pendingApprovals: number;
+  policyFlags: number;
+  totalSpendOut: number;
+};
+
+export type OrganizationMember = {
+  id: number;
+  userId: number;
+  role: OrgMemberRole;
+  joinedAt: string;
+};
+
+export type OrganizationInvite = {
+  id: number;
+  organizationId: number;
+  email: string;
+  role: OrgMemberRole;
+  status: "PENDING" | "ACCEPTED" | "REVOKED";
+  createdAt: string;
+  expiresAt: string | null;
+  acceptUrl: string;
+};
+
+export type CreateOrganizationInviteRequest = {
+  email: string;
+  role: Exclude<OrgMemberRole, "OWNER">;
+};
 
 export type ExpenseCategory = {
   id: number;

@@ -1,4 +1,4 @@
-export const TRIAL_DAYS = 7;
+export const TRIAL_DAYS = 14;
 
 const TRIAL_START_KEY = "ems_trial_start";
 

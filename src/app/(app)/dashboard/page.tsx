@@ -30,7 +30,9 @@ import {
   type DashboardFilter,
 } from "@/lib/dashboard-period";
 import { formatCurrency, formatPercent } from "@/lib/format";
-import type { ExpenseReport, ProfitabilityReport } from "@/lib/types";
+import type { ExpenseReport, ProfitabilityReport, SpendOverviewStats } from "@/lib/types";
+import Link from "next/link";
+import { formatCurrency } from "@/lib/format";
 
 export default function DashboardPage() {
   const { currentOrg, currentOrgId, organizations } = useOrganization();
@@ -39,6 +41,10 @@ export default function DashboardPage() {
   const [todayReport, setTodayReport] = useState<ExpenseReport | null>(null);
   const [weekTrend, setWeekTrend] = useState<ExpenseReport | null>(null);
   const [profitability, setProfitability] = useState<ProfitabilityReport | null>(null);
+  const [spendOverview, setSpendOverview] = useState<SpendOverviewStats | null>(null);
+  const [pendingApprovals, setPendingApprovals] = useState<
+    import("@/lib/types").Expense[]
+  >([]);
 
   useEffect(() => {
     if (!currentOrgId) return;
@@ -57,12 +63,16 @@ export default function DashboardPage() {
       filter.period === "TODAY"
         ? api.reportSummary("LAST_7_DAYS", currentOrgId)
         : Promise.resolve(null),
+      api.getSpendOverview(currentOrgId, filter.fromDate, filter.toDate),
+      api.listPendingApprovals(currentOrgId).catch(() => []),
     ])
-      .then(([periodReport, profitReport, today, week]) => {
+      .then(([periodReport, profitReport, today, week, overview, pending]) => {
         setSummary(periodReport);
         setProfitability(profitReport);
         setTodayReport(today);
         setWeekTrend(week);
+        setSpendOverview(overview);
+        setPendingApprovals(pending.slice(0, 5));
       })
       .catch((err) => showApiError(err, "Failed to load dashboard"));
   }, [
@@ -88,35 +98,53 @@ export default function DashboardPage() {
     <SubscriberGuard>
       <div className="space-y-8">
         <PageHeader
-          title="Dashboard"
-          subtitle={
-            currentOrg
-              ? `Cash flow insights for ${currentOrg.name}`
-              : "Your cash flow overview"
-          }
+          title="Overview"
+          subtitle="Your spend command center"
           action={<PeriodSelector filter={filter} onChange={setFilter} />}
         />
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            label={`Money in (${periodStatLabel(filter)})`}
-            value={formatCurrency(totalIn)}
-          />
-          <StatCard
-            label={`Money out (${periodStatLabel(filter)})`}
-            value={formatCurrency(totalOut)}
+            label={`Total spend (${periodStatLabel(filter)})`}
+            value={formatCurrency(spendOverview?.totalSpendOut ?? totalOut)}
             highlight
           />
           <StatCard
-            label={`Profit (${periodStatLabel(filter)})`}
-            value={formatCurrency(profit)}
-            highlight={profit >= 0}
+            label="Pending approvals"
+            value={String(spendOverview?.pendingApprovals ?? 0)}
+          />
+          <StatCard
+            label="Policy flags"
+            value={String(spendOverview?.policyFlags ?? 0)}
           />
           <StatCard
             label={`Profit margin (${periodStatLabel(filter)})`}
             value={formatPercent(profitMargin)}
             highlight={profitMargin >= 0}
           />
+        </div>
+
+        {pendingApprovals.length > 0 ? (
+          <DashboardChartCard title="Pending approvals" subtitle="Top items awaiting finance review">
+            <ul className="divide-y divide-border">
+              {pendingApprovals.map((item) => (
+                <li key={item.id} className="flex items-center justify-between py-3 text-sm">
+                  <span>
+                    {item.category} · {item.description || "No description"}
+                  </span>
+                  <span className="font-semibold text-ink">{formatCurrency(item.amount)}</span>
+                </li>
+              ))}
+            </ul>
+            <Link href="/approvals" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">
+              View all approvals →
+            </Link>
+          </DashboardChartCard>
+        ) : null}
+
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard label={`Money in (${periodStatLabel(filter)})`} value={formatCurrency(totalIn)} />
+          <StatCard label={`Profit (${periodStatLabel(filter)})`} value={formatCurrency(profit)} highlight={profit >= 0} />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">

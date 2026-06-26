@@ -9,16 +9,16 @@ import { postAuthPath } from "@/lib/navigation";
 
 const features = [
   {
-    title: "Track every expense",
-    description: "Log spending by category, date, and notes — synced to your account instantly.",
+    title: "Policy at the point of spend",
+    description: "Set limits and receipt rules once — every submission is checked before it hits your books.",
   },
   {
-    title: "Reports that matter",
-    description: "See daily totals, category breakdowns, and monthly trends at a glance.",
+    title: "Approvals finance trusts",
+    description: "Single-level approval queue with audit trail. Nothing posts until finance says yes.",
   },
   {
-    title: "Smart notifications",
-    description: "Get email and SMS alerts plus end-of-day summaries with report links.",
+    title: "GST-ready from day one",
+    description: "GST splits, summaries, and exports built for Indian SMBs and your CA.",
   },
 ];
 
@@ -57,10 +57,10 @@ export function LandingPage() {
               Contact sales
             </Link>
             <Link
-              href="/login"
+              href="/register"
               className="inline-flex rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
             >
-              Launch ExpenseKit
+              Start free trial
             </Link>
           </div>
         </div>
@@ -69,20 +69,22 @@ export function LandingPage() {
       <main>
         <section className="mx-auto grid max-w-6xl gap-12 px-6 py-16 lg:grid-cols-2 lg:items-center lg:py-24">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-widest text-brand">Expense management</p>
+            <p className="text-sm font-semibold uppercase tracking-widest text-brand">
+              Built for Indian SMBs · GST-native · Close books with confidence
+            </p>
             <h1 className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight text-[#212121] sm:text-5xl lg:text-[3.25rem]">
-              Take control of your spending.
+              Control company spend before it hits your books.
             </h1>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-[#6b6b6b]">
-              Join teams and individuals building better money habits — track expenses, unlock reports,
-              and get notified before budgets slip.
+              India&apos;s spend management platform — policies, approvals, and GST-ready reports for
+              growing businesses. Replace receipt chaos with one system your accountant will actually use.
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
                 href="/register"
                 className="inline-flex rounded-lg bg-brand px-7 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-brand-hover"
               >
-                Get started free
+                Get started — 14 days free
               </Link>
               <Link
                 href="/login"
@@ -91,7 +93,7 @@ export function LandingPage() {
                 Sign in
               </Link>
             </div>
-            <p className="mt-6 text-sm text-[#9b9b9b]">Sign in required to use the product.</p>
+            <p className="mt-6 text-sm text-[#9b9b9b]">Start your company workspace — no card required.</p>
           </div>
 
           <div className="relative hidden lg:block">
@@ -102,10 +104,10 @@ export function LandingPage() {
         <section id="features" className="border-t border-[#ebebeb] bg-[#fafafa] py-20">
           <div className="mx-auto max-w-6xl px-6">
             <h2 className="text-center text-3xl font-bold tracking-tight text-[#212121]">
-              Everything you need to stay on budget
+              Spend control built for finance teams
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-center text-[#6b6b6b]">
-              ExpenseKit brings tracking, reporting, and alerts into one clean workspace.
+              ExpenseKit brings policies, approvals, and GST compliance into one calm workspace.
             </p>
             <div className="mt-14 grid gap-8 md:grid-cols-3">
               {features.map((feature) => (
@@ -124,10 +126,9 @@ export function LandingPage() {
 
         <section id="pricing" className="py-20">
           <div className="mx-auto max-w-3xl px-6 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-[#212121]">Simple monthly plans</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-[#212121]">Simple plans for growing teams</h2>
             <p className="mt-4 text-[#6b6b6b]">
-              Start with a free account. Upgrade to Pro or Beast when you need cloud sync, reports, and
-              notifications.
+              14-day company trial. Upgrade when you need full spend control, policies, and team seats.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link

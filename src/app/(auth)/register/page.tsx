@@ -49,8 +49,8 @@ export default function RegisterPage() {
 
   return (
     <Card className="!shadow-[var(--shadow-elevated)]" padding="lg">
-      <h1 className="text-[28px] font-bold text-ink">Create account</h1>
-      <p className="mt-2 text-sm text-muted">Create your account to access ExpenseKit</p>
+      <h1 className="text-[28px] font-bold text-ink">Start your company workspace</h1>
+      <p className="mt-2 text-sm text-muted">14 days free — policies, spend, and GST-ready reports</p>
 
       {referralCode ? (
         <p className="mt-4 rounded-lg border border-brand/20 bg-brand-light px-3 py-2 text-sm text-ink">

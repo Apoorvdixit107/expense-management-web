@@ -14,7 +14,7 @@ import { useSubscription } from "@/components/SubscriptionProvider";
 import { api } from "@/lib/api";
 import { clearSession, getUser } from "@/lib/auth";
 import { clearSubscriptionState } from "@/lib/subscription";
-import { isAuthenticated, isSubscriber } from "@/lib/navigation";
+import { isAuthenticated, isSubscriber, memberNavLinks, subscriberNavLinks } from "@/lib/navigation";
 
 type NavLink = {
   href: string;
@@ -22,41 +22,6 @@ type NavLink = {
   icon: string;
   premium?: boolean;
 };
-
-const memberLinks: NavLink[] = [
-  { href: "/expenses", label: "Expenses", icon: "₹" },
-  { href: "/budgets", label: "Budgets", icon: "⊞" },
-  { href: "/profit", label: "Profit", icon: "◈" },
-  { href: "/tax", label: "Tax / GST", icon: "₪" },
-  { href: "/expenses/upload", label: "Upload Bill", icon: "↑", premium: true },
-  { href: "/assistant", label: "AI Assistant", icon: "✦", premium: true },
-  { href: "/bank-accounts", label: "Cash & Bank", icon: "◇" },
-  { href: "/bank-accounts/connect", label: "Connect Bank", icon: "⧉", premium: true },
-  { href: "/organizations", label: "Organizations", icon: "▣" },
-  { href: "/reports", label: "Reports", icon: "▤" },
-  { href: "/notifications", label: "Notifications", icon: "◔" },
-  { href: "/refer-and-earn", label: "Refer & earn", icon: "↗" },
-  { href: "/manage-plan", label: "Manage plan", icon: "◆" },
-  { href: "/profile", label: "Profile", icon: "◎" },
-];
-
-const subscriberLinks: NavLink[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "◉" },
-  { href: "/budgets", label: "Budgets", icon: "⊞" },
-  { href: "/profit", label: "Profit", icon: "◈" },
-  { href: "/tax", label: "Tax / GST", icon: "₪" },
-  { href: "/expenses", label: "Expenses", icon: "₹" },
-  { href: "/expenses/upload", label: "Upload Bill", icon: "↑", premium: true },
-  { href: "/assistant", label: "AI Assistant", icon: "✦", premium: true },
-  { href: "/bank-accounts", label: "Cash & Bank", icon: "◇" },
-  { href: "/bank-accounts/connect", label: "Connect Bank", icon: "⧉", premium: true },
-  { href: "/organizations", label: "Organizations", icon: "▣" },
-  { href: "/reports", label: "Reports", icon: "▤" },
-  { href: "/notifications", label: "Notifications", icon: "◔" },
-  { href: "/refer-and-earn", label: "Refer & earn", icon: "↗" },
-  { href: "/manage-plan", label: "Manage plan", icon: "◆" },
-  { href: "/profile", label: "Profile", icon: "◎" },
-];
 
 function SidebarNav({
   links,
@@ -210,7 +175,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  const links = subscriber ? subscriberLinks : memberLinks;
+  const links = (subscriber ? subscriberNavLinks : memberNavLinks) as NavLink[];
 
   function logout() {
     clearSession();
