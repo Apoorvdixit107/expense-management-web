@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
@@ -10,7 +10,7 @@ import { showApiError } from "@/lib/apiErrors";
 import { isAuthenticated } from "@/lib/auth";
 import { postAuthPath } from "@/lib/navigation";
 
-export default function AcceptInvitePage() {
+function AcceptInviteContent() {
   const router = useRouter();
   const params = useSearchParams();
   const token = params.get("token");
@@ -59,5 +59,13 @@ export default function AcceptInvitePage() {
         )}
       </Card>
     </div>
+  );
+}
+
+export default function AcceptInvitePage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-muted">Loading…</div>}>
+      <AcceptInviteContent />
+    </Suspense>
   );
 }
