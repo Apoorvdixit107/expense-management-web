@@ -11,7 +11,7 @@ import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { showAuthError } from "@/lib/authErrors";
 import { saveSession } from "@/lib/auth";
-import { postAuthPath } from "@/lib/navigation";
+import { resolvePostAuthPath } from "@/lib/authSession";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function LoginForm() {
     try {
       const auth = await api.login({ email, password });
       saveSession(auth);
-      router.push(nextPath || postAuthPath());
+      router.push(nextPath || (await resolvePostAuthPath()));
     } catch (err) {
       showAuthError(err, "login");
     } finally {

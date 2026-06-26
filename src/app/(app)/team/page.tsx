@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { showApiError } from "@/lib/apiErrors";
+import { OrgRequiredState } from "@/components/OrgRequiredState";
+import { FinanceRoleGuard } from "@/components/FinanceRoleGuard";
 import type { OrganizationInvite, OrganizationMember, OrgMemberRole } from "@/lib/types";
 
 export default function TeamPage() {
@@ -22,7 +24,10 @@ export default function TeamPage() {
   const [saving, setSaving] = useState(false);
 
   function load() {
-    if (!currentOrgId) return;
+    if (!currentOrgId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     Promise.all([api.listTeamMembers(currentOrgId), api.listTeamInvites(currentOrgId)])
       .then(([m, i]) => {
@@ -55,6 +60,8 @@ export default function TeamPage() {
 
   return (
     <SubscriberGuard>
+      <FinanceRoleGuard>
+      <OrgRequiredState>
       <PageHeader title="Team" subtitle="Invite colleagues and assign roles" />
 
       <Card className="mt-8" padding="lg">
@@ -130,6 +137,8 @@ export default function TeamPage() {
           )}
         </Card>
       </div>
+      </OrgRequiredState>
+      </FinanceRoleGuard>
     </SubscriberGuard>
   );
 }

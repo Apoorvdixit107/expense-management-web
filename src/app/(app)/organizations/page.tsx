@@ -34,12 +34,15 @@ export default function OrganizationsPage() {
     refreshOrgs().catch(() => undefined);
   }, [refreshOrgs]);
 
-  function buildPayload() {
+  function buildPayload(source?: Organization | null) {
     const isCustom = typeChoice === "CUSTOM";
     return {
       name: name.trim(),
       type: (isCustom ? "CUSTOM" : typeChoice) as OrganizationType,
       customTypeLabel: isCustom ? customTypeLabel.trim() : undefined,
+      gstin: source?.gstin ?? undefined,
+      industry: source?.industry ?? undefined,
+      fyStartMonth: source?.fyStartMonth ?? undefined,
     };
   }
 
@@ -74,7 +77,7 @@ export default function OrganizationsPage() {
     }
     setLoading(true);
     try {
-      await api.updateOrganization(editing.id, buildPayload());
+      await api.updateOrganization(editing.id, buildPayload(editing));
       setEditing(null);
       setName("");
       setTypeChoice("HOME");

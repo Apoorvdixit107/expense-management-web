@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDeleteDialog, SOFT_DELETE_MESSAGE } from "@/components/ui/ConfirmDeleteDialog";
+import { RecordSpendActions } from "@/components/RecordSpendActions";
 import { TransactionAmount, TransactionTypeBadge } from "@/components/TransactionAmount";
 import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
@@ -103,7 +104,12 @@ export function ExpenseList(props: ExpenseListProps) {
         <div className="rounded-2xl border border-dashed border-border bg-paper px-6 py-12 text-center text-sm text-muted">
           {view === "deleted"
             ? "No deleted transactions. Deleted items appear here and can be recovered."
-            : "No transactions in this date range."}
+            : "No spend recorded yet. Add your first entry or capture a receipt."}
+          {view === "active" ? (
+            <div className="mt-4 flex justify-center">
+              <RecordSpendActions />
+            </div>
+          ) : null}
         </div>
         {view === "active" ? (
           <ConfirmDeleteDialog

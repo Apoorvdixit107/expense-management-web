@@ -23,7 +23,7 @@ type OrganizationContextValue = {
 
 const OrganizationContext = createContext<OrganizationContextValue | null>(null);
 
-const SKIP_ORG_ROUTES = ["/select-account"];
+const SKIP_ORG_ROUTES = ["/select-account", "/organizations"];
 
 export function OrganizationProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -33,9 +33,13 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true);
 
   const refreshOrgs = useCallback(async () => {
-    const orgs = await api.listOrganizations();
-    setOrganizations(orgs);
-    return;
+    try {
+      const orgs = await api.listOrganizations();
+      setOrganizations(orgs);
+    } catch (err) {
+      showApiError(err, "Could not refresh organizations");
+      throw err;
+    }
   }, []);
 
   const switchOrg = useCallback((id: number, remember = false) => {
@@ -63,6 +67,8 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
           switchOrg(orgs[0].id, remembered);
         } else if (savedValid) {
           setCurrentOrgIdState(savedId);
+        } else if (orgs.length === 0 && !SKIP_ORG_ROUTES.includes(pathname)) {
+          router.replace("/organizations");
         } else if (!SKIP_ORG_ROUTES.includes(pathname)) {
           router.replace("/select-account");
         }

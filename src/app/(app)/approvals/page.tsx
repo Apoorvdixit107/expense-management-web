@@ -11,6 +11,8 @@ import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { showApiError } from "@/lib/apiErrors";
 import { formatCurrency } from "@/lib/format";
+import { OrgRequiredState } from "@/components/OrgRequiredState";
+import { FinanceRoleGuard } from "@/components/FinanceRoleGuard";
 import type { Expense } from "@/lib/types";
 
 function statusLabel(status?: Expense["spendStatus"]) {
@@ -35,7 +37,10 @@ export default function ApprovalsPage() {
   const [actingId, setActingId] = useState<number | null>(null);
 
   function load() {
-    if (!currentOrgId) return;
+    if (!currentOrgId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     api
       .listPendingApprovals(currentOrgId)
@@ -79,6 +84,8 @@ export default function ApprovalsPage() {
 
   return (
     <SubscriberGuard>
+      <FinanceRoleGuard>
+      <OrgRequiredState>
       <PageHeader
         title="Approvals"
         subtitle="Nothing posts until finance says yes"
@@ -134,6 +141,8 @@ export default function ApprovalsPage() {
           </div>
         )}
       </div>
+      </OrgRequiredState>
+      </FinanceRoleGuard>
     </SubscriberGuard>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { RecordSpendActions } from "@/components/RecordSpendActions";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ExpenseList } from "@/components/ExpenseList";
 import { ExpensesSubNav } from "@/components/ExpensesSubNav";
@@ -57,13 +58,13 @@ export default function ExpensesPage() {
     Promise.all([
       api.listExpenses(currentOrgId),
       api.listExpenses(currentOrgId, { deletedOnly: true }),
-      refreshOrgs(),
     ])
       .then(([items, deleted]) => {
         setExpenses(items);
         setDeletedExpenses(deleted);
       })
       .catch((err) => showApiError(err, "Failed to load expenses"));
+    refreshOrgs().catch(() => undefined);
   }, [currentOrgId, refreshOrgs]);
 
   useEffect(() => {
@@ -81,48 +82,13 @@ export default function ExpensesPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Transactions"
+        title="Spend"
         subtitle={
           currentOrg
-            ? `Money in and out for ${currentOrg.name}`
-            : "Select an organization to view transactions"
+            ? "Record and review every outbound payment"
+            : "Select an entity to view spend"
         }
-        action={
-          currentOrg ? (
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/expenses/new?type=OUT"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-semibold text-white transition hover:bg-red-700"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path
-                    d="M12 5V19M12 19L6 13M12 19L18 13"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Expense
-              </Link>
-              <Link
-                href="/expenses/new?type=IN"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path
-                    d="M12 19V5M12 5L6 11M12 5L18 11"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Income
-              </Link>
-            </div>
-          ) : null
-        }
+        action={<RecordSpendActions showIncome />}
       />
 
       <ExpensesSubNav />
@@ -140,7 +106,7 @@ export default function ExpensesPage() {
       <Card className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-bold text-ink">Transaction history</h2>
+            <h2 className="text-lg font-bold text-ink">Spend history</h2>
             <p className="mt-1 text-sm text-muted">
               {listView === "active"
                 ? `${filteredExpenses.length} transaction${filteredExpenses.length === 1 ? "" : "s"} in selected range`

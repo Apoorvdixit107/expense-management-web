@@ -22,6 +22,7 @@ import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import {
   createDefaultDashboardFilter,
+  filterToDateRange,
   filterToSummaryOptions,
   periodDescription,
   periodStatLabel,
@@ -32,6 +33,7 @@ import {
 import { formatCurrency, formatPercent } from "@/lib/format";
 import type { Expense, ExpenseReport, ProfitabilityReport, SpendOverviewStats } from "@/lib/types";
 import Link from "next/link";
+import { OrgRequiredState } from "@/components/OrgRequiredState";
 
 export default function DashboardPage() {
   const { currentOrg, currentOrgId, organizations } = useOrganization();
@@ -52,6 +54,7 @@ export default function DashboardPage() {
     }
 
     const options = filterToSummaryOptions(filter);
+    const { fromDate, toDate } = filterToDateRange(filter);
 
     Promise.all([
       api.reportSummary(filter.period, currentOrgId, options),
@@ -60,7 +63,7 @@ export default function DashboardPage() {
       filter.period === "TODAY"
         ? api.reportSummary("LAST_7_DAYS", currentOrgId)
         : Promise.resolve(null),
-      api.getSpendOverview(currentOrgId, filter.fromDate, filter.toDate),
+      api.getSpendOverview(currentOrgId, fromDate, toDate).catch(() => null),
       api.listPendingApprovals(currentOrgId).catch(() => []),
     ])
       .then(([periodReport, profitReport, today, week, overview, pending]) => {
@@ -93,6 +96,7 @@ export default function DashboardPage() {
 
   return (
     <SubscriberGuard>
+      <OrgRequiredState>
       <div className="space-y-8">
         <PageHeader
           title="Overview"
@@ -202,6 +206,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      </OrgRequiredState>
     </SubscriberGuard>
   );
 }

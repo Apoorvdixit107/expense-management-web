@@ -11,7 +11,7 @@ import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { showAuthError } from "@/lib/authErrors";
 import { saveSession } from "@/lib/auth";
-import { postAuthPath } from "@/lib/navigation";
+import { resolvePostAuthPath } from "@/lib/authSession";
 import { clearReferralCode, getReferralCode } from "@/lib/referral";
 
 export default function RegisterPage() {
@@ -39,7 +39,7 @@ export default function RegisterPage() {
       });
       clearReferralCode();
       saveSession(auth);
-      router.push(postAuthPath());
+      router.push(await resolvePostAuthPath());
     } catch (err) {
       showAuthError(err, "register");
     } finally {

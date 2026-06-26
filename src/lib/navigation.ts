@@ -1,5 +1,6 @@
 import { isAuthenticated } from "./auth";
 import { isSubscribed } from "./subscription";
+import type { OrgMemberRole } from "./types";
 
 export function isSubscriber(): boolean {
   return isAuthenticated() && isSubscribed();
@@ -50,3 +51,16 @@ export const memberNavLinks: AppNavLink[] = [
   { href: "/notifications", label: "Alerts", icon: "◔" },
   { href: "/profile", label: "Account", icon: "◎" },
 ];
+
+export function isFinanceRole(role?: OrgMemberRole | null): boolean {
+  return role === "OWNER" || role === "FINANCE";
+}
+
+export function navLinksForSubscriber(role?: OrgMemberRole | null): AppNavLink[] {
+  if (!isFinanceRole(role)) {
+    return subscriberNavLinks.filter(
+      (link) => !["/approvals", "/policies", "/team"].includes(link.href)
+    );
+  }
+  return subscriberNavLinks;
+}

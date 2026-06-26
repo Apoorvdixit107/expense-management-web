@@ -7,14 +7,22 @@ import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
 import { PremiumStarButton } from "@/components/PremiumStarButton";
 import { PremiumStarIcon } from "@/components/ExpensesSubNav";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
+import { useOrganization } from "@/components/OrganizationProvider";
+import { useSubscription } from "@/components/SubscriptionProvider";
 import { useUserPreferences } from "@/components/UserPreferencesProvider";
 import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useSubscription } from "@/components/SubscriptionProvider";
 import { api } from "@/lib/api";
 import { clearSession, getUser } from "@/lib/auth";
 import { clearSubscriptionState } from "@/lib/subscription";
-import { isAuthenticated, isSubscriber, memberNavLinks, subscriberNavLinks } from "@/lib/navigation";
+import { isNavLinkActive } from "@/lib/navActive";
+import {
+  isAuthenticated,
+  isSubscriber,
+  memberNavLinks,
+  navLinksForSubscriber,
+  postAuthPath,
+} from "@/lib/navigation";
 
 type NavLink = {
   href: string;
@@ -37,7 +45,7 @@ function SidebarNav({
   return (
     <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
       {links.map((link) => {
-        const active = pathname === link.href;
+        const active = isNavLinkActive(pathname, link.href);
         const showBadge = link.href === "/notifications" && unread > 0;
 
         return (
@@ -83,6 +91,7 @@ function Sidebar({
   subscription,
   user,
   profileImageUrl,
+  homeHref,
   onLogout,
   onNavigate,
 }: {
@@ -93,6 +102,7 @@ function Sidebar({
   subscription: { planName: string | null };
   user: ReturnType<typeof getUser>;
   profileImageUrl: string | null;
+  homeHref: string;
   onLogout: () => void;
   onNavigate?: () => void;
 }) {
@@ -102,7 +112,7 @@ function Sidebar({
     <div className="flex h-full flex-col bg-sidebar text-[var(--sidebar-text)]">
       <div className="border-b border-sidebar-border px-4 py-4">
         <div className="flex items-center justify-between gap-2">
-          <Logo href="/expenses" height={40} variant="icon" showWordmark onClick={onNavigate} />
+          <Logo href={homeHref} height={40} variant="icon" showWordmark onClick={onNavigate} />
           <PremiumStarButton />
         </div>
       </div>
@@ -153,7 +163,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { subscription } = useSubscription();
+  const { currentOrg } = useOrganization();
   const subscriber = isSubscriber();
+  const homeHref = postAuthPath();
   const [unread, setUnread] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const user = getUser();
@@ -175,7 +187,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  const links = (subscriber ? subscriberNavLinks : memberNavLinks) as NavLink[];
+  const links = (subscriber ? navLinksForSubscriber(currentOrg?.currentUserRole) : memberNavLinks) as NavLink[];
 
   function logout() {
     clearSession();
@@ -209,6 +221,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           subscription={subscription}
           user={user}
           profileImageUrl={profileImageUrl}
+          homeHref={homeHref}
           onLogout={logout}
           onNavigate={() => setMobileOpen(false)}
         />
@@ -228,7 +241,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Logo href="/expenses" height={32} variant="icon" className="lg:hidden" />
+          <Logo href={homeHref} height={32} variant="icon" className="lg:hidden" />
           <div className="ml-auto">
             <PremiumStarButton />
           </div>

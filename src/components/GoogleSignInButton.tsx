@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import { showAuthError } from "@/lib/authErrors";
 import { toast } from "@/components/toast";
 import { saveSession, updateStoredUser } from "@/lib/auth";
-import { postAuthPath } from "@/lib/navigation";
+import { resolvePostAuthPath } from "@/lib/authSession";
 import { applyProfilePreferences } from "@/lib/preferences";
 import { clearReferralCode, getReferralCode } from "@/lib/referral";
 
@@ -50,7 +50,7 @@ export function GoogleSignInButton({ mode, redirectTo }: GoogleSignInButtonProps
       } catch {
         // profile sync is best-effort after sign-in
       }
-      router.push(redirectTo || postAuthPath());
+      router.push(redirectTo || (await resolvePostAuthPath()));
     } catch (err) {
       showAuthError(err, "google");
     } finally {

@@ -7,6 +7,7 @@ import { useOrganization } from "@/components/OrganizationProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { organizationTypeLabel } from "@/lib/types";
+import { postAuthPath } from "@/lib/navigation";
 
 const TYPE_STYLES: Record<string, string> = {
   COMPANY: "bg-violet-100 text-violet-700",
@@ -23,7 +24,7 @@ export default function SelectAccountPage() {
 
   function choose(id: number) {
     switchOrg(id, remember);
-    router.push("/expenses");
+    router.push(postAuthPath());
   }
 
   return (

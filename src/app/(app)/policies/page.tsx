@@ -11,6 +11,9 @@ import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { showApiError } from "@/lib/apiErrors";
 import { formatCurrency } from "@/lib/format";
+import { OrgRequiredState } from "@/components/OrgRequiredState";
+import { FinanceRoleGuard } from "@/components/FinanceRoleGuard";
+
 import type { CreateSpendPolicyRequest, SpendPolicy } from "@/lib/types";
 
 export default function PoliciesPage() {
@@ -24,7 +27,10 @@ export default function PoliciesPage() {
   const [saving, setSaving] = useState(false);
 
   function load() {
-    if (!currentOrgId) return;
+    if (!currentOrgId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     api
       .listSpendPolicies(currentOrgId)
@@ -76,6 +82,8 @@ export default function PoliciesPage() {
 
   return (
     <SubscriberGuard>
+      <FinanceRoleGuard>
+      <OrgRequiredState>
       <PageHeader
         title="Policies"
         subtitle="Set rules once — enforce on every spend"
@@ -143,6 +151,8 @@ export default function PoliciesPage() {
           ))
         )}
       </div>
+      </OrgRequiredState>
+      </FinanceRoleGuard>
     </SubscriberGuard>
   );
 }

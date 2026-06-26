@@ -15,14 +15,14 @@ function NewExpenseContent() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title={type === "IN" ? "Record income" : "Record expense"}
-        subtitle={type === "IN" ? "Add money coming in" : "Add money going out"}
+        title={type === "IN" ? "Record income" : "Record spend"}
+        subtitle={type === "IN" ? "Add money coming in" : "Add an outbound payment for your entity"}
         action={
           <Link
             href="/expenses"
             className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-ink transition hover:bg-paper"
           >
-            Back to transactions
+            Back to Spend
           </Link>
         }
       />

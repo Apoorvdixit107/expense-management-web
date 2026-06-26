@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const tabs = [
-  { href: "/expenses", label: "Transactions" },
-  { href: "/expenses/upload", label: "Upload bill", premium: true },
+  { href: "/expenses", label: "Spend list" },
+  { href: "/expenses/upload", label: "Capture receipt", premium: true },
 ];
 
 export function ExpensesSubNav() {
