@@ -52,10 +52,10 @@ export default function ProfitPage() {
     <SubscriberGuard>
       <div className="space-y-8">
         <PageHeader
-          title="Profit"
+          title="Insights"
           subtitle={
             currentOrg
-              ? `Income vs expenses for ${currentOrg.name}`
+              ? `Income vs spend for ${currentOrg.name}`
               : "Track profitability over time"
           }
           action={<PeriodSelector filter={filter} onChange={setFilter} />}

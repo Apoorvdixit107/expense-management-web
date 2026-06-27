@@ -27,16 +27,15 @@ import {
 
 type ExpenseFormProps = {
   mode: "api" | "guest";
-  defaultType?: ExpenseType;
   billPrefill?: BillScanPrefill | null;
   editingExpense?: Expense | null;
   onCancelEdit?: () => void;
   onCreated: () => void;
 };
 
-function defaultFormState(type: ExpenseType = "OUT") {
+function defaultFormState() {
   return {
-    type,
+    type: "OUT" as ExpenseType,
     categoryId: "" as number | "",
     bankAccountId: "" as number | "",
     paymentMode: "CASH" as PaymentMode,
@@ -50,7 +49,6 @@ function defaultFormState(type: ExpenseType = "OUT") {
 
 export function ExpenseForm({
   mode,
-  defaultType = "OUT",
   billPrefill,
   editingExpense,
   onCancelEdit,
@@ -89,7 +87,7 @@ export function ExpenseForm({
   }, [amount, selectedGstRate]);
 
   const resetForm = useCallback(() => {
-    const defaults = defaultFormState(defaultType);
+    const defaults = defaultFormState();
     setType(defaults.type);
     setCategoryId(defaults.categoryId);
     setBankAccountId(defaults.bankAccountId);
@@ -101,12 +99,12 @@ export function ExpenseForm({
     setTaxCategoryId(defaults.taxCategoryId);
     setShowAddCategory(false);
     setNewCategoryName("");
-  }, [defaultType]);
+  }, []);
 
   useEffect(() => {
     if (editingExpense) return;
-    setType(defaultType);
-  }, [defaultType, editingExpense]);
+    setType("OUT");
+  }, [editingExpense]);
 
   useEffect(() => {
     if (!editingExpense) return;
@@ -231,13 +229,7 @@ export function ExpenseForm({
         setSpentAt(localDatetimeInputValue());
       }
 
-      toast.success(
-        isEditing
-          ? "Transaction updated."
-          : type === "IN"
-            ? "Income recorded."
-            : "Expense saved."
-      );
+      toast.success(isEditing ? "Spend updated." : "Spend recorded.");
       onCreated();
     } catch (err) {
       showApiError(err, "Failed to save transaction");
@@ -259,7 +251,7 @@ export function ExpenseForm({
     <div id="expense-form">
     <Card>
       <h2 className="text-xl font-bold text-ink">
-        {isEditing ? "Edit transaction" : billPrefill ? "Verify & create transaction" : "Add transaction"}
+        {isEditing ? "Edit spend" : billPrefill ? "Verify & save spend" : "Record spend"}
       </h2>
       {billPrefill ? (
         <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
@@ -272,39 +264,6 @@ export function ExpenseForm({
           <span className="font-semibold text-ink">{currentOrg.name}</span>
         </p>
       ) : null}
-
-      <div className="mt-6 grid grid-cols-2 gap-2 rounded-xl bg-paper p-1">
-        <button
-          type="button"
-          onClick={() => setType("IN")}
-          disabled={loading}
-          className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
-            type === "IN"
-              ? "bg-emerald-600 text-white shadow-sm"
-              : "text-muted hover:text-ink"
-          }`}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M12 19V5M12 5L6 11M12 5L18 11" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Income
-        </button>
-        <button
-          type="button"
-          onClick={() => setType("OUT")}
-          disabled={loading}
-          className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
-            type === "OUT"
-              ? "bg-red-600 text-white shadow-sm"
-              : "text-muted hover:text-ink"
-          }`}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M12 5V19M12 19L6 13M12 19L18 13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Expense
-        </button>
-      </div>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-5">
         <div className="grid gap-5 sm:grid-cols-2">
@@ -476,7 +435,7 @@ export function ExpenseForm({
           <Input
             label="Description"
             name="description"
-            placeholder={type === "IN" ? "e.g. Monthly salary" : "Optional note"}
+            placeholder="Optional note"
             disabled={loading}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -492,9 +451,7 @@ export function ExpenseForm({
               ? "Saving..."
               : isEditing
                 ? "Save changes"
-                : type === "IN"
-                  ? "Record income"
-                  : "Record expense"}
+                : "Record spend"}
           </Button>
           {isEditing && onCancelEdit ? (
             <Button

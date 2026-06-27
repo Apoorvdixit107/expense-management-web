@@ -105,11 +105,7 @@ export default function DashboardPage() {
         />
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label={`Total spend (${periodStatLabel(filter)})`}
-            value={formatCurrency(spendOverview?.totalSpendOut ?? totalOut)}
-            highlight
-          />
+          <StatCard label={`Spend (${periodStatLabel(filter)})`} value={formatCurrency(spendOverview?.totalSpendOut ?? totalOut)} highlight />
           <StatCard
             label="Pending approvals"
             value={String(spendOverview?.pendingApprovals ?? 0)}
@@ -154,13 +150,13 @@ export default function DashboardPage() {
           </DashboardChartCard>
 
           <DashboardChartCard
-            title="Expenses by category"
-            subtitle={`Money out for ${periodLabel}`}
+            title="Spend by category"
+            subtitle={`Outbound payments for ${periodLabel}`}
           >
             <CategoryDonutChart
               items={summary?.byCategory ?? []}
               total={totalOut}
-              emptyMessage="No expenses in this period."
+              emptyMessage="No spend in this period."
               centerLabel="Spent"
             />
           </DashboardChartCard>

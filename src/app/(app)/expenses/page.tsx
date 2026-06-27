@@ -88,7 +88,7 @@ export default function ExpensesPage() {
             ? "Record and review every outbound payment"
             : "Select an entity to view spend"
         }
-        action={<RecordSpendActions showIncome />}
+        action={<RecordSpendActions />}
       />
 
       <ExpensesSubNav />

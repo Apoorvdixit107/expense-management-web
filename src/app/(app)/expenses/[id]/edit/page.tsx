@@ -46,7 +46,7 @@ export default function EditExpensePage() {
     <div className="space-y-8">
       <PageHeader
         title="Edit transaction"
-        subtitle={`${expense.category} · ${expense.type === "IN" ? "Income" : "Expense"}`}
+        subtitle={`${expense.category} · ${expense.type === "IN" ? "Income (legacy)" : "Spend"}`}
         action={
           <Link
             href="/expenses"

@@ -1,22 +1,18 @@
 "use client";
 
-import { Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { PageHeader } from "@/components/ui/PageHeader";
-import type { ExpenseType } from "@/lib/types";
 
-function NewExpenseContent() {
+export default function NewExpensePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const type: ExpenseType = searchParams.get("type") === "IN" ? "IN" : "OUT";
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title={type === "IN" ? "Record income" : "Record spend"}
-        subtitle={type === "IN" ? "Add money coming in" : "Add an outbound payment for your entity"}
+        title="Record spend"
+        subtitle="Add an outbound payment for your entity"
         action={
           <Link
             href="/expenses"
@@ -26,19 +22,7 @@ function NewExpenseContent() {
           </Link>
         }
       />
-      <ExpenseForm
-        mode="api"
-        defaultType={type}
-        onCreated={() => router.push("/expenses")}
-      />
+      <ExpenseForm mode="api" onCreated={() => router.push("/expenses")} />
     </div>
-  );
-}
-
-export default function NewExpensePage() {
-  return (
-    <Suspense fallback={<div className="py-20 text-center text-muted">Loading...</div>}>
-      <NewExpenseContent />
-    </Suspense>
   );
 }

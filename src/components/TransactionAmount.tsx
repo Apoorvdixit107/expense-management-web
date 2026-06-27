@@ -62,7 +62,7 @@ export function TransactionTypeBadge({ type }: { type: ExpenseType }) {
       }`}
     >
       {isIn ? <ArrowUpIcon className="h-3 w-3" /> : <ArrowDownIcon className="h-3 w-3" />}
-      {isIn ? "Money in" : "Money out"}
+      {isIn ? "Income" : "Spend"}
     </span>
   );
 }

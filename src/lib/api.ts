@@ -71,6 +71,7 @@ export class ApiError extends Error {
 }
 
 import { isGenericHttpMessage } from "./apiErrors";
+import { profitabilityFromSummary } from "./profitability";
 
 function parseErrorMessage(body: string, status: number): string {
   let message = body;
@@ -476,7 +477,7 @@ export const api = {
     return request<ExpenseReport>(`/api/reports/yearly?${params}`);
   },
 
-  reportProfitability: (
+  reportProfitability: async (
     period: ReportPeriod,
     organizationId?: number,
     options?: ReportSummaryOptions
@@ -487,7 +488,16 @@ export const api = {
     if (options?.month !== undefined) params.set("month", String(options.month));
     if (options?.fromDate) params.set("fromDate", options.fromDate);
     if (options?.toDate) params.set("toDate", options.toDate);
-    return request<ProfitabilityReport>(`/api/reports/profitability?${params}`);
+
+    try {
+      return await request<ProfitabilityReport>(`/api/reports/profitability?${params}`);
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 404 || err.status >= 500)) {
+        const summary = await request<ExpenseReport>(`/api/reports/summary?${params}`);
+        return profitabilityFromSummary(summary, organizationId);
+      }
+      throw err;
+    }
   },
 
   listPlans: () => request<Plan[]>("/api/billing/plans", {}, false),

@@ -3,12 +3,7 @@
 import { useOrganization } from "@/components/OrganizationProvider";
 import { Button } from "@/components/ui/Button";
 
-type RecordSpendActionsProps = {
-  /** Show secondary income button on the Spend page. */
-  showIncome?: boolean;
-};
-
-export function RecordSpendActions({ showIncome = false }: RecordSpendActionsProps) {
+export function RecordSpendActions() {
   const { currentOrgId, organizations, loading } = useOrganization();
 
   if (loading) {
@@ -26,14 +21,9 @@ export function RecordSpendActions({ showIncome = false }: RecordSpendActionsPro
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button href="/expenses/new?type=OUT" variant="primary">
+      <Button href="/expenses/new" variant="primary">
         Record spend
       </Button>
-      {showIncome ? (
-        <Button href="/expenses/new?type=IN" variant="secondary">
-          Record income
-        </Button>
-      ) : null}
     </div>
   );
 }
