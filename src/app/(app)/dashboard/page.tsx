@@ -15,7 +15,6 @@ import {
 } from "@/components/charts/ProfitabilityCharts";
 import { StatCard } from "@/components/ReportCards";
 import { useOrganization } from "@/components/OrganizationProvider";
-import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
@@ -95,8 +94,7 @@ export default function DashboardPage() {
   const profitMargin = profitability?.profitMarginPercent ?? 0;
 
   return (
-    <SubscriberGuard>
-      <OrgRequiredState>
+    <OrgRequiredState>
       <div className="space-y-8">
         <PageHeader
           title="Overview"
@@ -202,7 +200,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-      </OrgRequiredState>
-    </SubscriberGuard>
+    </OrgRequiredState>
   );
 }

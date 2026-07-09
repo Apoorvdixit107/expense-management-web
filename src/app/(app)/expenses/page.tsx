@@ -151,7 +151,7 @@ export default function ExpensesPage() {
 
       {!subscriber ? (
         <div className="rounded-2xl border border-dashed border-border bg-surface p-5 text-center text-sm text-muted">
-          Upgrade for dashboard, email alerts, and cloud reports.{" "}
+          Upgrade for email alerts, cloud reports, and premium features.{" "}
           <Link href="/manage-plan" className="font-semibold text-brand hover:text-brand-hover">
             View plans
           </Link>

@@ -9,7 +9,7 @@ export function isSubscriber(): boolean {
 export { isAuthenticated };
 
 export function postAuthPath(): string {
-  return isSubscribed() ? "/dashboard" : "/expenses";
+  return "/dashboard";
 }
 
 export type AppNavLink = {
@@ -42,6 +42,7 @@ export const subscriberNavLinks: AppNavLink[] = [
 ];
 
 export const memberNavLinks: AppNavLink[] = [
+  { href: "/dashboard", label: "Overview", icon: "◉" },
   { href: "/expenses", label: "Spend", icon: "₹" },
   { href: "/expenses/upload", label: "Capture receipt", icon: "↑", premium: true },
   { href: "/budgets", label: "Budgets & limits", icon: "⊞" },

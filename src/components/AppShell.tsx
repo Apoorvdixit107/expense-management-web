@@ -18,7 +18,6 @@ import { clearSubscriptionState } from "@/lib/subscription";
 import { isNavLinkActive } from "@/lib/navActive";
 import {
   isAuthenticated,
-  isSubscriber,
   memberNavLinks,
   navLinksForSubscriber,
   postAuthPath,
@@ -162,9 +161,9 @@ function Sidebar({
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { subscription } = useSubscription();
+  const { subscription, loading: subscriptionLoading } = useSubscription();
   const { currentOrg } = useOrganization();
-  const subscriber = isSubscriber();
+  const subscriber = subscription.subscribed;
   const homeHref = postAuthPath();
   const [unread, setUnread] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -187,7 +186,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  const links = (subscriber ? navLinksForSubscriber(currentOrg?.currentUserRole) : memberNavLinks) as NavLink[];
+  const links = (
+    subscriber ? navLinksForSubscriber(currentOrg?.currentUserRole) : memberNavLinks
+  ) as NavLink[];
+
+  if (subscriptionLoading && isAuthenticated()) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-paper text-muted">
+        Loading...
+      </div>
+    );
+  }
 
   function logout() {
     clearSession();
