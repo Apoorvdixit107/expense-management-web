@@ -468,7 +468,7 @@ export function ExpenseForm({
               <span>
                 <span className="text-sm font-semibold text-ink">Save as draft</span>
                 <span className="mt-0.5 block text-xs text-muted">
-                  Edit and submit later. Drafts are not included in reports until submitted.
+                  Edit and submit later. Drafts are not in your balance or reports until you submit.
                 </span>
               </span>
             </label>

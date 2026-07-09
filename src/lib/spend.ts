@@ -74,10 +74,10 @@ export const SPEND_STATUS_FILTERS = [
 export type SpendStatusFilter = (typeof SPEND_STATUS_FILTERS)[number]["id"];
 
 export const EDIT_BLOCKED_MESSAGE =
-  "Posted spends are locked in reports and cannot be edited directly. Use Correct details to change the category, or delete and create a new entry.";
+  "This spend is posted and locked in your reports. Use Change category below to fix mistakes — your spend is not deleted.";
 
-export const CORRECT_SPEND_CONFIRM =
-  "Posted spends are locked in your ledger. To change the category or other details, we'll unlock this entry for editing (it will leave Posted totals until you save again). Continue?";
+export const CHANGE_CATEGORY_CONFIRM =
+  "We will unlock this spend so you can change the category or other details. After you save, click Submit to add it back to your reports.";
 
 export const VOID_SPEND_CONFIRM =
-  "Void this spend? It will be removed from reports and appear under Rejected, where you can edit and resubmit.";
+  "This removes the spend from your reports and balance. It moves to Rejected — you can edit and submit again later, or delete it.";

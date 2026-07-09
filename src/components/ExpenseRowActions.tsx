@@ -15,7 +15,7 @@ import {
   canEditExpense,
   canSubmitExpense,
   canVoidExpense,
-  CORRECT_SPEND_CONFIRM,
+  CHANGE_CATEGORY_CONFIRM,
   VOID_SPEND_CONFIRM,
 } from "@/lib/spend";
 import type { Expense, OrgMemberRole } from "@/lib/types";
@@ -46,6 +46,8 @@ export function ExpenseRowActions({
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const [rejectOpen, setRejectOpen] = useState(false);
   const isOwner = currentUserId != null && expense.userId === currentUserId;
+  const voidButtonLabel =
+    expense.spendStatus === "PENDING_APPROVAL" ? "Withdraw request" : "Remove from reports";
 
   async function run(action: string, fn: () => Promise<void>) {
     if (busy) return;
@@ -68,7 +70,7 @@ export function ExpenseRowActions({
     if (action === "correct") {
       await run("correct", async () => {
         await api.voidExpense(expense.id);
-        toast.success("Spend unlocked for editing.");
+            toast.success("Spend unlocked — update the category and submit again.");
         router.push(`/expenses/${expense.id}/edit`);
       });
       return;
@@ -76,7 +78,7 @@ export function ExpenseRowActions({
 
     await run("void", async () => {
       await api.voidExpense(expense.id);
-      toast.success("Spend voided. Open the Rejected tab to edit and resubmit.");
+      toast.success("Spend removed from reports. Find it under Rejected to edit or delete.");
     });
   }
 
@@ -138,7 +140,7 @@ export function ExpenseRowActions({
         disabled={busy != null}
         onClick={() => setConfirmAction("correct")}
       >
-        {busy === "correct" ? "Opening…" : "Correct details"}
+        {busy === "correct" ? "Opening…" : "Change category"}
       </Button>
     );
   }
@@ -151,7 +153,7 @@ export function ExpenseRowActions({
         disabled={busy != null}
         onClick={() => setConfirmAction("void")}
       >
-        {busy === "void" ? "Voiding…" : "Void"}
+        {busy === "void" ? "Working…" : voidButtonLabel}
       </Button>
     );
   }
@@ -202,21 +204,21 @@ export function ExpenseRowActions({
         open={confirmAction === "void"}
         onClose={() => setConfirmAction(null)}
         onConfirm={handleConfirmAction}
-        title="Void spend"
+        title="Remove from reports?"
         message={VOID_SPEND_CONFIRM}
-        confirmLabel="Void"
+        confirmLabel="Remove"
         confirmVariant="danger"
         loading={busy === "void"}
-        loadingLabel="Voiding..."
+        loadingLabel="Removing..."
       />
 
       <ConfirmDialog
         open={confirmAction === "correct"}
         onClose={() => setConfirmAction(null)}
         onConfirm={handleConfirmAction}
-        title="Correct spend details"
-        message={CORRECT_SPEND_CONFIRM}
-        confirmLabel="Unlock & edit"
+        title="Change category?"
+        message={CHANGE_CATEGORY_CONFIRM}
+        confirmLabel="Continue"
         confirmVariant="primary"
         loading={busy === "correct"}
         loadingLabel="Opening..."

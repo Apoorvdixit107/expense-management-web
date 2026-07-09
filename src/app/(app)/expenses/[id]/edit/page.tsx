@@ -17,6 +17,10 @@ import { getUser } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { canEditExpense, EDIT_BLOCKED_MESSAGE } from "@/lib/spend";
+import {
+  SpendWorkflowGuide,
+  SpendWorkflowHelpButton,
+} from "@/components/SpendWorkflowGuide";
 import type { Expense } from "@/lib/types";
 
 export default function EditExpensePage() {
@@ -28,6 +32,7 @@ export default function EditExpensePage() {
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
 
   function reload() {
     if (!Number.isFinite(expenseId)) return;
@@ -70,12 +75,15 @@ export default function EditExpensePage() {
         title={editable ? "Edit spend" : "Spend details"}
         subtitle={`${expense.category} · ${expense.type === "IN" ? "Income (legacy)" : "Spend"}`}
         action={
-          <Link
-            href="/expenses"
-            className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-ink transition hover:bg-paper"
-          >
-            Back to Spend
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <SpendWorkflowHelpButton onClick={() => setGuideOpen(true)} />
+            <Link
+              href="/expenses"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-ink transition hover:bg-paper"
+            >
+              Back to Spend
+            </Link>
+          </div>
         }
       />
 
@@ -138,6 +146,8 @@ export default function EditExpensePage() {
           onCreated={() => router.push("/expenses")}
         />
       ) : null}
+
+      <SpendWorkflowGuide open={guideOpen} onClose={() => setGuideOpen(false)} />
     </div>
   );
 }

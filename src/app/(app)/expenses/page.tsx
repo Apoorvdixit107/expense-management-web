@@ -18,6 +18,13 @@ import {
   resolveReportDateRange,
   type ReportDateFilter,
 } from "@/lib/reports";
+import {
+  SPEND_STATUS_TAB_HINTS,
+  SpendStatusTabHint,
+  SpendWorkflowGuide,
+  SpendWorkflowHelpButton,
+  useSpendWorkflowFirstVisit,
+} from "@/components/SpendWorkflowGuide";
 import { SPEND_STATUS_FILTERS, type SpendStatusFilter } from "@/lib/spend";
 import type { Expense } from "@/lib/types";
 
@@ -39,6 +46,8 @@ export default function ExpensesPage() {
   const [statusFilter, setStatusFilter] = useState<SpendStatusFilter>("all");
   const [dateFilter, setDateFilter] = useState<ReportDateFilter>(createDefaultReportDateFilter);
   const [ready, setReady] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const { firstVisitOpen, closeFirstVisit } = useSpendWorkflowFirstVisit();
 
   const { fromDate, toDate } = useMemo(() => resolveReportDateRange(dateFilter), [dateFilter]);
 
@@ -139,21 +148,27 @@ export default function ExpensesPage() {
         </div>
 
         {listView === "active" ? (
-          <div className="flex flex-wrap gap-2">
-            {SPEND_STATUS_FILTERS.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setStatusFilter(tab.id)}
-                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
-                  statusFilter === tab.id
-                    ? "bg-brand text-white"
-                    : "bg-paper text-muted hover:text-ink"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {SPEND_STATUS_FILTERS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                    statusFilter === tab.id
+                      ? "bg-brand text-white"
+                      : "bg-paper text-muted hover:text-ink"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+              <SpendWorkflowHelpButton onClick={() => setGuideOpen(true)} />
+            </div>
+            {SPEND_STATUS_TAB_HINTS[statusFilter] ? (
+              <SpendStatusTabHint message={SPEND_STATUS_TAB_HINTS[statusFilter]!} />
+            ) : null}
           </div>
         ) : null}
 
@@ -187,6 +202,11 @@ export default function ExpensesPage() {
           </Link>
         </div>
       ) : null}
+
+      <SpendWorkflowGuide open={guideOpen || firstVisitOpen} onClose={() => {
+        closeFirstVisit();
+        setGuideOpen(false);
+      }} />
     </div>
   );
 }
