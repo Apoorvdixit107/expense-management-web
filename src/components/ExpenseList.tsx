@@ -1,19 +1,21 @@
 "use client";
 
-import Link from "next/link";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDeleteDialog, SOFT_DELETE_MESSAGE } from "@/components/ui/ConfirmDeleteDialog";
+import { ExpenseRowActions } from "@/components/ExpenseRowActions";
 import { RecordSpendActions } from "@/components/RecordSpendActions";
+import { PolicyWarning, SpendStatusBadge } from "@/components/SpendStatusBadge";
 import { TransactionAmount, TransactionTypeBadge } from "@/components/TransactionAmount";
 import { api } from "@/lib/api";
+import { getUser } from "@/lib/auth";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
-import { deleteGuestExpense, type GuestExpense } from "@/lib/guest";
 import { formatDateTime } from "@/lib/format";
-import type { Expense, ExpenseType, PaymentMode } from "@/lib/types";
+import { deleteGuestExpense, type GuestExpense } from "@/lib/guest";
+import type { Expense, ExpenseType, OrgMemberRole, PaymentMode } from "@/lib/types";
 
 type ExpenseListProps =
   | {
@@ -22,6 +24,8 @@ type ExpenseListProps =
       onChanged: () => void;
       showPaymentMode?: boolean;
       view?: "active" | "deleted";
+      currentUserRole?: OrgMemberRole | null;
+      organizationId?: number;
     }
   | { mode: "guest"; expenses: GuestExpense[]; onChanged: () => void };
 
@@ -35,23 +39,9 @@ function paymentModeLabel(mode: PaymentMode): string {
   return "Cash";
 }
 
-function EditIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0 0-3L16.5 4.5a2.1 2.1 0 0 0-3 0L4 14v6z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M13.5 6.5l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export function ExpenseList(props: ExpenseListProps) {
   const view = props.mode === "api" ? (props.view ?? "active") : "active";
+  const currentUserId = getUser()?.userId ?? null;
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string | number;
     label: string;
@@ -104,7 +94,7 @@ export function ExpenseList(props: ExpenseListProps) {
         <div className="rounded-2xl border border-dashed border-border bg-paper px-6 py-12 text-center text-sm text-muted">
           {view === "deleted"
             ? "No deleted transactions. Deleted items appear here and can be recovered."
-            : "No spend recorded yet. Add your first entry or capture a receipt."}
+            : "No spend in this filter. Try another status or date range."}
           {view === "active" ? (
             <div className="mt-4 flex justify-center">
               <RecordSpendActions />
@@ -143,12 +133,13 @@ export function ExpenseList(props: ExpenseListProps) {
         const paymentMode =
           props.mode === "api" ? (expense as Expense).paymentMode ?? "CASH" : null;
         const deletedAt = props.mode === "api" ? (expense as Expense).deletedAt : null;
+        const apiExpense = props.mode === "api" ? (expense as Expense) : null;
 
         return (
           <Card
             key={id}
             padding="sm"
-            className={`flex flex-col gap-4 border-l-4 sm:flex-row sm:items-center sm:justify-between ${
+            className={`flex flex-col gap-4 border-l-4 sm:flex-row sm:items-start sm:justify-between ${
               view === "deleted"
                 ? "border-l-neutral-400 opacity-90"
                 : type === "IN"
@@ -156,32 +147,55 @@ export function ExpenseList(props: ExpenseListProps) {
                   : "border-l-red-500"
             }`}
           >
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge>{category}</Badge>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="brand">{category}</Badge>
                 <TransactionTypeBadge type={type} />
+                {apiExpense ? <SpendStatusBadge status={apiExpense.spendStatus} /> : null}
                 {view === "deleted" ? <Badge variant="neutral">Deleted</Badge> : null}
+                {apiExpense?.policyViolation ? (
+                  <PolicyWarning message={apiExpense.policyMessage ?? "Policy warning"} />
+                ) : null}
                 {props.mode === "api" && props.showPaymentMode && paymentMode ? (
                   <Badge variant="neutral">{paymentModeLabel(paymentMode)}</Badge>
                 ) : null}
                 <TransactionAmount type={type} amount={amount} />
               </div>
               <p className="mt-2 text-sm text-muted">{formatDateTime(spentAt)}</p>
+              {apiExpense?.submittedAt ? (
+                <p className="mt-1 text-xs text-muted">
+                  Submitted {formatDateTime(apiExpense.submittedAt)}
+                </p>
+              ) : null}
+              {apiExpense?.rejectionComment ? (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  Rejected: {apiExpense.rejectionComment}
+                </p>
+              ) : null}
+              {apiExpense?.policyViolation && apiExpense.policyMessage ? (
+                <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{apiExpense.policyMessage}</p>
+              ) : null}
               {deletedAt ? (
                 <p className="mt-1 text-xs text-muted">Deleted {formatDateTime(deletedAt)}</p>
               ) : null}
-              {description ? <p className="mt-1 text-sm text-neutral-700">{description}</p> : null}
+              {description ? <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">{description}</p> : null}
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              {props.mode === "api" && view === "active" ? (
-                <Link
-                  href={`/expenses/${id}/edit`}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-muted transition hover:border-brand hover:text-brand"
-                  aria-label="Edit transaction"
-                  title="Edit transaction"
-                >
-                  <EditIcon />
-                </Link>
+            <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
+              {props.mode === "api" && view === "active" && apiExpense && props.organizationId ? (
+                <ExpenseRowActions
+                  expense={apiExpense}
+                  currentUserId={currentUserId}
+                  currentUserRole={props.currentUserRole}
+                  organizationId={props.organizationId}
+                  onChanged={props.onChanged}
+                  onDelete={() =>
+                    setDeleteTarget({
+                      id,
+                      label: `${category} · ${formatDateTime(spentAt)}`,
+                    })
+                  }
+                  compact
+                />
               ) : null}
               {props.mode === "api" && view === "deleted" ? (
                 <Button
@@ -191,20 +205,7 @@ export function ExpenseList(props: ExpenseListProps) {
                 >
                   {restoringId === id ? "Recovering..." : "Recover"}
                 </Button>
-              ) : (
-                <Button
-                  variant="danger"
-                  disabled={deleting && deleteTarget?.id === id}
-                  onClick={() =>
-                    setDeleteTarget({
-                      id,
-                      label: `${category} · ${formatDateTime(spentAt)}`,
-                    })
-                  }
-                >
-                  Delete
-                </Button>
-              )}
+              ) : null}
             </div>
           </Card>
         );

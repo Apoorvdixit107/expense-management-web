@@ -1,5 +1,6 @@
 import { toast } from "@/components/toast";
 import { ApiError } from "./api";
+import { EDIT_BLOCKED_MESSAGE } from "./spend";
 
 export type ApiErrorVariant = "error" | "warning" | "info";
 
@@ -20,6 +21,10 @@ const KNOWN_MESSAGES: Array<{ match: string | RegExp; message: string }> = [
   {
     match: "You must keep at least one organization",
     message: "You need at least one organization. Create another before deleting this one.",
+  },
+  {
+    match: "Posted or pending spend cannot be edited",
+    message: EDIT_BLOCKED_MESSAGE,
   },
   { match: "Organization not found", message: "Organization not found." },
   { match: "Category already exists", message: "A category with this name already exists." },

@@ -72,6 +72,8 @@ export function ExpenseForm({
   const [newCategoryName, setNewCategoryName] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
   const [taxCategoryId, setTaxCategoryId] = useState<number | "">("");
+  const [saveAsDraft, setSaveAsDraft] = useState(false);
+  const [hasReceipt, setHasReceipt] = useState(Boolean(billPrefill));
 
   const isEditing = mode === "api" && editingExpense != null;
 
@@ -97,6 +99,8 @@ export function ExpenseForm({
     setSpentAt(defaults.spentAt);
     setGuestCategory(defaults.guestCategory);
     setTaxCategoryId(defaults.taxCategoryId);
+    setSaveAsDraft(false);
+    setHasReceipt(Boolean(billPrefill));
     setShowAddCategory(false);
     setNewCategoryName("");
   }, []);
@@ -120,6 +124,7 @@ export function ExpenseForm({
 
   useEffect(() => {
     if (!billPrefill || editingExpense) return;
+    setHasReceipt(true);
     if (billPrefill.amount) setAmount(billPrefill.amount);
     if (billPrefill.description) setDescription(billPrefill.description);
     if (billPrefill.categoryId) setCategoryId(billPrefill.categoryId);
@@ -215,6 +220,8 @@ export function ExpenseForm({
           const payload: CreateExpenseRequest = {
             organizationId: currentOrgId,
             ...shared,
+            saveAsDraft: saveAsDraft || undefined,
+            hasReceipt: hasReceipt || undefined,
           };
           await api.createExpense(payload);
         }
@@ -229,7 +236,13 @@ export function ExpenseForm({
         setSpentAt(localDatetimeInputValue());
       }
 
-      toast.success(isEditing ? "Spend updated." : "Spend recorded.");
+      toast.success(
+        isEditing
+          ? "Spend updated."
+          : saveAsDraft
+            ? "Draft saved."
+            : "Spend recorded."
+      );
       onCreated();
     } catch (err) {
       showApiError(err, "Failed to save transaction");
@@ -442,6 +455,40 @@ export function ExpenseForm({
             className="sm:col-span-2"
           />
         </div>
+        {!isEditing && mode === "api" ? (
+          <div className="space-y-3 rounded-xl border border-border bg-paper p-4">
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={saveAsDraft}
+                onChange={(e) => setSaveAsDraft(e.target.checked)}
+                disabled={loading}
+                className="mt-1 h-4 w-4 rounded border-border text-brand focus:ring-brand"
+              />
+              <span>
+                <span className="text-sm font-semibold text-ink">Save as draft</span>
+                <span className="mt-0.5 block text-xs text-muted">
+                  Edit and submit later. Drafts are not included in reports until submitted.
+                </span>
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={hasReceipt}
+                onChange={(e) => setHasReceipt(e.target.checked)}
+                disabled={loading}
+                className="mt-1 h-4 w-4 rounded border-border text-brand focus:ring-brand"
+              />
+              <span>
+                <span className="text-sm font-semibold text-ink">Receipt attached</span>
+                <span className="mt-0.5 block text-xs text-muted">
+                  Required by some spend policies for larger amounts.
+                </span>
+              </span>
+            </label>
+          </div>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           <Button
             type="submit"
@@ -451,7 +498,9 @@ export function ExpenseForm({
               ? "Saving..."
               : isEditing
                 ? "Save changes"
-                : "Record spend"}
+                : saveAsDraft
+                  ? "Save draft"
+                  : "Record spend"}
           </Button>
           {isEditing && onCancelEdit ? (
             <Button

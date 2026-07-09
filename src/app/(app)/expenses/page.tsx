@@ -10,7 +10,6 @@ import { ReportDateFilter as ReportDateFilterBar } from "@/components/reports/Re
 import { useOrganization } from "@/components/OrganizationProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
-import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { isSubscriber } from "@/lib/navigation";
@@ -19,6 +18,7 @@ import {
   resolveReportDateRange,
   type ReportDateFilter,
 } from "@/lib/reports";
+import { SPEND_STATUS_FILTERS, type SpendStatusFilter } from "@/lib/spend";
 import type { Expense } from "@/lib/types";
 
 function expenseInRange(spentAt: string, fromDate: string, toDate: string): boolean {
@@ -36,6 +36,7 @@ export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [deletedExpenses, setDeletedExpenses] = useState<Expense[]>([]);
   const [listView, setListView] = useState<"active" | "deleted">("active");
+  const [statusFilter, setStatusFilter] = useState<SpendStatusFilter>("all");
   const [dateFilter, setDateFilter] = useState<ReportDateFilter>(createDefaultReportDateFilter);
   const [ready, setReady] = useState(false);
 
@@ -55,8 +56,10 @@ export default function ExpensesPage() {
 
   const loadExpenses = useCallback(() => {
     if (!currentOrgId) return;
+    const statusOpts =
+      statusFilter === "all" ? undefined : { spendStatus: statusFilter };
     Promise.all([
-      api.listExpenses(currentOrgId),
+      api.listExpenses(currentOrgId, statusOpts),
       api.listExpenses(currentOrgId, { deletedOnly: true }),
     ])
       .then(([items, deleted]) => {
@@ -65,7 +68,7 @@ export default function ExpensesPage() {
       })
       .catch((err) => showApiError(err, "Failed to load expenses"));
     refreshOrgs().catch(() => undefined);
-  }, [currentOrgId, refreshOrgs]);
+  }, [currentOrgId, refreshOrgs, statusFilter]);
 
   useEffect(() => {
     setSubscriber(isSubscriber());
@@ -134,11 +137,38 @@ export default function ExpensesPage() {
             </button>
           </div>
         </div>
+
+        {listView === "active" ? (
+          <div className="flex flex-wrap gap-2">
+            {SPEND_STATUS_FILTERS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setStatusFilter(tab.id)}
+                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                  statusFilter === tab.id
+                    ? "bg-brand text-white"
+                    : "bg-paper text-muted hover:text-ink"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         <ReportDateFilterBar filter={dateFilter} onChange={setDateFilter} />
         {fromDate > toDate ? (
           <p className="text-sm text-error">End date must be on or after start date.</p>
         ) : listView === "active" ? (
-          <ExpenseList mode="api" expenses={filteredExpenses} onChanged={loadExpenses} view="active" />
+          <ExpenseList
+            mode="api"
+            expenses={filteredExpenses}
+            onChanged={loadExpenses}
+            view="active"
+            currentUserRole={currentOrg?.currentUserRole}
+            organizationId={currentOrgId ?? undefined}
+          />
         ) : (
           <ExpenseList
             mode="api"
