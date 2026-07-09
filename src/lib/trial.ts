@@ -28,3 +28,19 @@ export function getDaysLeft(): number {
 export function isTrialActive(): boolean {
   return getDaysLeft() > 0;
 }
+
+export function getTrialEndDate(): Date | null {
+  const start = getTrialStart();
+  if (!start) return null;
+  const end = new Date(start);
+  end.setDate(end.getDate() + TRIAL_DAYS);
+  return end;
+}
+
+export function getTrialProgressPercent(): number {
+  const start = getTrialStart();
+  if (!start) return 0;
+  const elapsed = Date.now() - start.getTime();
+  const total = TRIAL_DAYS * 24 * 60 * 60 * 1000;
+  return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+}

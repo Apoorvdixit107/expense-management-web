@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isSubscriber } from "@/lib/navigation";
+import { hasPremiumAccess } from "@/lib/premium-access";
 import { isTrialActive } from "@/lib/trial";
 
 export function TrialGate({ children }: { children: React.ReactNode }) {
@@ -10,7 +10,7 @@ export function TrialGate({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (isSubscriber() || isTrialActive()) {
+    if (hasPremiumAccess() || isTrialActive()) {
       setReady(true);
       return;
     }

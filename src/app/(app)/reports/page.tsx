@@ -10,11 +10,11 @@ import { useOrganization } from "@/components/OrganizationProvider";
 import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { FeatureGuideTrigger } from "@/components/FeatureGuide";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { formatCurrency, formatPercent } from "@/lib/format";
-import { isSubscriber } from "@/lib/navigation";
 import {
   createDefaultReportDateFilter,
   REPORT_TYPE_OPTIONS,
@@ -64,6 +64,7 @@ function ReportsContent() {
             ? `Financial reports for ${currentOrg.name}`
             : "Select an organization to view reports"
         }
+        action={<FeatureGuideTrigger guideId="reports" />}
       />
 
       <Card className="space-y-4">
@@ -135,35 +136,8 @@ function ReportsContent() {
 }
 
 export default function ReportsPage() {
-  const [subscriber, setSubscriber] = useState(false);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    setSubscriber(isSubscriber());
-    setReady(true);
-  }, []);
-
-  if (!ready) {
-    return <div className="py-20 text-center text-muted">Loading...</div>;
-  }
-
-  if (!subscriber) {
-    return (
-      <div className="space-y-6 py-12 text-center">
-        <h1 className="text-2xl font-bold text-ink">Reports require a plan</h1>
-        <p className="text-muted">Subscribe to unlock full analytics and export options.</p>
-        <Link
-          href="/manage-plan"
-          className="inline-flex rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-hover"
-        >
-          View plans
-        </Link>
-      </div>
-    );
-  }
-
   return (
-    <SubscriberGuard>
+    <SubscriberGuard featureName="Reports">
       <ReportsContent />
     </SubscriberGuard>
   );

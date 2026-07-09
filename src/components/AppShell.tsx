@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
 import { PremiumStarButton } from "@/components/PremiumStarButton";
+import { AuthenticatedTrialBanner, TrialExpiredBanner } from "@/components/AuthenticatedTrialBanner";
 import { PremiumStarIcon } from "@/components/ExpensesSubNav";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { useOrganization } from "@/components/OrganizationProvider";
@@ -16,6 +17,8 @@ import { api } from "@/lib/api";
 import { clearSession, getUser } from "@/lib/auth";
 import { clearSubscriptionState, getSubscriptionSnapshot } from "@/lib/subscription";
 import { isNavLinkActive } from "@/lib/navActive";
+import { hasPremiumAccess, isOnFreeTrial, trialDaysLeft, trialExpiredForUser } from "@/lib/premium-access";
+import { ensureTrialStarted } from "@/lib/trial";
 import {
   accountNavLinks,
   isAuthenticated,
@@ -27,6 +30,10 @@ import {
 function planBadgeLabel(subscription: ReturnType<typeof getSubscriptionSnapshot>): string {
   if (subscription.subscribed && subscription.planName) {
     return subscription.planName;
+  }
+  if (isOnFreeTrial()) {
+    const days = trialDaysLeft();
+    return days > 0 ? `Trial · ${days}d` : "Trial";
   }
   return "Free";
 }
@@ -212,6 +219,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { subscription, loading: subscriptionLoading } = useSubscription();
   const { currentOrg } = useOrganization();
   const subscriber = subscription.subscribed;
+  const premiumAccess = hasPremiumAccess();
   const homeHref = postAuthPath();
   const [unread, setUnread] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -223,19 +231,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
-    if (!subscriber) return;
+    if (!isAuthenticated()) return;
+    ensureTrialStarted();
+  }, []);
+
+  useEffect(() => {
+    if (!premiumAccess) return;
     api
       .unreadCount()
       .then((res) => setUnread(res.count))
       .catch(() => setUnread(0));
-  }, [pathname, subscriber]);
+  }, [pathname, premiumAccess]);
 
   if (pathname === "/subscribe" || pathname === "/select-account") {
     return <>{children}</>;
   }
 
   const links = (
-    subscriber ? navLinksForSubscriber(currentOrg?.currentUserRole) : memberNavLinks
+    isAuthenticated()
+      ? navLinksForSubscriber(currentOrg?.currentUserRole)
+      : memberNavLinks
   ).filter((link) => link.href !== "/manage-plan") as NavLink[];
 
   if (subscriptionLoading && isAuthenticated()) {
@@ -305,7 +320,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <div className="mx-auto max-w-[1200px]">{children}</div>
+          <div className="mx-auto max-w-[1200px]">
+            <AuthenticatedTrialBanner />
+            {trialExpiredForUser() ? <TrialExpiredBanner /> : null}
+            {children}
+          </div>
         </main>
       </div>
     </div>

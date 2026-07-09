@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { FreeTrialPlanSection, PlanTrialBadge } from "@/components/FreeTrialPlanSection";
 import { ShippingDetailsForm } from "@/components/ShippingDetailsForm";
 import { Modal } from "@/components/ui/Modal";
 import { useRazorpayCheckout } from "@/hooks/useRazorpayCheckout";
@@ -14,6 +15,7 @@ import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
 import { isAuthenticated } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
+import { TRIAL_DAYS } from "@/lib/trial";
 import type { Invoice, Plan, PlanCode, ShippingDetails } from "@/lib/types";
 
 const features = [
@@ -55,10 +57,12 @@ export default function ManagePlanPage() {
     <div className="space-y-8">
       <PageHeader
         title="Manage plan"
-        subtitle="Buy or renew your monthly subscription — Pro or Beast"
+        subtitle={`Pro or Beast — every plan includes a ${TRIAL_DAYS}-day free trial`}
       />
 
       {loading ? <p className="text-sm text-muted">Loading subscription...</p> : null}
+
+      {!subscription.subscribed ? <FreeTrialPlanSection /> : null}
 
       {subscription.subscribed ? (
         <Card className="border-brand/30 bg-brand-light/30">
@@ -71,16 +75,9 @@ export default function ManagePlanPage() {
             <p className="mt-2 text-sm text-muted">Renew early to extend your billing period.</p>
           ) : null}
         </Card>
-      ) : (
-        <Card>
-          <p className="font-semibold text-ink">No active plan</p>
-          <p className="mt-1 text-sm text-muted">
-            Choose Pro or Beast below to unlock the full app. Both plans include the same features for now.
-          </p>
-        </Card>
-      )}
+      ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div id="plans" className="grid gap-6 lg:grid-cols-2">
         {plans.map((plan) => {
           const isCurrent = subscription.planCode === plan.code && subscription.subscribed;
           const price = (plan.amountPaise / 100).toLocaleString("en-IN");
@@ -96,6 +93,9 @@ export default function ManagePlanPage() {
                 </span>
               ) : null}
               <p className="font-semibold text-brand">{plan.name}</p>
+              <div className="mt-2">
+                <PlanTrialBadge />
+              </div>
               <p className="mt-2 text-3xl font-extrabold text-ink">
                 ₹{price}
                 <span className="text-base font-medium text-muted">/month</span>

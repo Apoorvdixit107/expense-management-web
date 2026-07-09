@@ -12,6 +12,7 @@ import { api } from "@/lib/api";
 import { showApiError } from "@/lib/apiErrors";
 import { OrgRequiredState } from "@/components/OrgRequiredState";
 import { FinanceRoleGuard } from "@/components/FinanceRoleGuard";
+import { FeatureGuideTrigger } from "@/components/FeatureGuide";
 import type { OrganizationInvite, OrganizationMember, OrgMemberRole } from "@/lib/types";
 
 export default function TeamPage() {
@@ -59,10 +60,14 @@ export default function TeamPage() {
   }
 
   return (
-    <SubscriberGuard>
+    <SubscriberGuard featureName="Team">
       <FinanceRoleGuard>
       <OrgRequiredState>
-      <PageHeader title="Team" subtitle="Invite colleagues and assign roles" />
+      <PageHeader
+        title="Team"
+        subtitle="Invite colleagues and assign roles"
+        action={<FeatureGuideTrigger guideId="team" />}
+      />
 
       <Card className="mt-8" padding="lg">
         <h2 className="text-lg font-semibold text-ink">Invite by email</h2>

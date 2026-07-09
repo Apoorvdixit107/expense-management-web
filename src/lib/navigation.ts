@@ -1,9 +1,14 @@
 import { isAuthenticated } from "./auth";
-import { isSubscribed } from "./subscription";
+import { hasPremiumAccess, isPaidSubscriber } from "./premium-access";
 import type { OrgMemberRole } from "./types";
 
 export function isSubscriber(): boolean {
-  return isAuthenticated() && isSubscribed();
+  return isPaidSubscriber();
+}
+
+/** Paid subscriber or active free trial — can open premium screens. */
+export function canAccessPremiumFeatures(): boolean {
+  return hasPremiumAccess();
 }
 
 export { isAuthenticated };

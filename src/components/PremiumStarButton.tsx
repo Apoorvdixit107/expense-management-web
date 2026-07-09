@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { PremiumStarIcon } from "@/components/ExpensesSubNav";
-import { useSubscription } from "@/components/SubscriptionProvider";
+import { hasPremiumAccess } from "@/lib/premium-access";
 
 export function PremiumStarButton() {
-  const { subscription } = useSubscription();
-  const subscriber = subscription.subscribed;
-  const href = subscriber ? "/expenses/upload" : "/manage-plan";
-  const title = subscriber ? "Premium — Capture receipt with AI" : "Upgrade — Pro or Beast plan";
+  const premium = hasPremiumAccess();
+  const href = premium ? "/expenses/upload" : "/manage-plan";
+  const title = premium ? "Premium — Capture receipt with AI" : "Upgrade — Pro or Beast plan";
 
   return (
     <Link

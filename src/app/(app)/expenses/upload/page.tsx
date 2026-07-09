@@ -10,6 +10,7 @@ import { useOrganization } from "@/components/OrganizationProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { FeatureGuideTrigger } from "@/components/FeatureGuide";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
@@ -85,7 +86,7 @@ export default function UploadBillPage() {
   }
 
   return (
-    <SubscriberGuard>
+    <SubscriberGuard featureName="Capture receipt">
       <div className="space-y-8">
         <PageHeader
           title="Capture receipt"
@@ -94,6 +95,7 @@ export default function UploadBillPage() {
               ? `AI reads your receipt for ${currentOrg.name} — printed or handwritten`
               : "Select an entity first"
           }
+          action={<FeatureGuideTrigger guideId="capture-receipt" />}
         />
 
         <ExpensesSubNav />

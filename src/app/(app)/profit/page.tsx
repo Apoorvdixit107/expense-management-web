@@ -22,6 +22,7 @@ import {
   type DashboardFilter,
 } from "@/lib/dashboard-period";
 import { formatCurrency, formatPercent } from "@/lib/format";
+import { withFeatureGuideAction } from "@/components/FeatureGuide";
 import type { ProfitabilityReport } from "@/lib/types";
 
 export default function ProfitPage() {
@@ -49,7 +50,7 @@ export default function ProfitPage() {
   const margin = profitability?.profitMarginPercent ?? 0;
 
   return (
-    <SubscriberGuard>
+    <SubscriberGuard featureName="Insights">
       <div className="space-y-8">
         <PageHeader
           title="Insights"
@@ -58,7 +59,10 @@ export default function ProfitPage() {
               ? `Income vs spend for ${currentOrg.name}`
               : "Track profitability over time"
           }
-          action={<PeriodSelector filter={filter} onChange={setFilter} />}
+          action={withFeatureGuideAction(
+            "insights",
+            <PeriodSelector filter={filter} onChange={setFilter} />
+          )}
         />
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">

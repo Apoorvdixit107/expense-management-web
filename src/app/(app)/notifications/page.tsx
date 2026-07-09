@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { NotificationPreferencesForm } from "@/components/NotificationPreferencesForm";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { FeatureGuideTrigger } from "@/components/FeatureGuide";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
@@ -31,7 +32,11 @@ export default function NotificationsPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Notifications" subtitle="Email & SMS alerts for your account" />
+      <PageHeader
+        title="Notifications"
+        subtitle="Email & SMS alerts for your account"
+        action={<FeatureGuideTrigger guideId="alerts" />}
+      />
       <NotificationPreferencesForm />
       {items.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-12 text-center text-sm text-muted">

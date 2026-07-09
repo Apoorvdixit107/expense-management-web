@@ -8,13 +8,14 @@ import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { isAuthenticated } from "@/lib/auth";
-import { isSubscribed } from "@/lib/subscription";
+import { hasPremiumAccess } from "@/lib/premium-access";
+import { TRIAL_DAYS } from "@/lib/trial";
 
 export default function SubscribePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated() && isSubscribed()) {
+    if (isAuthenticated() && hasPremiumAccess()) {
       router.replace("/dashboard");
     }
   }, [router]);
@@ -32,7 +33,7 @@ export default function SubscribePage() {
         </span>
         <h1 className="mt-6 text-3xl font-extrabold text-ink">Continue with a paid plan</h1>
         <p className="mx-auto mt-4 text-muted">
-          Your 7-day free trial has ended. Sign in and choose Pro or Beast to keep tracking expenses with cloud
+          Your {TRIAL_DAYS}-day free trial has ended. Sign in and choose Pro or Beast to keep tracking expenses with cloud
           sync and reports.
         </p>
 

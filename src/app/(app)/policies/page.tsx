@@ -13,6 +13,7 @@ import { showApiError } from "@/lib/apiErrors";
 import { formatCurrency } from "@/lib/format";
 import { OrgRequiredState } from "@/components/OrgRequiredState";
 import { FinanceRoleGuard } from "@/components/FinanceRoleGuard";
+import { withFeatureGuideAction } from "@/components/FeatureGuide";
 
 import type { CreateSpendPolicyRequest, SpendPolicy } from "@/lib/types";
 
@@ -81,17 +82,18 @@ export default function PoliciesPage() {
   }
 
   return (
-    <SubscriberGuard>
+    <SubscriberGuard featureName="Policies">
       <FinanceRoleGuard>
       <OrgRequiredState>
       <PageHeader
         title="Policies"
         subtitle="Set rules once — enforce on every spend"
-        action={
+        action={withFeatureGuideAction(
+          "policies",
           <Button variant="primary" onClick={() => setShowForm((v) => !v)}>
             {showForm ? "Cancel" : "New policy"}
           </Button>
-        }
+        )}
       />
 
       {showForm ? (

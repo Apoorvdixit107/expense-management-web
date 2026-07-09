@@ -6,6 +6,7 @@ import { ExpenseList } from "@/components/ExpenseList";
 import { ReportDateFilter as ReportDateFilterBar } from "@/components/reports/ReportDateFilter";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { FeatureGuideTrigger } from "@/components/FeatureGuide";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
@@ -75,6 +76,7 @@ export default function CashAndBankPage() {
       <PageHeader
         title="Cash & Bank"
         subtitle={`Cash, online, and bank transactions for ${currentOrg.name}`}
+        action={<FeatureGuideTrigger guideId="ledger" />}
       />
 
       <BankAccountsSubNav />

@@ -14,6 +14,7 @@ import { showApiError } from "@/lib/apiErrors";
 import { formatCurrency } from "@/lib/format";
 import { OrgRequiredState } from "@/components/OrgRequiredState";
 import { FinanceRoleGuard } from "@/components/FinanceRoleGuard";
+import { withFeatureGuideAction } from "@/components/FeatureGuide";
 import type { Expense } from "@/lib/types";
 
 function statusLabel(status?: Expense["spendStatus"]) {
@@ -85,17 +86,18 @@ export default function ApprovalsPage() {
   }
 
   return (
-    <SubscriberGuard>
+    <SubscriberGuard featureName="Approvals">
       <FinanceRoleGuard>
       <OrgRequiredState>
       <PageHeader
         title="Approvals"
         subtitle="Nothing posts until finance says yes"
-        action={
+        action={withFeatureGuideAction(
+          "approvals",
           <Button href="/expenses/new" variant="primary">
             Record spend
           </Button>
-        }
+        )}
       />
 
       <div className="mt-8">

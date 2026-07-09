@@ -2,14 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PremiumUpgradePrompt } from "@/components/PremiumUpgradePrompt";
 import { useSubscription } from "@/components/SubscriptionProvider";
 import { isAuthenticated } from "@/lib/auth";
-import { isSubscribed } from "@/lib/subscription";
+import { hasPremiumAccess } from "@/lib/premium-access";
+import { ensureTrialStarted } from "@/lib/trial";
 
-export function SubscriberGuard({ children }: { children: React.ReactNode }) {
+type SubscriberGuardProps = {
+  children: React.ReactNode;
+  featureName?: string;
+};
+
+export function SubscriberGuard({ children, featureName }: SubscriberGuardProps) {
   const router = useRouter();
   const { loading, refresh } = useSubscription();
   const [ready, setReady] = useState(false);
+  const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -19,18 +27,19 @@ export function SubscriberGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (!isSubscribed()) {
-      refresh().finally(() => {
-        if (!isSubscribed()) {
-          router.replace("/manage-plan");
-        } else {
-          setReady(true);
-        }
-      });
+    ensureTrialStarted();
+
+    if (hasPremiumAccess()) {
+      setAllowed(true);
+      setReady(true);
       return;
     }
 
-    setReady(true);
+    refresh().finally(() => {
+      ensureTrialStarted();
+      setAllowed(hasPremiumAccess());
+      setReady(true);
+    });
   }, [loading, router, refresh]);
 
   if (!ready) {
@@ -39,6 +48,10 @@ export function SubscriberGuard({ children }: { children: React.ReactNode }) {
         Loading...
       </div>
     );
+  }
+
+  if (!allowed) {
+    return <PremiumUpgradePrompt featureName={featureName} />;
   }
 
   return children;

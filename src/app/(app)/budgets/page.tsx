@@ -11,6 +11,7 @@ import { useOrganization } from "@/components/OrganizationProvider";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { withFeatureGuideAction } from "@/components/FeatureGuide";
 
 export default function BudgetsPage() {
   const { currentOrg } = useOrganization();
@@ -28,7 +29,8 @@ export default function BudgetsPage() {
             ? `Spending limits for ${currentOrg.name}`
             : "Set monthly, quarterly, and yearly budgets"
         }
-        action={
+        action={withFeatureGuideAction(
+          "budgets",
           <div className="flex flex-wrap items-center gap-3">
             <label className="flex items-center gap-2 text-sm text-muted">
               Year
@@ -48,7 +50,7 @@ export default function BudgetsPage() {
               {showForm ? "Close form" : "Add budget"}
             </Button>
           </div>
-        }
+        )}
       />
 
       <BudgetPerformanceSummary performance={performance} />

@@ -33,6 +33,7 @@ import { formatCurrency, formatPercent } from "@/lib/format";
 import type { Expense, ExpenseReport, ProfitabilityReport, SpendOverviewStats } from "@/lib/types";
 import Link from "next/link";
 import { OrgRequiredState } from "@/components/OrgRequiredState";
+import { withFeatureGuideAction } from "@/components/FeatureGuide";
 
 export default function DashboardPage() {
   const { currentOrg, currentOrgId, organizations } = useOrganization();
@@ -99,7 +100,11 @@ export default function DashboardPage() {
         <PageHeader
           title="Overview"
           subtitle="Your spend command center"
-          action={<PeriodSelector filter={filter} onChange={setFilter} />}
+          action={withFeatureGuideAction(
+            "getting-started",
+            <PeriodSelector filter={filter} onChange={setFilter} />,
+            { showFirstVisit: true }
+          )}
         />
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">

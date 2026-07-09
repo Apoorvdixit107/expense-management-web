@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
-import { isSubscriber } from "@/lib/navigation";
+import { trialExpiredForUser } from "@/lib/premium-access";
 import {
   createDefaultReportDateFilter,
   resolveReportDateRange,
@@ -39,7 +39,6 @@ function expenseInRange(spentAt: string, fromDate: string, toDate: string): bool
 
 export default function ExpensesPage() {
   const { currentOrg, currentOrgId, refreshOrgs } = useOrganization();
-  const [subscriber, setSubscriber] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [deletedExpenses, setDeletedExpenses] = useState<Expense[]>([]);
   const [listView, setListView] = useState<"active" | "deleted">("active");
@@ -80,7 +79,6 @@ export default function ExpensesPage() {
   }, [currentOrgId, refreshOrgs, statusFilter]);
 
   useEffect(() => {
-    setSubscriber(isSubscriber());
     if (currentOrgId) {
       loadExpenses();
     }
@@ -194,9 +192,9 @@ export default function ExpensesPage() {
         )}
       </Card>
 
-      {!subscriber ? (
+      {trialExpiredForUser() ? (
         <div className="rounded-2xl border border-dashed border-border bg-surface p-5 text-center text-sm text-muted">
-          Upgrade for email alerts, cloud reports, and premium features.{" "}
+          Your free trial has ended. Subscribe for email alerts, cloud reports, and premium features.{" "}
           <Link href="/manage-plan" className="font-semibold text-brand hover:text-brand-hover">
             View plans
           </Link>

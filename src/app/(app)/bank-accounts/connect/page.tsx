@@ -7,6 +7,7 @@ import { PremiumStarIcon } from "@/components/ExpensesSubNav";
 import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { FeatureGuideTrigger } from "@/components/FeatureGuide";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -136,7 +137,7 @@ export default function ConnectBankAccountPage() {
   }
 
   return (
-    <SubscriberGuard>
+    <SubscriberGuard featureName="Connect bank">
       <div className="space-y-8">
         <PageHeader
           title="Connect bank account"
@@ -145,6 +146,7 @@ export default function ConnectBankAccountPage() {
               ? `Link net banking for ${currentOrg.name}. Credits and debits sync as transactions.`
               : "Select an organization to manage bank accounts"
           }
+          action={<FeatureGuideTrigger guideId="connect-bank" />}
         />
 
         <BankAccountsSubNav />

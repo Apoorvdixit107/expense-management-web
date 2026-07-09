@@ -9,6 +9,7 @@ import {
   getSubscriptionSnapshot,
   setSubscriptionState,
 } from "@/lib/subscription";
+import { ensureTrialStarted } from "@/lib/trial";
 import type { Subscription } from "@/lib/types";
 
 type SubscriptionContextValue = {
@@ -35,6 +36,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       setLoading(false);
       return;
     }
+
+    ensureTrialStarted();
 
     try {
       const response = await api.getSubscriptionStatus();

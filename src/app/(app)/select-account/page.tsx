@@ -6,6 +6,7 @@ import { Logo } from "@/components/brand/Logo";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { FeatureGuideTrigger } from "@/components/FeatureGuide";
 import { organizationTypeLabel } from "@/lib/types";
 import { postAuthPath } from "@/lib/navigation";
 
@@ -35,6 +36,9 @@ export default function SelectAccountPage() {
         <p className="mt-2 text-sm text-muted">
           Pick where you want to track expenses — company, home, shop, or anything else.
         </p>
+        <div className="mt-4 flex justify-center">
+          <FeatureGuideTrigger guideId="getting-started" showFirstVisit />
+        </div>
       </div>
 
       <Card className="space-y-3 p-2">

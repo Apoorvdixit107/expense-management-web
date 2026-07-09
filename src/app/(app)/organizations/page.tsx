@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useOrganization } from "@/components/OrganizationProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { FeatureGuideTrigger } from "@/components/FeatureGuide";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -135,6 +136,7 @@ export default function OrganizationsPage() {
       <PageHeader
         title="Organizations"
         subtitle="Manage company, home, shop, or any custom place where you track expenses."
+        action={<FeatureGuideTrigger guideId="entities" />}
       />
 
       <Card>

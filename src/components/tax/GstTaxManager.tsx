@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { withFeatureGuideAction } from "@/components/FeatureGuide";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
@@ -300,7 +301,8 @@ export function GstTaxPageContent() {
             ? `GST summary for ${currentOrg.name}`
             : "Track input tax, output tax, and net payable"
         }
-        action={
+        action={withFeatureGuideAction(
+          "tax",
           <div className="flex flex-wrap items-end gap-3">
             <label className="space-y-1 text-sm text-muted">
               From
@@ -339,7 +341,7 @@ export function GstTaxPageContent() {
               {showCategoryForm ? "Close" : "Add rate"}
             </Button>
           </div>
-        }
+        )}
       />
 
       <Card className="text-sm text-muted">
