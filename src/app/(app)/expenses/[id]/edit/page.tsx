@@ -7,6 +7,7 @@ import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseRowActions } from "@/components/ExpenseRowActions";
 import { PolicyWarning, SpendStatusBadge } from "@/components/SpendStatusBadge";
 import { Card } from "@/components/ui/Card";
+import { ConfirmDeleteDialog, SOFT_DELETE_MESSAGE } from "@/components/ui/ConfirmDeleteDialog";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { TransactionAmount } from "@/components/TransactionAmount";
 import { toast } from "@/components/toast";
@@ -25,6 +26,8 @@ export default function EditExpensePage() {
   const { currentOrg, currentOrgId } = useOrganization();
   const [expense, setExpense] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   function reload() {
     if (!Number.isFinite(expenseId)) return;
@@ -102,19 +105,30 @@ export default function EditExpensePage() {
           currentUserId={getUser()?.userId ?? null}
           currentUserRole={currentOrg?.currentUserRole}
           organizationId={currentOrgId}
-          onChanged={() => {
-            reload();
-            router.push("/expenses");
-          }}
-          onDelete={() => {
-            if (!window.confirm("Move this spend to Deleted?")) return;
-            void api.deleteExpense(expense.id).then(() => {
-              toast.success("Spend deleted.");
-              router.push("/expenses");
-            }).catch((err) => showApiError(err, "Failed to delete spend"));
-          }}
+          onChanged={() => reload()}
+          onDelete={() => setDeleteOpen(true)}
         />
       </Card>
+
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        loading={deleting}
+        title="Delete spend"
+        message={SOFT_DELETE_MESSAGE}
+        onConfirm={async () => {
+          setDeleting(true);
+          try {
+            await api.deleteExpense(expense.id);
+            toast.success("Spend deleted.");
+            router.push("/expenses");
+          } catch (err) {
+            showApiError(err, "Failed to delete spend");
+          } finally {
+            setDeleting(false);
+          }
+        }}
+      />
 
       {editable ? (
         <ExpenseForm

@@ -1,16 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { PromptDialog } from "@/components/ui/PromptDialog";
 import { api } from "@/lib/api";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import {
   canApproveExpense,
+  canCorrectExpense,
   canEditExpense,
   canSubmitExpense,
   canVoidExpense,
+  CORRECT_SPEND_CONFIRM,
+  VOID_SPEND_CONFIRM,
 } from "@/lib/spend";
 import type { Expense, OrgMemberRole } from "@/lib/types";
 
@@ -24,6 +30,8 @@ type ExpenseRowActionsProps = {
   compact?: boolean;
 };
 
+type ConfirmAction = "void" | "correct" | null;
+
 export function ExpenseRowActions({
   expense,
   currentUserId,
@@ -33,7 +41,10 @@ export function ExpenseRowActions({
   onDelete,
   compact = false,
 }: ExpenseRowActionsProps) {
+  const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
+  const [rejectOpen, setRejectOpen] = useState(false);
   const isOwner = currentUserId != null && expense.userId === currentUserId;
 
   async function run(action: string, fn: () => Promise<void>) {
@@ -47,6 +58,34 @@ export function ExpenseRowActions({
     } finally {
       setBusy(null);
     }
+  }
+
+  async function handleConfirmAction() {
+    if (!confirmAction) return;
+    const action = confirmAction;
+    setConfirmAction(null);
+
+    if (action === "correct") {
+      await run("correct", async () => {
+        await api.voidExpense(expense.id);
+        toast.success("Spend unlocked for editing.");
+        router.push(`/expenses/${expense.id}/edit`);
+      });
+      return;
+    }
+
+    await run("void", async () => {
+      await api.voidExpense(expense.id);
+      toast.success("Spend voided. Open the Rejected tab to edit and resubmit.");
+    });
+  }
+
+  async function handleReject(comment: string) {
+    setRejectOpen(false);
+    await run("reject", async () => {
+      await api.rejectSpend(organizationId, expense.id, comment || undefined);
+      toast.success("Spend rejected.");
+    });
   }
 
   const buttons: React.ReactNode[] = [];
@@ -91,19 +130,26 @@ export function ExpenseRowActions({
     );
   }
 
+  if (isOwner && canCorrectExpense(expense)) {
+    buttons.push(
+      <Button
+        key="correct"
+        variant="primary"
+        disabled={busy != null}
+        onClick={() => setConfirmAction("correct")}
+      >
+        {busy === "correct" ? "Opening…" : "Correct details"}
+      </Button>
+    );
+  }
+
   if (isOwner && canVoidExpense(expense)) {
     buttons.push(
       <Button
         key="void"
         variant="secondary"
         disabled={busy != null}
-        onClick={() => {
-          if (!window.confirm("Void this spend? It will be removed from reports and ledger.")) return;
-          void run("void", async () => {
-            await api.voidExpense(expense.id);
-            toast.success("Spend voided.");
-          });
-        }}
+        onClick={() => setConfirmAction("void")}
       >
         {busy === "void" ? "Voiding…" : "Void"}
       </Button>
@@ -131,13 +177,7 @@ export function ExpenseRowActions({
         key="reject"
         variant="secondary"
         disabled={busy != null}
-        onClick={() => {
-          const comment = window.prompt("Reason for rejection (optional):") ?? undefined;
-          void run("reject", async () => {
-            await api.rejectSpend(organizationId, expense.id, comment);
-            toast.success("Spend rejected.");
-          });
-        }}
+        onClick={() => setRejectOpen(true)}
       >
         Reject
       </Button>
@@ -154,5 +194,44 @@ export function ExpenseRowActions({
 
   if (buttons.length === 0) return null;
 
-  return <div className="flex flex-wrap items-center gap-2">{buttons}</div>;
+  return (
+    <>
+      <div className="flex flex-wrap items-center gap-2">{buttons}</div>
+
+      <ConfirmDialog
+        open={confirmAction === "void"}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleConfirmAction}
+        title="Void spend"
+        message={VOID_SPEND_CONFIRM}
+        confirmLabel="Void"
+        confirmVariant="danger"
+        loading={busy === "void"}
+        loadingLabel="Voiding..."
+      />
+
+      <ConfirmDialog
+        open={confirmAction === "correct"}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleConfirmAction}
+        title="Correct spend details"
+        message={CORRECT_SPEND_CONFIRM}
+        confirmLabel="Unlock & edit"
+        confirmVariant="primary"
+        loading={busy === "correct"}
+        loadingLabel="Opening..."
+      />
+
+      <PromptDialog
+        open={rejectOpen}
+        onClose={() => setRejectOpen(false)}
+        onConfirm={handleReject}
+        title="Reject spend"
+        message="Optionally add a reason. The submitter will see this when fixing the spend."
+        placeholder="Reason for rejection (optional)"
+        confirmLabel="Reject"
+        loading={busy === "reject"}
+      />
+    </>
+  );
 }

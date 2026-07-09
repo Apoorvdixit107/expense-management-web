@@ -19,6 +19,11 @@ export function canVoidExpense(expense: Expense): boolean {
   return status === "PENDING_APPROVAL" || status === "POSTED";
 }
 
+/** Posted spends must be unlocked (voided → rejected) before editing. */
+export function canCorrectExpense(expense: Expense): boolean {
+  return (expense.spendStatus ?? "POSTED") === "POSTED";
+}
+
 export function canApproveExpense(expense: Expense, role?: OrgMemberRole | null): boolean {
   return canApproveRole(role) && (expense.spendStatus ?? "POSTED") === "PENDING_APPROVAL";
 }
@@ -69,4 +74,10 @@ export const SPEND_STATUS_FILTERS = [
 export type SpendStatusFilter = (typeof SPEND_STATUS_FILTERS)[number]["id"];
 
 export const EDIT_BLOCKED_MESSAGE =
-  "This spend is finalized and cannot be edited. Void it to make changes, or delete and create a new entry.";
+  "Posted spends are locked in reports and cannot be edited directly. Use Correct details to change the category, or delete and create a new entry.";
+
+export const CORRECT_SPEND_CONFIRM =
+  "Posted spends are locked in your ledger. To change the category or other details, we'll unlock this entry for editing (it will leave Posted totals until you save again). Continue?";
+
+export const VOID_SPEND_CONFIRM =
+  "Void this spend? It will be removed from reports and appear under Rejected, where you can edit and resubmit.";

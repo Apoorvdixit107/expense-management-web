@@ -7,6 +7,7 @@ import { SubscriberGuard } from "@/components/SubscriberGuard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { PromptDialog } from "@/components/ui/PromptDialog";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { showApiError } from "@/lib/apiErrors";
@@ -35,6 +36,7 @@ export default function ApprovalsPage() {
   const [pending, setPending] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [actingId, setActingId] = useState<number | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<Expense | null>(null);
 
   function load() {
     if (!currentOrgId) {
@@ -67,12 +69,12 @@ export default function ApprovalsPage() {
     }
   }
 
-  async function reject(expense: Expense) {
+  async function rejectWithComment(expense: Expense, comment: string) {
     if (!currentOrgId) return;
-    const comment = window.prompt("Reason for rejection (optional):") ?? undefined;
+    setRejectTarget(null);
     setActingId(expense.id);
     try {
-      await api.rejectSpend(currentOrgId, expense.id, comment);
+      await api.rejectSpend(currentOrgId, expense.id, comment || undefined);
       toast.success("Spend rejected");
       load();
     } catch (err) {
@@ -128,7 +130,7 @@ export default function ApprovalsPage() {
                   <Button
                     variant="secondary"
                     disabled={actingId === expense.id}
-                    onClick={() => reject(expense)}
+                    onClick={() => setRejectTarget(expense)}
                   >
                     Reject
                   </Button>
@@ -141,6 +143,20 @@ export default function ApprovalsPage() {
           </div>
         )}
       </div>
+
+      <PromptDialog
+        open={rejectTarget != null}
+        onClose={() => setRejectTarget(null)}
+        onConfirm={(comment) => {
+          if (!rejectTarget) return;
+          return rejectWithComment(rejectTarget, comment);
+        }}
+        title="Reject spend"
+        message="Optionally add a reason. The submitter will see this when fixing the spend."
+        placeholder="Reason for rejection (optional)"
+        confirmLabel="Reject"
+        loading={rejectTarget != null && actingId === rejectTarget.id}
+      />
       </OrgRequiredState>
       </FinanceRoleGuard>
     </SubscriberGuard>
