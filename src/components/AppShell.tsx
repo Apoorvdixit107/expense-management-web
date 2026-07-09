@@ -17,6 +17,7 @@ import { clearSession, getUser } from "@/lib/auth";
 import { clearSubscriptionState, getSubscriptionSnapshot } from "@/lib/subscription";
 import { isNavLinkActive } from "@/lib/navActive";
 import {
+  accountNavLinks,
   isAuthenticated,
   memberNavLinks,
   navLinksForSubscriber,
@@ -125,7 +126,51 @@ function Sidebar({
 
       <SidebarNav links={links} pathname={pathname} unread={unread} onNavigate={onNavigate} />
 
-      <div className="mt-auto border-t border-sidebar-border p-4">
+      <div className="mt-auto border-t border-sidebar-border">
+        <div className="space-y-0.5 px-3 py-2">
+          {accountNavLinks.map((link) => {
+            const active = isNavLinkActive(pathname, link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={onNavigate}
+                className={`group relative flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition ${
+                  active
+                    ? "text-[var(--sidebar-text-active)]"
+                    : "text-[var(--sidebar-text)] hover:text-[var(--sidebar-text-hover)]"
+                }`}
+                style={active ? { background: "var(--sidebar-active-bg)" } : undefined}
+              >
+                {active ? (
+                  <span
+                    className="absolute left-0 top-1/2 h-7 w-1 -translate-y-1/2 rounded-r-full bg-brand"
+                    aria-hidden
+                  />
+                ) : null}
+                <span
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base ${
+                    active ? "text-brand" : "text-[var(--sidebar-text)] group-hover:text-[var(--sidebar-text-hover)]"
+                  }`}
+                >
+                  {link.icon}
+                </span>
+                <span className="truncate">{link.label}</span>
+                <span
+                  className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    subscriber
+                      ? "bg-brand/20 text-brand"
+                      : "bg-[var(--sidebar-control-hover)] text-[var(--sidebar-text)]"
+                  }`}
+                >
+                  {planBadgeLabel(subscription)}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="border-t border-sidebar-border p-4">
         <OrganizationSwitcher onNavigate={onNavigate} />
         {loggedIn && user ? (
           <Link
@@ -141,17 +186,6 @@ function Sidebar({
             <span className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-[var(--sidebar-text-active)]">{user.fullName}</p>
               <p className="truncate text-xs text-[var(--sidebar-text)]">{user.email}</p>
-              <Link
-                href="/manage-plan"
-                onClick={onNavigate}
-                className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-semibold transition hover:opacity-90 ${
-                  subscriber
-                    ? "bg-brand/20 text-brand"
-                    : "bg-[var(--sidebar-control-hover)] text-[var(--sidebar-text)]"
-                }`}
-              >
-                {planBadgeLabel(subscription)}
-              </Link>
             </span>
           </Link>
         ) : null}
@@ -165,6 +199,7 @@ function Sidebar({
           >
             Sign out
           </button>
+        </div>
         </div>
       </div>
     </div>
@@ -201,7 +236,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const links = (
     subscriber ? navLinksForSubscriber(currentOrg?.currentUserRole) : memberNavLinks
-  ) as NavLink[];
+  ).filter((link) => link.href !== "/manage-plan") as NavLink[];
 
   if (subscriptionLoading && isAuthenticated()) {
     return (

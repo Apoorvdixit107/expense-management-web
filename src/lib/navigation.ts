@@ -37,8 +37,12 @@ export const subscriberNavLinks: AppNavLink[] = [
   { href: "/assistant", label: "Ask finance", icon: "✦", premium: true },
   { href: "/bank-accounts/connect", label: "Connect Bank", icon: "⧉", premium: true },
   { href: "/refer-and-earn", label: "Refer & earn", icon: "↗" },
-  { href: "/manage-plan", label: "Plan & billing", icon: "◆" },
   { href: "/profile", label: "Account", icon: "◎" },
+];
+
+/** Always visible above profile — not buried in scrollable nav. */
+export const accountNavLinks: AppNavLink[] = [
+  { href: "/manage-plan", label: "Manage plan", icon: "◆" },
 ];
 
 export const memberNavLinks: AppNavLink[] = [
@@ -50,7 +54,6 @@ export const memberNavLinks: AppNavLink[] = [
   { href: "/bank-accounts", label: "Ledger", icon: "◇" },
   { href: "/organizations", label: "Entities", icon: "▣" },
   { href: "/notifications", label: "Alerts", icon: "◔" },
-  { href: "/manage-plan", label: "Plan & billing", icon: "◆" },
   { href: "/profile", label: "Account", icon: "◎" },
 ];
 
