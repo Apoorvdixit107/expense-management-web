@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { PremiumStarIcon } from "@/components/ExpensesSubNav";
-import { isSubscriber } from "@/lib/navigation";
+import { useSubscription } from "@/components/SubscriptionProvider";
 
 export function PremiumStarButton() {
-  const subscriber = isSubscriber();
+  const { subscription } = useSubscription();
+  const subscriber = subscription.subscribed;
   const href = subscriber ? "/expenses/upload" : "/manage-plan";
-  const title = subscriber ? "Premium — Upload bill with AI" : "Premium features — upgrade to unlock";
+  const title = subscriber ? "Premium — Capture receipt with AI" : "Upgrade — Pro or Beast plan";
 
   return (
     <Link

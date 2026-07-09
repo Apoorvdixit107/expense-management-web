@@ -14,7 +14,7 @@ import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { api } from "@/lib/api";
 import { clearSession, getUser } from "@/lib/auth";
-import { clearSubscriptionState } from "@/lib/subscription";
+import { clearSubscriptionState, getSubscriptionSnapshot } from "@/lib/subscription";
 import { isNavLinkActive } from "@/lib/navActive";
 import {
   isAuthenticated,
@@ -22,6 +22,13 @@ import {
   navLinksForSubscriber,
   postAuthPath,
 } from "@/lib/navigation";
+
+function planBadgeLabel(subscription: ReturnType<typeof getSubscriptionSnapshot>): string {
+  if (subscription.subscribed && subscription.planName) {
+    return subscription.planName;
+  }
+  return "Free";
+}
 
 type NavLink = {
   href: string;
@@ -98,7 +105,7 @@ function Sidebar({
   pathname: string;
   unread: number;
   subscriber: boolean;
-  subscription: { planName: string | null };
+  subscription: ReturnType<typeof getSubscriptionSnapshot>;
   user: ReturnType<typeof getUser>;
   profileImageUrl: string | null;
   homeHref: string;
@@ -134,11 +141,17 @@ function Sidebar({
             <span className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-[var(--sidebar-text-active)]">{user.fullName}</p>
               <p className="truncate text-xs text-[var(--sidebar-text)]">{user.email}</p>
-              {subscriber && subscription.planName ? (
-                <span className="mt-2 inline-block rounded-full bg-brand/20 px-2 py-0.5 text-xs font-semibold text-brand">
-                  {subscription.planName}
-                </span>
-              ) : null}
+              <Link
+                href="/manage-plan"
+                onClick={onNavigate}
+                className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-semibold transition hover:opacity-90 ${
+                  subscriber
+                    ? "bg-brand/20 text-brand"
+                    : "bg-[var(--sidebar-control-hover)] text-[var(--sidebar-text)]"
+                }`}
+              >
+                {planBadgeLabel(subscription)}
+              </Link>
             </span>
           </Link>
         ) : null}

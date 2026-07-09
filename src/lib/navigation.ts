@@ -50,6 +50,7 @@ export const memberNavLinks: AppNavLink[] = [
   { href: "/bank-accounts", label: "Ledger", icon: "◇" },
   { href: "/organizations", label: "Entities", icon: "▣" },
   { href: "/notifications", label: "Alerts", icon: "◔" },
+  { href: "/manage-plan", label: "Plan & billing", icon: "◆" },
   { href: "/profile", label: "Account", icon: "◎" },
 ];
 
