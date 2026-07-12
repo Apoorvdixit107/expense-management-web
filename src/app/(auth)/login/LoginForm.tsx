@@ -12,11 +12,12 @@ import { api } from "@/lib/api";
 import { showAuthError } from "@/lib/authErrors";
 import { saveSession } from "@/lib/auth";
 import { resolvePostAuthPath } from "@/lib/authSession";
+import { safeInternalPath } from "@/lib/safeRedirect";
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next");
+  const nextPath = safeInternalPath(searchParams.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
