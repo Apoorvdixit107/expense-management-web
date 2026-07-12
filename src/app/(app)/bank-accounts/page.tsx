@@ -74,7 +74,7 @@ export default function CashAndBankPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Cash & Bank"
+        title="Ledger"
         subtitle={`Cash, online, and bank transactions for ${currentOrg.name}`}
         action={<FeatureGuideTrigger guideId="ledger" />}
       />

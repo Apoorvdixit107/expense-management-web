@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { showApiError } from "@/lib/apiErrors";
@@ -26,6 +27,8 @@ export default function PoliciesPage() {
   const [maxAmount, setMaxAmount] = useState("");
   const [receiptAbove, setReceiptAbove] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deactivateTarget, setDeactivateTarget] = useState<SpendPolicy | null>(null);
+  const [deactivating, setDeactivating] = useState(false);
 
   function load() {
     if (!currentOrgId) {
@@ -69,15 +72,18 @@ export default function PoliciesPage() {
     }
   }
 
-  async function removePolicy(policy: SpendPolicy) {
-    if (!currentOrgId) return;
-    if (!window.confirm(`Deactivate policy "${policy.name}"?`)) return;
+  async function confirmDeactivate() {
+    if (!currentOrgId || !deactivateTarget) return;
+    setDeactivating(true);
     try {
-      await api.deleteSpendPolicy(currentOrgId, policy.id);
+      await api.deleteSpendPolicy(currentOrgId, deactivateTarget.id);
       toast.success("Policy deactivated");
+      setDeactivateTarget(null);
       load();
     } catch (err) {
       showApiError(err, "Could not deactivate policy");
+    } finally {
+      setDeactivating(false);
     }
   }
 
@@ -146,13 +152,32 @@ export default function PoliciesPage() {
                     : ""}
                 </p>
               </div>
-              <Button variant="secondary" onClick={() => removePolicy(policy)}>
+              <Button variant="secondary" onClick={() => setDeactivateTarget(policy)}>
                 Deactivate
               </Button>
             </Card>
           ))
         )}
       </div>
+
+      <ConfirmDialog
+        open={deactivateTarget != null}
+        onClose={() => {
+          if (deactivating) return;
+          setDeactivateTarget(null);
+        }}
+        onConfirm={confirmDeactivate}
+        title="Deactivate policy"
+        message={
+          deactivateTarget
+            ? `Deactivate "${deactivateTarget.name}"? It will no longer apply to new spend. Existing transactions are unchanged.`
+            : ""
+        }
+        confirmLabel="Deactivate"
+        confirmVariant="danger"
+        loading={deactivating}
+        loadingLabel="Deactivating…"
+      />
       </OrgRequiredState>
       </FinanceRoleGuard>
     </SubscriberGuard>

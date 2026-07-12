@@ -61,9 +61,9 @@ export default function OrganizationsPage() {
       setTypeChoice("HOME");
       setCustomTypeLabel("");
       await refreshOrgs();
-      showApiSuccess("Organization created with default expense categories.");
+      showApiSuccess("Entity created with default expense categories.");
     } catch (err) {
-      showApiError(err, "Failed to create organization");
+      showApiError(err, "Failed to create entity");
     } finally {
       setLoading(false);
     }
@@ -84,9 +84,9 @@ export default function OrganizationsPage() {
       setTypeChoice("HOME");
       setCustomTypeLabel("");
       await refreshOrgs();
-      showApiSuccess("Organization updated.");
+      showApiSuccess("Entity updated.");
     } catch (err) {
-      showApiError(err, "Failed to update organization");
+      showApiError(err, "Failed to update entity");
     } finally {
       setLoading(false);
     }
@@ -95,7 +95,7 @@ export default function OrganizationsPage() {
   async function confirmDeleteOrganization() {
     if (!deleteTarget) return;
     if (organizations.length <= 1) {
-      toast.error("You need at least one organization. Create another before deleting this one.");
+      toast.error("You need at least one entity. Create another before deleting this one.");
       setDeleteTarget(null);
       return;
     }
@@ -103,10 +103,10 @@ export default function OrganizationsPage() {
     try {
       await api.deleteOrganization(deleteTarget.id);
       await refreshOrgs();
-      showApiSuccess("Organization deleted.");
+      showApiSuccess("Entity deleted.");
       setDeleteTarget(null);
     } catch (err) {
-      showApiError(err, "Could not delete this organization. Try again.");
+      showApiError(err, "Could not delete this entity. Try again.");
     } finally {
       setDeleting(false);
     }
@@ -134,13 +134,13 @@ export default function OrganizationsPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Organizations"
+        title="Entities"
         subtitle="Manage company, home, shop, or any custom place where you track expenses."
         action={<FeatureGuideTrigger guideId="entities" />}
       />
 
       <Card>
-        <h2 className="text-lg font-bold text-ink">{editing ? "Edit organization" : "Add organization"}</h2>
+        <h2 className="text-lg font-bold text-ink">{editing ? "Edit entity" : "Add entity"}</h2>
         <form onSubmit={editing ? handleUpdate : handleCreate} className="mt-4 grid gap-4 sm:grid-cols-2">
           <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
           <label className="block space-y-1.5">
@@ -170,7 +170,7 @@ export default function OrganizationsPage() {
           ) : null}
           <div className="flex flex-wrap gap-2 sm:col-span-2">
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : editing ? "Save changes" : "Create organization"}
+              {loading ? "Saving..." : editing ? "Save changes" : "Create entity"}
             </Button>
             {editing ? (
               <Button type="button" variant="secondary" onClick={resetForm}>
@@ -190,7 +190,7 @@ export default function OrganizationsPage() {
               <p className="font-semibold text-ink">{org.name}</p>
               <p className="text-sm text-muted">
                 {organizationTypeLabel(org)} · default categories included
-                {isLastOrg ? " · cannot delete your only organization" : ""}
+                {isLastOrg ? " · cannot delete your only entity" : ""}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -219,7 +219,7 @@ export default function OrganizationsPage() {
           if (!deleting) setDeleteTarget(null);
         }}
         onConfirm={confirmDeleteOrganization}
-        title="Delete organization"
+        title="Delete entity"
         itemName={deleteTarget?.name}
         message={
           deleteTarget

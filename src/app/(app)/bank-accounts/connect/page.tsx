@@ -140,11 +140,11 @@ export default function ConnectBankAccountPage() {
     <SubscriberGuard featureName="Connect bank">
       <div className="space-y-8">
         <PageHeader
-          title="Connect bank account"
+          title="Connect Bank"
           subtitle={
             currentOrg
               ? `Link net banking for ${currentOrg.name}. Credits and debits sync as transactions.`
-              : "Select an organization to manage bank accounts"
+              : "Select an entity to manage bank accounts"
           }
           action={<FeatureGuideTrigger guideId="connect-bank" />}
         />

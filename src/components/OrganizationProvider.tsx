@@ -37,7 +37,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
       const orgs = await api.listOrganizations();
       setOrganizations(orgs);
     } catch (err) {
-      showApiError(err, "Could not refresh organizations");
+      showApiError(err, "Could not refresh entities");
       throw err;
     }
   }, []);
@@ -75,7 +75,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
       } catch (err) {
         if (!cancelled) {
           setOrganizations([]);
-          showApiError(err, "Could not load organizations. Check that the backend is running.");
+          showApiError(err, "Could not load entities. Please try again.");
         }
       } finally {
         if (!cancelled) setLoading(false);

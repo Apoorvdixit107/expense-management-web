@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { FreeTrialPlanSection, PlanTrialBadge } from "@/components/FreeTrialPlanSection";
 import { ShippingDetailsForm } from "@/components/ShippingDetailsForm";
 import { Modal } from "@/components/ui/Modal";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useRazorpayCheckout } from "@/hooks/useRazorpayCheckout";
 import { useSubscription } from "@/components/SubscriptionProvider";
 import { Button } from "@/components/ui/Button";
@@ -30,6 +31,7 @@ export default function ManagePlanPage() {
   const router = useRouter();
   const { subscription, loading, refresh } = useSubscription();
   const { payForPlan, loadingPlan } = useRazorpayCheckout();
+  const { confirm, dialog: confirmDialog } = useConfirmDialog();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [checkoutPlan, setCheckoutPlan] = useState<{ code: PlanCode; name: string } | null>(null);
@@ -180,7 +182,15 @@ export default function ManagePlanPage() {
             loading={loadingPlan === checkoutPlan.code}
             onCancel={() => setCheckoutPlan(null)}
             onSubmit={async (details: ShippingDetails, sendInvoiceEmail: boolean) => {
-              await payForPlan(checkoutPlan.code, details, sendInvoiceEmail);
+              await payForPlan(checkoutPlan.code, details, sendInvoiceEmail, {
+                confirmMockPayment: async (checkout) =>
+                  confirm({
+                    title: "Confirm payment",
+                    message: `Confirm ${checkout.planName} for ₹${(checkout.amountPaise / 100).toFixed(0)}/month? This is mock payment mode for local testing.`,
+                    confirmLabel: "Confirm payment",
+                    confirmVariant: "primary",
+                  }),
+              });
               setCheckoutPlan(null);
               await refresh();
               const updated = await api.listInvoices();
@@ -189,6 +199,8 @@ export default function ManagePlanPage() {
           />
         ) : null}
       </Modal>
+
+      {confirmDialog}
     </div>
   );
 }

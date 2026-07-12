@@ -20,7 +20,7 @@ type ProfileLabels = {
 
 const LABELS: Record<string, ProfileLabels> = {
   "en-IN": {
-    title: "Profile",
+    title: "Account",
     subtitle: "View and update your personal information",
     personalInfo: "Personal information",
     emailNote: "Email is tied to your login and cannot be changed here.",
@@ -39,7 +39,7 @@ const LABELS: Record<string, ProfileLabels> = {
     preferencesNote: "Currency and language apply across amounts and dates in the app.",
   },
   "en-US": {
-    title: "Profile",
+    title: "Account",
     subtitle: "View and update your personal information",
     personalInfo: "Personal information",
     emailNote: "Email is tied to your login and cannot be changed here.",

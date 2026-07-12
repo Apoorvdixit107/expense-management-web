@@ -42,7 +42,7 @@ export default function SelectAccountPage() {
       </div>
 
       <Card className="space-y-3 p-2">
-        <p className="px-3 pt-2 text-xs font-semibold uppercase tracking-wide text-muted">Your organizations</p>
+        <p className="px-3 pt-2 text-xs font-semibold uppercase tracking-wide text-muted">Your entities</p>
         {organizations.map((org) => (
           <button
             key={org.id}
@@ -79,7 +79,7 @@ export default function SelectAccountPage() {
       </label>
 
       <Button variant="secondary" className="mt-4" onClick={() => router.push("/organizations")}>
-        + Add organization
+        + Add entity
       </Button>
     </div>
   );

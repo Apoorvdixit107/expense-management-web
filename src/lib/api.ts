@@ -74,6 +74,11 @@ import { isGenericHttpMessage } from "./apiErrors";
 import { profitabilityFromSummary } from "./profitability";
 
 function parseErrorMessage(body: string, status: number): string {
+  // Never expose server internals to the client layer.
+  if (status >= 500) {
+    return "Something went wrong on our side. Please try again.";
+  }
+
   let message = body;
   try {
     const json = JSON.parse(body) as { detail?: string; message?: string; error?: string; title?: string };
@@ -88,7 +93,7 @@ function parseErrorMessage(body: string, status: number): string {
     if (status === 400) return "Invalid request. Please check your input and try again.";
     if (status === 401) return "Invalid email or password";
     if (status === 403) {
-      return "Access denied. Sign in again, or ensure the backend allows your site origin and bill scan is deployed.";
+      return "You don't have permission to do that.";
     }
     if (status === 404) return "The requested item was not found.";
     if (status === 409) return "Email already registered";
@@ -97,14 +102,9 @@ function parseErrorMessage(body: string, status: number): string {
     if (status === 503 || status === 502 || status === 504) {
       return "Service is temporarily unavailable. Please try again shortly.";
     }
-    if (status >= 500) return "Something went wrong on our side. Please try again.";
     return `Request failed (${status})`;
   }
   return message;
-}
-
-function isAuthPath(path: string): boolean {
-  return path.startsWith("/api/auth/");
 }
 
 async function request<T>(path: string, init: RequestInit = {}, auth = true): Promise<T> {
@@ -119,12 +119,7 @@ async function request<T>(path: string, init: RequestInit = {}, auth = true): Pr
   }
 
   const response = await fetch(`${API_URL}${path}`, { ...init, headers }).catch(() => {
-    throw new ApiError(
-      isAuthPath(path)
-        ? "Cannot reach the server."
-        : "Cannot reach the API. Start the backend: cd ExpenseManagementSystem && docker compose up (gateway on :8081)",
-      0
-    );
+    throw new ApiError("Cannot reach the server. Check your connection and try again.", 0);
   });
 
   if (response.status === 401 && auth) {

@@ -33,7 +33,7 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Notifications"
+        title="Alerts"
         subtitle="Email & SMS alerts for your account"
         action={<FeatureGuideTrigger guideId="alerts" />}
       />

@@ -23,7 +23,7 @@ export default function BudgetsPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Budgets"
+        title="Budgets & limits"
         subtitle={
           currentOrg
             ? `Spending limits for ${currentOrg.name}`

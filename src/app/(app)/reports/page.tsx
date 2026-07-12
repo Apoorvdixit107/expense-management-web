@@ -58,11 +58,11 @@ function ReportsContent() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Reports"
+        title="Reports & export"
         subtitle={
           currentOrg
             ? `Financial reports for ${currentOrg.name}`
-            : "Select an organization to view reports"
+            : "Select an entity to view reports"
         }
         action={<FeatureGuideTrigger guideId="reports" />}
       />

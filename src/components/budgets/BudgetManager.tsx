@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ConfirmDeleteDialog } from "@/components/ui/ConfirmDeleteDialog";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
@@ -169,6 +170,8 @@ export function BudgetCard({
   const [editing, setEditing] = useState(false);
   const [amount, setAmount] = useState(String(budget.budgetAmount));
   const [saving, setSaving] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const barWidth = Math.min(budget.utilizationPercent, 100);
 
@@ -192,15 +195,18 @@ export function BudgetCard({
     }
   }
 
-  async function remove() {
+  async function confirmDelete() {
     if (!currentOrgId) return;
-    if (!window.confirm("Delete this budget?")) return;
+    setDeleting(true);
     try {
       await api.deleteBudget(currentOrgId, budget.id);
       toast.success("Budget deleted.");
+      setDeleteOpen(false);
       onUpdated();
     } catch (err) {
       showApiError(err, "Failed to delete budget");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -278,10 +284,23 @@ export function BudgetCard({
             Edit amount
           </Button>
         )}
-        <Button className="h-9 px-3 text-xs" variant="danger" onClick={remove}>
+        <Button className="h-9 px-3 text-xs" variant="danger" onClick={() => setDeleteOpen(true)}>
           Delete
         </Button>
       </div>
+
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onClose={() => {
+          if (deleting) return;
+          setDeleteOpen(false);
+        }}
+        onConfirm={confirmDelete}
+        title="Delete budget"
+        message={`Delete the budget for ${budget.categoryName} (${budget.periodLabel})? This cannot be undone.`}
+        confirmLabel="Delete"
+        loading={deleting}
+      />
     </Card>
   );
 }

@@ -17,16 +17,19 @@ const GENERIC_HTTP = new Set([
   "Server error",
 ]);
 
+const SERVER_ERROR_MESSAGE =
+  "Something went wrong on our side. Please try again in a moment.";
+
 const KNOWN_MESSAGES: Array<{ match: string | RegExp; message: string }> = [
   {
     match: "You must keep at least one organization",
-    message: "You need at least one organization. Create another before deleting this one.",
+    message: "You need at least one entity. Create another before deleting this one.",
   },
   {
     match: "Posted or pending spend cannot be edited",
     message: EDIT_BLOCKED_MESSAGE,
   },
-  { match: "Organization not found", message: "Organization not found." },
+  { match: "Organization not found", message: "Entity not found." },
   { match: "Category already exists", message: "A category with this name already exists." },
   { match: "Email already registered", message: "This email is already registered." },
   { match: "Invalid credentials", message: "Incorrect email or password." },
@@ -46,8 +49,11 @@ function looksTechnical(message: string): boolean {
   if (!text) return true;
   if (text.startsWith("{") && text.includes("status")) return true;
   if (GENERIC_HTTP.has(text)) return true;
-  if (/sql|exception|stack trace|constraint violation|null pointer/i.test(text)) return true;
+  if (/sql|exception|stack trace|constraint violation|null pointer|hibernate|jackson|servlet/i.test(text)) {
+    return true;
+  }
   if (/^Request failed \(\d+\)$/i.test(text)) return true;
+  if (/Cannot reach the API\. Start the backend/i.test(text)) return true;
   if (text.length > 160) return true;
   return false;
 }
@@ -87,9 +93,9 @@ function statusFallback(status: number, fallback: string): string {
       return "Service is temporarily unavailable. Please try again shortly.";
     default:
       if (status >= 500) {
-        return "Something went wrong on our side. Please try again in a moment.";
+        return SERVER_ERROR_MESSAGE;
       }
-      return fallback;
+      return fallback || SERVER_ERROR_MESSAGE;
   }
 }
 
@@ -104,14 +110,29 @@ export type ResolvedApiError = {
   status: number;
 };
 
-/** Resolve API errors into user-friendly text and toast variant by HTTP status. */
+/**
+ * Resolve API errors into user-friendly toast text.
+ * Never exposes raw backend / 500 details to the user.
+ */
 export function resolveApiError(err: unknown, fallback: string): ResolvedApiError {
   if (err instanceof ApiError && err.message === "Payment cancelled") {
     return { message: "Payment cancelled.", variant: "info", status: err.status };
   }
 
   if (!(err instanceof ApiError)) {
-    return { message: fallback, variant: "error", status: -1 };
+    if (err instanceof Error && looksTechnical(err.message)) {
+      return { message: fallback || SERVER_ERROR_MESSAGE, variant: "error", status: -1 };
+    }
+    return { message: fallback || SERVER_ERROR_MESSAGE, variant: "error", status: -1 };
+  }
+
+  // Never surface server/backend internals (5xx) or connection diagnostics.
+  if (err.status >= 500 || err.status === 0) {
+    return {
+      message: statusFallback(err.status, fallback),
+      variant: getErrorVariant(err.status),
+      status: err.status,
+    };
   }
 
   const known = matchKnown(err.message);

@@ -35,12 +35,19 @@ export function useRazorpayCheckout() {
   const [loadingPlan, setLoadingPlan] = useState<PlanCode | null>(null);
 
   const payForPlan = useCallback(
-    async (planCode: PlanCode, shippingDetails: ShippingDetails, sendInvoiceEmail: boolean) => {
+    async (
+      planCode: PlanCode,
+      shippingDetails: ShippingDetails,
+      sendInvoiceEmail: boolean,
+      options?: {
+        confirmMockPayment?: (checkout: CheckoutSession) => Promise<boolean>;
+      }
+    ) => {
       setLoadingPlan(planCode);
 
       try {
         const checkout = await api.createCheckout({ planCode, shippingDetails, sendInvoiceEmail });
-        await openCheckout(checkout, shippingDetails, refresh);
+        await openCheckout(checkout, shippingDetails, refresh, options?.confirmMockPayment);
         toast.success(
           sendInvoiceEmail
             ? "Payment successful. Invoice will be emailed to you."
@@ -61,12 +68,13 @@ export function useRazorpayCheckout() {
 async function openCheckout(
   checkout: CheckoutSession,
   shipping: ShippingDetails,
-  onSuccess: () => Promise<void>
+  onSuccess: () => Promise<void>,
+  confirmMockPayment?: (checkout: CheckoutSession) => Promise<boolean>
 ) {
   if (checkout.mock) {
-    const confirmed = window.confirm(
-      `Mock payment mode: confirm ${checkout.planName} plan for ₹${(checkout.amountPaise / 100).toFixed(0)}/month?`
-    );
+    const confirmed = confirmMockPayment
+      ? await confirmMockPayment(checkout)
+      : false;
     if (!confirmed) throw new Error("Payment cancelled");
 
     await api.verifyPayment({

@@ -12,7 +12,7 @@ export default function AssistantPage() {
     <SubscriberGuard featureName="Ask finance">
       <div className="space-y-8">
         <PageHeader
-          title="AI Assistant"
+          title="Ask finance"
           subtitle="Ask questions about your expenses, balance, and budgeting — powered by Gemini."
           action={<FeatureGuideTrigger guideId="assistant" />}
         />

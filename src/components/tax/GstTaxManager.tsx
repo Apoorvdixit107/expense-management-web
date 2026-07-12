@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ConfirmDeleteDialog } from "@/components/ui/ConfirmDeleteDialog";
 import { withFeatureGuideAction } from "@/components/FeatureGuide";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
@@ -229,18 +230,21 @@ type TaxCategoryListProps = {
 
 export function TaxCategoryList({ categories, onDeleted }: TaxCategoryListProps) {
   const { currentOrgId } = useOrganization();
+  const [deleteTarget, setDeleteTarget] = useState<GstTaxCategory | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  async function handleDelete(category: GstTaxCategory) {
-    if (!currentOrgId) return;
-    if (!window.confirm(`Remove "${category.name}"? Existing transactions keep their stored tax.`)) {
-      return;
-    }
+  async function confirmDelete() {
+    if (!currentOrgId || !deleteTarget) return;
+    setDeleting(true);
     try {
-      await api.deleteTaxCategory(currentOrgId, category.id);
+      await api.deleteTaxCategory(currentOrgId, deleteTarget.id);
       toast.success("Tax category removed.");
+      setDeleteTarget(null);
       onDeleted();
     } catch (err) {
       showApiError(err, "Failed to remove tax category");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -253,19 +257,38 @@ export function TaxCategoryList({ categories, onDeleted }: TaxCategoryListProps)
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {categories.map((cat) => (
-        <Card key={cat.id} className="flex items-center justify-between gap-3">
-          <div>
-            <p className="font-semibold text-ink">{cat.name}</p>
-            <p className="text-sm text-muted">{cat.rate}% GST</p>
-          </div>
-          <Button type="button" variant="secondary" onClick={() => void handleDelete(cat)}>
-            Remove
-          </Button>
-        </Card>
-      ))}
-    </div>
+    <>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {categories.map((cat) => (
+          <Card key={cat.id} className="flex items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-ink">{cat.name}</p>
+              <p className="text-sm text-muted">{cat.rate}% GST</p>
+            </div>
+            <Button type="button" variant="secondary" onClick={() => setDeleteTarget(cat)}>
+              Remove
+            </Button>
+          </Card>
+        ))}
+      </div>
+
+      <ConfirmDeleteDialog
+        open={deleteTarget != null}
+        onClose={() => {
+          if (deleting) return;
+          setDeleteTarget(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Remove tax category"
+        message={
+          deleteTarget
+            ? `Remove "${deleteTarget.name}"? Existing transactions keep their stored tax.`
+            : ""
+        }
+        confirmLabel="Remove"
+        loading={deleting}
+      />
+    </>
   );
 }
 
@@ -295,7 +318,7 @@ export function GstTaxPageContent() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Tax / GST"
+        title="Tax & compliance"
         subtitle={
           currentOrg
             ? `GST summary for ${currentOrg.name}`
