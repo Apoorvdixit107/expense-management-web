@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { CookieSettingsLink } from "@/components/CookieSettingsLink";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { CONTACT_EMAIL, CONTACT_MAILTO, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/contact";
 import { COOKIE_CATEGORIES } from "@/lib/cookies";
 
 export const metadata = {
@@ -83,8 +84,20 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-lg font-bold text-ink">Contact</h2>
             <p className="mt-2 text-muted">
-              Questions about privacy or cookies? Reach us via WhatsApp from the app or email
-              support through your account settings.
+              Questions about privacy or cookies? Email us at{" "}
+              <a href={CONTACT_MAILTO} className="font-semibold text-brand hover:text-brand-hover">
+                {CONTACT_EMAIL}
+              </a>{" "}
+              or message us on{" "}
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-brand hover:text-brand-hover"
+              >
+                WhatsApp ({WHATSAPP_DISPLAY})
+              </a>
+              .
             </p>
           </section>
         </div>
