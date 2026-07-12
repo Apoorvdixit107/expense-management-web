@@ -6,6 +6,10 @@ import {
   BlogIndexMockup,
   BlogPostMockup,
 } from "@/design-preview/screens/BlogMockups";
+import {
+  PricingDesktopMockup,
+  PricingMobileMockup,
+} from "@/design-preview/screens/PricingMockups";
 import { DashboardMockup } from "@/design-preview/screens/DashboardMockup";
 import { ExpensesMockup } from "@/design-preview/screens/ExpensesMockup";
 import { GuestExpensesMockup } from "@/design-preview/screens/GuestExpensesMockup";
@@ -21,14 +25,36 @@ const screens: {
   label: string;
   title: string;
   note: string;
-  group: "Guest (trial)" | "Auth" | "Subscribe" | "Subscriber" | "Marketing · Blog";
+  group:
+    | "Guest (trial)"
+    | "Auth"
+    | "Subscribe"
+    | "Subscriber"
+    | "Marketing · Blog"
+    | "Marketing · Pricing";
   Mock: ComponentType;
 }[] = [
+  {
+    id: "pricing-desktop",
+    label: "P1. Pricing desktop",
+    title: "Pricing — desktop",
+    note: "Ramp-style structure, ExpenseKit light + orange. Free / Starter / Growth / Enterprise. Spec: docs/PRICING-DESIGN-SPEC.md",
+    group: "Marketing · Pricing",
+    Mock: PricingDesktopMockup,
+  },
+  {
+    id: "pricing-mobile",
+    label: "P2. Pricing mobile",
+    title: "Pricing — mobile (375)",
+    note: "Cards stack; Growth keeps brand border. Live at /pricing.",
+    group: "Marketing · Pricing",
+    Mock: PricingMobileMockup,
+  },
   {
     id: "blog-index",
     label: "B1. Blog index",
     title: "Blog — post list",
-    note: "Public marketing. List layout (not cards). Nav includes Blog. Approve before live /blog. Spec: docs/BLOG-DESIGN-SPEC.md",
+    note: "Public marketing. List layout (not cards). Nav includes Blog. Spec: docs/BLOG-DESIGN-SPEC.md",
     group: "Marketing · Blog",
     Mock: BlogIndexMockup,
   },
@@ -130,7 +156,14 @@ const screens: {
   },
 ];
 
-const groups = ["Marketing · Blog", "Guest (trial)", "Auth", "Subscribe", "Subscriber"] as const;
+const groups = [
+  "Marketing · Pricing",
+  "Marketing · Blog",
+  "Guest (trial)",
+  "Auth",
+  "Subscribe",
+  "Subscriber",
+] as const;
 
 export default function DesignPreviewPage() {
   return (
@@ -144,7 +177,7 @@ export default function DesignPreviewPage() {
             <h1 className="text-xl font-bold" style={{ color: brand.ink }}>
               ExpenseKit — Design review
             </h1>
-            <p className="text-sm text-slate-500">Blog (marketing) + Guest-first UX (v3)</p>
+            <p className="text-sm text-slate-500">Pricing + Blog (marketing) + Guest-first UX (v3)</p>
           </div>
           <p className="max-w-xl text-right text-sm text-slate-500">
             Inspired by{" "}

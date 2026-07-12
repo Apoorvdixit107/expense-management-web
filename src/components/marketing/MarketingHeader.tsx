@@ -19,7 +19,7 @@ export function MarketingHeader({ active }: MarketingHeaderProps) {
             Features
           </Link>
           <Link
-            href="/#pricing"
+            href="/pricing"
             className={`transition hover:text-[#212121] ${active === "pricing" ? "font-semibold text-[#212121]" : ""}`}
           >
             Pricing

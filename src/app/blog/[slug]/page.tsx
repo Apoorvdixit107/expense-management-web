@@ -90,7 +90,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               Start free trial
             </Link>
             <Link
-              href="/#pricing"
+              href="/pricing"
               className="inline-flex rounded-lg border border-[#d1d1d1] bg-white px-5 py-2.5 text-sm font-medium text-[#212121] transition hover:bg-[#fafafa]"
             >
               View pricing
