@@ -13,7 +13,7 @@
 | Content system | **MDX in-repo** (`content/blog/*.mdx`) — no CMS yet |
 | Routes | `/blog` (index), `/blog/[slug]` (post) — public, outside AppShell |
 | Chrome | Same marketing header/footer as landing (+ Blog nav link) |
-| CTA on posts | Primary: Start free trial → `/register` · Secondary: Pricing → `/#pricing` |
+| CTA on posts | Primary: Start free trial → `/register` · Secondary: Pricing → `/pricing` |
 | Launch posts | 3 articles (drafts below) |
 
 ---

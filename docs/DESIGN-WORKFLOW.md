@@ -20,11 +20,18 @@ Design preview screens  →  You approve  →  I implement in Next.js
 
 **http://localhost:3000/design-preview**
 
-### Blog (this week)
+### Pricing (this week)
+
+- Live: **http://localhost:3000/pricing**
+- Screens: **Marketing · Pricing** (desktop + mobile) at `/design-preview`
+- Spec: [PRICING-DESIGN-SPEC.md](./PRICING-DESIGN-SPEC.md)
+- Tiers: Free · Starter ₹999 · Growth ₹2,499 · Enterprise Custom
+
+### Blog
 
 - Screens: **Marketing · Blog** (index, post, empty) at `/design-preview`
 - Spec + drafts: [BLOG-DESIGN-SPEC.md](./BLOG-DESIGN-SPEC.md), `content/blog/drafts/`
-- Approve with: **Design approved — implement blog**
+- Live: `/blog`
 
 ### Current design (v3)
 

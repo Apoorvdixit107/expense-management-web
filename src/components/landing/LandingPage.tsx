@@ -96,16 +96,25 @@ export function LandingPage() {
 
         <section id="pricing" className="py-20">
           <div className="mx-auto max-w-3xl px-6 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-[#212121]">Simple plans for growing teams</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-[#212121]">
+              Plans for shops, teams, and industry
+            </h2>
             <p className="mt-4 text-[#6b6b6b]">
-              14-day company trial. Upgrade when you need full spend control, policies, and team seats.
+              Free for home &amp; shop. Starter from ₹999/mo. Growth for multi-entity teams. Custom for
+              industrialists.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link
-                href="/register"
+                href="/pricing"
                 className="inline-flex rounded-lg bg-brand px-8 py-3.5 text-base font-semibold text-white transition hover:bg-brand-hover"
               >
-                Create account
+                View pricing
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex rounded-lg border border-[#d1d1d1] bg-white px-8 py-3.5 text-base font-semibold text-[#212121] transition hover:bg-[#fafafa]"
+              >
+                Start free trial
               </Link>
             </div>
           </div>
