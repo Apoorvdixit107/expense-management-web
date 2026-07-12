@@ -189,7 +189,7 @@ export function withFeatureGuideAction(
   options?: { label?: string; showFirstVisit?: boolean }
 ) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
       {action}
       <FeatureGuideTrigger
         guideId={guideId}

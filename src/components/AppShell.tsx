@@ -232,6 +232,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
     if (!isAuthenticated()) return;
     ensureTrialStarted();
   }, []);
@@ -268,7 +275,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen min-w-0 overflow-x-hidden bg-paper">
       {/* Mobile overlay */}
       {mobileOpen ? (
         <button
@@ -299,14 +306,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         />
       </aside>
 
-      {/* Main content */}
-      <div className="flex min-h-screen flex-col lg:pl-[260px]">
+      {/* Main content — min-w-0 + overflow-x contain so charts/tables cannot blow out the page */}
+      <div className="flex min-h-screen min-w-0 flex-col overflow-x-hidden lg:pl-[260px]">
         {/* Mobile top bar */}
         <header className="flex h-14 items-center gap-3 border-b border-border bg-surface px-4 lg:hidden">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-ink"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border text-ink"
             aria-label="Open menu"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -314,13 +321,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </svg>
           </button>
           <Logo href={homeHref} height={32} variant="icon" className="lg:hidden" />
-          <div className="ml-auto">
+          <div className="ml-auto shrink-0">
             <PremiumStarButton />
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <div className="mx-auto max-w-[1200px]">
+        <main className="min-w-0 flex-1 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <div className="mx-auto w-full min-w-0 max-w-[1200px]">
             <AuthenticatedTrialBanner />
             {trialExpiredForUser() ? <TrialExpiredBanner /> : null}
             {children}
