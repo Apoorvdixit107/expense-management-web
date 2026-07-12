@@ -10,30 +10,62 @@ import { showApiError } from "@/lib/apiErrors";
 import { isAuthenticated } from "@/lib/auth";
 import { postAuthPath } from "@/lib/navigation";
 
+const PENDING_INVITE_KEY = "ems_pending_team_invite";
+
+function takePendingInviteToken(fromQuery: string | null): string | null {
+  if (typeof window === "undefined") return fromQuery;
+  if (fromQuery) {
+    try {
+      sessionStorage.setItem(PENDING_INVITE_KEY, fromQuery);
+    } catch {
+      // ignore quota / private mode
+    }
+    return fromQuery;
+  }
+  try {
+    const stored = sessionStorage.getItem(PENDING_INVITE_KEY);
+    return stored;
+  } catch {
+    return null;
+  }
+}
+
+function clearPendingInviteToken() {
+  try {
+    sessionStorage.removeItem(PENDING_INVITE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 function AcceptInviteContent() {
   const router = useRouter();
   const params = useSearchParams();
-  const token = params.get("token");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   useEffect(() => {
+    const token = takePendingInviteToken(params.get("token"));
     if (!token) {
       setStatus("error");
       return;
     }
     if (!isAuthenticated()) {
-      router.replace(`/login?next=${encodeURIComponent(`/team/accept?token=${token}`)}`);
+      // Do not put the raw invite token in the login URL (history / Referer leakage).
+      router.replace("/login?next=/team/accept");
       return;
     }
     setStatus("loading");
     api
       .acceptTeamInvite(token)
-      .then(() => setStatus("done"))
+      .then(() => {
+        clearPendingInviteToken();
+        setStatus("done");
+      })
       .catch((err) => {
         showApiError(err, "Could not accept invite");
         setStatus("error");
       });
-  }, [token, router]);
+  }, [params, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-paper px-4">
