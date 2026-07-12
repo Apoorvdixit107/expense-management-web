@@ -1,4 +1,5 @@
-import { clearSession, getToken } from "./auth";
+import { getToken } from "./auth";
+import { logoutClient } from "./session";
 import type {
   AuthResponse,
   BillingCompany,
@@ -123,7 +124,12 @@ async function request<T>(path: string, init: RequestInit = {}, auth = true): Pr
   });
 
   if (response.status === 401 && auth) {
-    clearSession();
+    logoutClient();
+    if (typeof window !== "undefined") {
+      const path = window.location.pathname + window.location.search;
+      const next = encodeURIComponent(path.startsWith("/") ? path : "/dashboard");
+      window.location.replace(`/login?next=${next}`);
+    }
     throw new ApiError("Session expired. Please sign in again.", 401);
   }
 
