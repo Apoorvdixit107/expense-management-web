@@ -200,7 +200,7 @@ export function ExpenseForm({
         });
       } else {
         if (!currentOrgId || categoryId === "") {
-          toast.error("Select an organization and category first.");
+          toast.error("Select an entity and category first.");
           return;
         }
         const shared = {

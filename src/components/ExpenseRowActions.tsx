@@ -56,7 +56,7 @@ export function ExpenseRowActions({
       await fn();
       onChanged();
     } catch (err) {
-      showApiError(err, `Failed to ${action}`);
+      showApiError(err, `Couldn't ${action}. Please try again.`);
     } finally {
       setBusy(null);
     }

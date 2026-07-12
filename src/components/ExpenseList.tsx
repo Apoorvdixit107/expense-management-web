@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { ConfirmDeleteDialog, SOFT_DELETE_MESSAGE } from "@/components/ui/ConfirmDeleteDialog";
 import { ExpenseRowActions } from "@/components/ExpenseRowActions";
 import { RecordSpendActions } from "@/components/RecordSpendActions";
-import { PolicyWarning, SpendStatusBadge } from "@/components/SpendStatusBadge";
+import { PolicyMessageText, PolicyWarning, SpendStatusBadge } from "@/components/SpendStatusBadge";
 import { TransactionAmount, TransactionTypeBadge } from "@/components/TransactionAmount";
 import { api } from "@/lib/api";
 import { getUser } from "@/lib/auth";
@@ -154,7 +154,7 @@ export function ExpenseList(props: ExpenseListProps) {
                 {apiExpense ? <SpendStatusBadge status={apiExpense.spendStatus} /> : null}
                 {view === "deleted" ? <Badge variant="neutral">Deleted</Badge> : null}
                 {apiExpense?.policyViolation ? (
-                  <PolicyWarning message={apiExpense.policyMessage ?? "Policy warning"} />
+                  <PolicyWarning message={apiExpense.policyMessage} />
                 ) : null}
                 {props.mode === "api" && props.showPaymentMode && paymentMode ? (
                   <Badge variant="neutral">{paymentModeLabel(paymentMode)}</Badge>
@@ -173,7 +173,7 @@ export function ExpenseList(props: ExpenseListProps) {
                 </p>
               ) : null}
               {apiExpense?.policyViolation && apiExpense.policyMessage ? (
-                <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{apiExpense.policyMessage}</p>
+                <PolicyMessageText message={apiExpense.policyMessage} />
               ) : null}
               {deletedAt ? (
                 <p className="mt-1 text-xs text-muted">Deleted {formatDateTime(deletedAt)}</p>

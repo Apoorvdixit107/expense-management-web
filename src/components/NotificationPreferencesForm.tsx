@@ -44,8 +44,8 @@ export function NotificationPreferencesForm() {
     setTesting(true);
     try {
       await api.updateNotificationPreferences(prefs);
-      const result = await api.sendTestNotification();
-      toast.success(result.message);
+      await api.sendTestNotification();
+      toast.success("Test notification sent.");
     } catch (err) {
       showApiError(err, "Failed to send test notification");
     } finally {

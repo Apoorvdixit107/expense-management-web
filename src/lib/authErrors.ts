@@ -25,18 +25,6 @@ const KNOWN_MESSAGES: Array<{ match: string | RegExp; message: string }> = [
   { match: /email.*valid/i, message: "Enter a valid email address." },
 ];
 
-function looksTechnical(message: string): boolean {
-  const text = message.trim();
-  if (!text) return true;
-  if (text.startsWith("{") && text.includes("status")) return true;
-  if (text.startsWith("[") && text.includes("error")) return true;
-  if (/internal server error/i.test(text)) return true;
-  if (/sql|exception|stack|constraint|null pointer/i.test(text)) return true;
-  if (/^Request failed \(\d+\)$/i.test(text)) return true;
-  if (text.length > 140) return true;
-  return false;
-}
-
 function matchKnownMessage(message: string): string | null {
   for (const entry of KNOWN_MESSAGES) {
     if (typeof entry.match === "string") {
@@ -79,12 +67,8 @@ export function getAuthErrorMessage(err: unknown, action: AuthAction): string {
     return FALLBACK[action];
   }
 
-  const message = err.message.trim();
-  if (looksTechnical(message)) {
-    return FALLBACK[action];
-  }
-
-  return message;
+  // Never surface unknown backend text on auth screens
+  return FALLBACK[action];
 }
 
 /** Status-aware toast for sign-in / sign-up failures. */

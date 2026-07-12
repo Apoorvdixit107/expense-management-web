@@ -44,7 +44,7 @@ export default function UploadBillPage() {
 
   async function scanBill() {
     if (!currentOrgId || !preparedFile) {
-      toast.error("Select an organization and upload a bill first.");
+      toast.error("Select an entity and upload a bill first.");
       return;
     }
     setScanning(true);
@@ -68,7 +68,7 @@ export default function UploadBillPage() {
         mock: result.mock,
       });
       if (result.mock) {
-        toast.info("Demo scan — add GEMINI_API_KEY on backend for real OCR.");
+        toast.info("Demo scan — AI preview mode is on.");
       } else {
         toast.success("Bill scanned — verify details below.");
       }

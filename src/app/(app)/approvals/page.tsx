@@ -15,6 +15,7 @@ import { formatCurrency } from "@/lib/format";
 import { OrgRequiredState } from "@/components/OrgRequiredState";
 import { FinanceRoleGuard } from "@/components/FinanceRoleGuard";
 import { withFeatureGuideAction } from "@/components/FeatureGuide";
+import { PolicyMessageText } from "@/components/SpendStatusBadge";
 import type { Expense } from "@/lib/types";
 
 function statusLabel(status?: Expense["spendStatus"]) {
@@ -117,7 +118,7 @@ export default function ApprovalsPage() {
                     {expense.description || "No description"} · {statusLabel(expense.spendStatus)}
                   </p>
                   {expense.policyViolation && expense.policyMessage ? (
-                    <p className="mt-1 text-xs text-amber-700">{expense.policyMessage}</p>
+                    <PolicyMessageText message={expense.policyMessage} />
                   ) : null}
                 </div>
                 <div className="flex items-center gap-3">

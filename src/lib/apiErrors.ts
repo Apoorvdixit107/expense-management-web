@@ -1,5 +1,6 @@
 import { toast } from "@/components/toast";
 import { ApiError } from "./api";
+import { getFriendlyPolicyToastMessage, isPolicyViolationMessage } from "./policyMessages";
 import { EDIT_BLOCKED_MESSAGE } from "./spend";
 
 export type ApiErrorVariant = "error" | "warning" | "info";
@@ -20,7 +21,8 @@ const GENERIC_HTTP = new Set([
 const SERVER_ERROR_MESSAGE =
   "Something went wrong on our side. Please try again in a moment.";
 
-const KNOWN_MESSAGES: Array<{ match: string | RegExp; message: string }> = [
+/** Only these known backend phrases are rewritten and shown — everything else uses fallback. */
+const KNOWN_MESSAGES: Array<{ match: string | RegExp; message: string; variant?: ApiErrorVariant }> = [
   {
     match: "You must keep at least one organization",
     message: "You need at least one entity. Create another before deleting this one.",
@@ -42,28 +44,22 @@ const KNOWN_MESSAGES: Array<{ match: string | RegExp; message: string }> = [
     match: "Billing API is unavailable",
     message: "Billing is temporarily unavailable. Please try again in a moment.",
   },
+  {
+    match: /cannot edit|not editable|locked/i,
+    message: EDIT_BLOCKED_MESSAGE,
+  },
 ];
 
-function looksTechnical(message: string): boolean {
-  const text = message.trim();
-  if (!text) return true;
-  if (text.startsWith("{") && text.includes("status")) return true;
-  if (GENERIC_HTTP.has(text)) return true;
-  if (/sql|exception|stack trace|constraint violation|null pointer|hibernate|jackson|servlet/i.test(text)) {
-    return true;
-  }
-  if (/^Request failed \(\d+\)$/i.test(text)) return true;
-  if (/Cannot reach the API\. Start the backend/i.test(text)) return true;
-  if (text.length > 160) return true;
-  return false;
-}
-
-function matchKnown(message: string): string | null {
+function matchKnown(
+  message: string
+): { message: string; variant?: ApiErrorVariant } | null {
   for (const entry of KNOWN_MESSAGES) {
     if (typeof entry.match === "string") {
-      if (message.includes(entry.match)) return entry.message;
+      if (message.includes(entry.match)) {
+        return { message: entry.message, variant: entry.variant };
+      }
     } else if (entry.match.test(message)) {
-      return entry.message;
+      return { message: entry.message, variant: entry.variant };
     }
   }
   return null;
@@ -74,7 +70,7 @@ function statusFallback(status: number, fallback: string): string {
     case 0:
       return "Cannot reach the server. Check your connection and try again.";
     case 400:
-      return fallback || "Invalid request. Please check your input and try again.";
+      return fallback || "We couldn't complete that. Check your details and try again.";
     case 401:
       return "Session expired. Please sign in again.";
     case 403:
@@ -92,9 +88,7 @@ function statusFallback(status: number, fallback: string): string {
     case 504:
       return "Service is temporarily unavailable. Please try again shortly.";
     default:
-      if (status >= 500) {
-        return SERVER_ERROR_MESSAGE;
-      }
+      if (status >= 500) return SERVER_ERROR_MESSAGE;
       return fallback || SERVER_ERROR_MESSAGE;
   }
 }
@@ -111,8 +105,8 @@ export type ResolvedApiError = {
 };
 
 /**
- * Resolve API errors into user-friendly toast text.
- * Never exposes raw backend / 500 details to the user.
+ * Resolve API errors into safe, user-facing toast text.
+ * Never shows raw backend / stack / policy dump strings.
  */
 export function resolveApiError(err: unknown, fallback: string): ResolvedApiError {
   if (err instanceof ApiError && err.message === "Payment cancelled") {
@@ -120,13 +114,14 @@ export function resolveApiError(err: unknown, fallback: string): ResolvedApiErro
   }
 
   if (!(err instanceof ApiError)) {
-    if (err instanceof Error && looksTechnical(err.message)) {
-      return { message: fallback || SERVER_ERROR_MESSAGE, variant: "error", status: -1 };
-    }
-    return { message: fallback || SERVER_ERROR_MESSAGE, variant: "error", status: -1 };
+    return {
+      message: fallback || SERVER_ERROR_MESSAGE,
+      variant: "error",
+      status: -1,
+    };
   }
 
-  // Never surface server/backend internals (5xx) or connection diagnostics.
+  // 5xx / network — never expose internals
   if (err.status >= 500 || err.status === 0) {
     return {
       message: statusFallback(err.status, fallback),
@@ -135,17 +130,32 @@ export function resolveApiError(err: unknown, fallback: string): ResolvedApiErro
     };
   }
 
-  const known = matchKnown(err.message);
-  if (known) {
-    return { message: known, variant: getErrorVariant(err.status), status: err.status };
+  const raw = err.message.trim();
+
+  // Policy blocks (submit/save) — friendly warning, not a scary ERROR dump
+  if (isPolicyViolationMessage(raw)) {
+    return {
+      message: getFriendlyPolicyToastMessage(raw),
+      variant: "warning",
+      status: err.status,
+    };
   }
 
-  const trimmed = err.message.trim();
-  const message = looksTechnical(trimmed)
-    ? statusFallback(err.status, fallback)
-    : trimmed || statusFallback(err.status, fallback);
+  const known = matchKnown(raw);
+  if (known) {
+    return {
+      message: known.message,
+      variant: known.variant ?? getErrorVariant(err.status),
+      status: err.status,
+    };
+  }
 
-  return { message, variant: getErrorVariant(err.status), status: err.status };
+  // Unknown backend text — use the caller's action fallback (never raw API body)
+  return {
+    message: statusFallback(err.status, fallback),
+    variant: getErrorVariant(err.status),
+    status: err.status,
+  };
 }
 
 /** Map API errors to short, user-friendly toast text (never raw JSON or HTTP titles). */

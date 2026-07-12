@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { ExpenseRowActions } from "@/components/ExpenseRowActions";
-import { PolicyWarning, SpendStatusBadge } from "@/components/SpendStatusBadge";
+import { PolicyMessageText, PolicyWarning, SpendStatusBadge } from "@/components/SpendStatusBadge";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDeleteDialog, SOFT_DELETE_MESSAGE } from "@/components/ui/ConfirmDeleteDialog";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -91,12 +91,15 @@ export default function EditExpensePage() {
         <div className="flex flex-wrap items-center gap-3">
           <SpendStatusBadge status={expense.spendStatus} />
           {expense.policyViolation ? (
-            <PolicyWarning message={expense.policyMessage ?? "Policy warning"} />
+            <PolicyWarning message={expense.policyMessage} />
           ) : null}
           <TransactionAmount type={expense.type} amount={expense.amount} />
         </div>
         <p className="text-sm text-muted">{formatDateTime(expense.spentAt)}</p>
         {expense.description ? <p className="text-sm text-ink">{expense.description}</p> : null}
+        {expense.policyViolation && expense.policyMessage ? (
+          <PolicyMessageText message={expense.policyMessage} />
+        ) : null}
         {expense.rejectionComment ? (
           <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-200">
             <span className="font-semibold">Rejection reason:</span> {expense.rejectionComment}

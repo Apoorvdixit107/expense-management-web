@@ -57,7 +57,7 @@ export function AssistantChat() {
 
       setMessages((prev) => [...prev, { role: "assistant", content: result.reply }]);
       if (result.mock) {
-        toast.info("Demo AI mode — add GEMINI_API_KEY on backend for full answers.");
+        toast.info("Demo AI mode — answers may be limited right now.");
       }
     } catch (err) {
       showApiError(err, "Failed to get AI reply");

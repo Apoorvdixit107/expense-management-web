@@ -13,20 +13,11 @@ const KNOWN: Array<{ match: string | RegExp; message: string }> = [
   { match: "Failed to load Razorpay checkout", message: "Payment service failed to load. Check your connection and try again." },
 ];
 
-function looksTechnical(message: string): boolean {
-  const text = message.trim();
-  if (!text) return true;
-  if (text.startsWith("{") && text.includes("error")) return true;
-  if (/internal server error|bad_gateway|sql|exception/i.test(text)) return true;
-  if (text.length > 160) return true;
-  return false;
-}
-
 export function getBillingErrorMessage(err: unknown): string {
   if (!(err instanceof ApiError)) {
     const msg = err instanceof Error ? err.message : "";
     if (msg === "Payment cancelled") return "Payment cancelled.";
-    return looksTechnical(msg) ? FALLBACK : msg || FALLBACK;
+    return FALLBACK;
   }
 
   if (err.status === 0) {
@@ -43,9 +34,8 @@ export function getBillingErrorMessage(err: unknown): string {
 
   if (err.status >= 500) return FALLBACK;
 
-  const message = err.message.trim();
-  if (looksTechnical(message)) return FALLBACK;
-  return message;
+  // Never surface unknown payment-provider / backend text
+  return FALLBACK;
 }
 
 /** Status-aware toast for billing / Razorpay errors. */
