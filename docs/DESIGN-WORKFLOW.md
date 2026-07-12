@@ -20,6 +20,12 @@ Design preview screens  →  You approve  →  I implement in Next.js
 
 **http://localhost:3000/design-preview**
 
+### Blog (this week)
+
+- Screens: **Marketing · Blog** (index, post, empty) at `/design-preview`
+- Spec + drafts: [BLOG-DESIGN-SPEC.md](./BLOG-DESIGN-SPEC.md), `content/blog/drafts/`
+- Approve with: **Design approved — implement blog**
+
 ### Current design (v3)
 
 - **Theme:** Crimson orange + white

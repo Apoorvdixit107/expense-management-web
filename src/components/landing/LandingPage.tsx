@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Logo } from "@/components/brand/Logo";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { isAuthenticated } from "@/lib/auth";
 import { postAuthPath } from "@/lib/navigation";
 
@@ -33,38 +34,7 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white text-[#212121]">
-      <header className="sticky top-0 z-50 border-b border-[#ebebeb] bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Logo href="/" height={40} />
-
-          <nav className="hidden items-center gap-8 text-sm font-medium text-[#6b6b6b] md:flex">
-            <a href="#features" className="transition hover:text-[#212121]">
-              Features
-            </a>
-            <a href="#pricing" className="transition hover:text-[#212121]">
-              Pricing
-            </a>
-            <Link href="/login" className="transition hover:text-[#212121]">
-              Sign in
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="hidden rounded-lg border border-[#d1d1d1] px-4 py-2 text-sm font-medium text-[#212121] transition hover:bg-[#fafafa] sm:inline-flex"
-            >
-              Contact sales
-            </Link>
-            <Link
-              href="/register"
-              className="inline-flex rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
-            >
-              Start free trial
-            </Link>
-          </div>
-        </div>
-      </header>
+      <MarketingHeader />
 
       <main>
         <section className="mx-auto grid max-w-6xl gap-12 px-6 py-16 lg:grid-cols-2 lg:items-center lg:py-24">
@@ -142,22 +112,7 @@ export function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-[#ebebeb] py-10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-[#9b9b9b] sm:flex-row">
-          <p>© {new Date().getFullYear()} ExpenseKit</p>
-          <div className="flex gap-6">
-            <Link href="/login" className="hover:text-[#212121]">
-              Sign in
-            </Link>
-            <Link href="/register" className="hover:text-[#212121]">
-              Register
-            </Link>
-            <Link href="/cookies" className="hover:text-[#212121]">
-              Cookies
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
