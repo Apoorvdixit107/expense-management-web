@@ -25,11 +25,11 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
       <MarketingHeader active="blog" />
 
       <main>
-        <section className="mx-auto max-w-6xl px-6 py-14 lg:py-20">
-          <p className="text-sm font-semibold uppercase tracking-widest text-brand">
+        <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-14 lg:py-20">
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand sm:text-sm sm:tracking-widest">
             ExpenseKit Blog
           </p>
-          <h1 className="mt-3 max-w-2xl text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
+          <h1 className="mt-3 max-w-2xl text-3xl font-extrabold leading-[1.1] tracking-tight sm:text-4xl md:text-5xl">
             Spend control, explained.
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#6b6b6b]">
@@ -39,7 +39,7 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
         </section>
 
         <section className="border-t border-[#ebebeb] bg-[#fafafa] py-12">
-          <div className="mx-auto max-w-6xl px-6">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
             {allPosts.length > 0 ? (
               <>
                 <div className="flex flex-wrap gap-2">

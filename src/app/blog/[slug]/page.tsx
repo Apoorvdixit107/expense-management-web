@@ -41,7 +41,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     <div className="min-h-screen bg-white text-[#212121]">
       <MarketingHeader active="blog" />
 
-      <main className="mx-auto max-w-3xl px-6 py-12 lg:py-16">
+      <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-12 lg:py-16">
         <Link href="/blog" className="text-sm font-medium text-brand hover:text-brand-hover">
           ← All posts
         </Link>
@@ -55,7 +55,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <span>{post.readingMinutes} min read</span>
         </div>
 
-        <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+        <h1 className="mt-4 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl md:text-4xl">
           {post.title}
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-[#6b6b6b]">{post.description}</p>
@@ -74,24 +74,26 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <BlogMarkdown content={post.content} />
         </article>
 
-        <aside className="mt-14 rounded-2xl border border-[#ebebeb] bg-[#fafafa] p-8 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-brand">Try ExpenseKit</p>
-          <h2 className="mt-3 text-2xl font-bold tracking-tight">
+        <aside className="mt-14 rounded-2xl border border-[#ebebeb] bg-[#fafafa] p-5 text-center sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand sm:text-sm sm:tracking-widest">
+            Try ExpenseKit
+          </p>
+          <h2 className="mt-3 text-xl font-bold tracking-tight sm:text-2xl">
             Put policy before the spend hits your books
           </h2>
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#6b6b6b]">
             14-day company trial. Policies, approvals, and GST-ready reports for Indian SMBs.
           </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
             <Link
               href="/register"
-              className="inline-flex rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
+              className="inline-flex w-full items-center justify-center rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:w-auto"
             >
               Start free trial
             </Link>
             <Link
               href="/pricing"
-              className="inline-flex rounded-lg border border-[#d1d1d1] bg-white px-5 py-2.5 text-sm font-medium text-[#212121] transition hover:bg-[#fafafa]"
+              className="inline-flex w-full items-center justify-center rounded-lg border border-[#d1d1d1] bg-white px-5 py-2.5 text-sm font-medium text-[#212121] transition hover:bg-[#fafafa] sm:w-auto"
             >
               View pricing
             </Link>

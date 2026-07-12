@@ -1,9 +1,13 @@
 import Link from "next/link";
 
-export function MarketingFooter() {
+type MarketingFooterProps = {
+  className?: string;
+};
+
+export function MarketingFooter({ className = "" }: MarketingFooterProps) {
   return (
-    <footer className="border-t border-[#ebebeb] py-10">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-sm text-[#9b9b9b] sm:flex-row">
+    <footer className={`border-t border-[#ebebeb] py-10 ${className}`.trim()}>
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm text-[#9b9b9b] sm:flex-row sm:px-6">
         <p>© {new Date().getFullYear()} ExpenseKit</p>
         <div className="flex flex-wrap justify-center gap-6">
           <Link href="/pricing" className="hover:text-[#212121]">
