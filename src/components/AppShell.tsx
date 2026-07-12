@@ -14,8 +14,9 @@ import { useUserPreferences } from "@/components/UserPreferencesProvider";
 import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { api } from "@/lib/api";
-import { clearSession, getUser } from "@/lib/auth";
-import { clearSubscriptionState, getSubscriptionSnapshot } from "@/lib/subscription";
+import { getUser } from "@/lib/auth";
+import { getSubscriptionSnapshot } from "@/lib/subscription";
+import { logoutClient } from "@/lib/session";
 import { isNavLinkActive } from "@/lib/navActive";
 import { hasPremiumAccess, isOnFreeTrial, trialDaysLeft, trialExpiredForUser } from "@/lib/premium-access";
 import { ensureTrialStarted } from "@/lib/trial";
@@ -262,8 +263,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   function logout() {
-    clearSession();
-    clearSubscriptionState();
+    logoutClient();
     router.push("/");
   }
 
