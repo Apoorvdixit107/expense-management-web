@@ -72,6 +72,9 @@ async function openCheckout(
   confirmMockPayment?: (checkout: CheckoutSession) => Promise<boolean>
 ) {
   if (checkout.mock) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Payment could not be started. Please try again or contact support.");
+    }
     const confirmed = confirmMockPayment
       ? await confirmMockPayment(checkout)
       : false;
