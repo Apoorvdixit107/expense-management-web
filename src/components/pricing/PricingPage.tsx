@@ -208,3 +208,7 @@ export function PricingPage() {
       </div>
 
       <MarketingFooter className="pb-24 md:pb-10" />
+    </div>
+  );
+}
+
