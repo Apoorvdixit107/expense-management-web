@@ -1,6 +1,11 @@
 import { MockupFrame } from "@/design-preview/primitives";
 import { brand } from "@/design-preview/tokens";
 import { LoginMockup, RegisterMockup } from "@/design-preview/screens/AuthMockups";
+import {
+  BlogEmptyMockup,
+  BlogIndexMockup,
+  BlogPostMockup,
+} from "@/design-preview/screens/BlogMockups";
 import { DashboardMockup } from "@/design-preview/screens/DashboardMockup";
 import { ExpensesMockup } from "@/design-preview/screens/ExpensesMockup";
 import { GuestExpensesMockup } from "@/design-preview/screens/GuestExpensesMockup";
@@ -16,9 +21,33 @@ const screens: {
   label: string;
   title: string;
   note: string;
-  group: "Guest (trial)" | "Auth" | "Subscribe" | "Subscriber";
+  group: "Guest (trial)" | "Auth" | "Subscribe" | "Subscriber" | "Marketing · Blog";
   Mock: ComponentType;
 }[] = [
+  {
+    id: "blog-index",
+    label: "B1. Blog index",
+    title: "Blog — post list",
+    note: "Public marketing. List layout (not cards). Nav includes Blog. Approve before live /blog. Spec: docs/BLOG-DESIGN-SPEC.md",
+    group: "Marketing · Blog",
+    Mock: BlogIndexMockup,
+  },
+  {
+    id: "blog-post",
+    label: "B2. Blog post",
+    title: "Blog — article detail",
+    note: "Long-form + author row + trial CTA. Max-width ~3xl for reading comfort.",
+    group: "Marketing · Blog",
+    Mock: BlogPostMockup,
+  },
+  {
+    id: "blog-empty",
+    label: "B3. Blog empty",
+    title: "Blog — empty state",
+    note: "If no published posts yet. Still offers trial CTA.",
+    group: "Marketing · Blog",
+    Mock: BlogEmptyMockup,
+  },
   {
     id: "guest-expenses",
     label: "1. Expenses (home)",
@@ -101,7 +130,7 @@ const screens: {
   },
 ];
 
-const groups = ["Guest (trial)", "Auth", "Subscribe", "Subscriber"] as const;
+const groups = ["Marketing · Blog", "Guest (trial)", "Auth", "Subscribe", "Subscriber"] as const;
 
 export default function DesignPreviewPage() {
   return (
@@ -113,8 +142,9 @@ export default function DesignPreviewPage() {
               Design review · Crimson orange & white
             </p>
             <h1 className="text-xl font-bold" style={{ color: brand.ink }}>
-              ExpenseKit — Guest-first UX (v3)
+              ExpenseKit — Design review
             </h1>
+            <p className="text-sm text-slate-500">Blog (marketing) + Guest-first UX (v3)</p>
           </div>
           <p className="max-w-xl text-right text-sm text-slate-500">
             Inspired by{" "}
