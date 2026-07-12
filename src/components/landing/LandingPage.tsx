@@ -3,25 +3,12 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ProductIcon } from "@/components/marketing/ProductIcon";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { isAuthenticated } from "@/lib/auth";
 import { postAuthPath } from "@/lib/navigation";
-
-const features = [
-  {
-    title: "Policy at the point of spend",
-    description: "Set limits and receipt rules once — every submission is checked before it hits your books.",
-  },
-  {
-    title: "Approvals finance trusts",
-    description: "Single-level approval queue with audit trail. Nothing posts until finance says yes.",
-  },
-  {
-    title: "GST-ready from day one",
-    description: "GST splits, summaries, and exports built for Indian SMBs and your CA.",
-  },
-];
+import { LANDING_FEATURE_GROUPS } from "@/lib/product-nav";
 
 export function LandingPage() {
   const router = useRouter();
@@ -37,28 +24,28 @@ export function LandingPage() {
       <MarketingHeader />
 
       <main>
-        <section className="mx-auto grid max-w-6xl gap-12 px-6 py-16 lg:grid-cols-2 lg:items-center lg:py-24">
+        <section className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-2 lg:items-center lg:gap-12 lg:py-24">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-widest text-brand">
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand sm:text-sm sm:tracking-widest">
               Built for Indian SMBs · GST-native · Close books with confidence
             </p>
-            <h1 className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight text-[#212121] sm:text-5xl lg:text-[3.25rem]">
+            <h1 className="mt-4 text-3xl font-extrabold leading-[1.1] tracking-tight text-[#212121] sm:text-5xl lg:text-[3.25rem]">
               Control company spend before it hits your books.
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-[#6b6b6b]">
+            <p className="mt-5 max-w-lg text-base leading-relaxed text-[#6b6b6b] sm:mt-6 sm:text-lg">
               India&apos;s spend management platform — policies, approvals, and GST-ready reports for
               growing businesses. Replace receipt chaos with one system your accountant will actually use.
             </p>
-            <div className="mt-10 flex flex-wrap gap-4">
+            <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:gap-4">
               <Link
                 href="/register"
-                className="inline-flex rounded-lg bg-brand px-7 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-brand-hover"
+                className="inline-flex w-full items-center justify-center rounded-lg bg-brand px-7 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-brand-hover sm:w-auto"
               >
                 Get started — 14 days free
               </Link>
               <Link
                 href="/login"
-                className="inline-flex rounded-lg border border-[#d1d1d1] bg-white px-7 py-3.5 text-base font-semibold text-[#212121] transition hover:bg-[#fafafa]"
+                className="inline-flex w-full items-center justify-center rounded-lg border border-[#d1d1d1] bg-white px-7 py-3.5 text-base font-semibold text-[#212121] transition hover:bg-[#fafafa] sm:w-auto"
               >
                 Sign in
               </Link>
@@ -66,53 +53,67 @@ export function LandingPage() {
             <p className="mt-6 text-sm text-[#9b9b9b]">Start your company workspace — no card required.</p>
           </div>
 
-          <div className="relative hidden lg:block">
+          <div className="relative mx-auto w-full max-w-md lg:mx-0 lg:max-w-none">
             <HeroIllustration />
           </div>
         </section>
 
-        <section id="features" className="border-t border-[#ebebeb] bg-[#fafafa] py-20">
-          <div className="mx-auto max-w-6xl px-6">
-            <h2 className="text-center text-3xl font-bold tracking-tight text-[#212121]">
+        <section id="features" className="border-t border-[#ebebeb] bg-[#fafafa] py-14 sm:py-20">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <h2 className="text-center text-2xl font-bold tracking-tight text-[#212121] sm:text-3xl">
               Spend control built for finance teams
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-center text-[#6b6b6b]">
-              ExpenseKit brings policies, approvals, and GST compliance into one calm workspace.
+              ExpenseKit brings policies, approvals, GST, budgets, and AI capture into one calm
+              workspace — explore every capability below.
             </p>
-            <div className="mt-14 grid gap-8 md:grid-cols-3">
-              {features.map((feature) => (
-                <div
-                  key={feature.title}
-                  className="rounded-2xl border border-[#ebebeb] bg-white p-8 shadow-sm"
-                >
-                  <div className="mb-4 h-1 w-10 rounded-full bg-brand" />
-                  <h3 className="text-lg font-bold text-[#212121]">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-[#6b6b6b]">{feature.description}</p>
+
+            <div className="mt-12 space-y-12 sm:mt-16 sm:space-y-16">
+              {LANDING_FEATURE_GROUPS.map((group) => (
+                <div key={group.id} id={group.id}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#9b9b9b]">
+                    {group.label}
+                  </p>
+                  <div className="mt-5 grid gap-4 sm:gap-6 md:grid-cols-3">
+                    {group.items.map((feature) => (
+                      <article
+                        key={feature.id}
+                        id={feature.id}
+                        className="scroll-mt-24 rounded-2xl border border-[#ebebeb] bg-white p-5 shadow-sm sm:scroll-mt-28 sm:p-7"
+                      >
+                        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff3ee] text-brand">
+                          <ProductIcon id={feature.icon} />
+                        </div>
+                        <h3 className="text-lg font-bold text-[#212121]">{feature.title}</h3>
+                        <p className="mt-2 text-sm leading-relaxed text-[#6b6b6b]">{feature.body}</p>
+                      </article>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="pricing" className="py-20">
-          <div className="mx-auto max-w-3xl px-6 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-[#212121]">
+        <section id="pricing" className="py-14 sm:py-20">
+          <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+            <h2 className="text-2xl font-bold tracking-tight text-[#212121] sm:text-3xl">
               Plans for shops, teams, and industry
             </h2>
             <p className="mt-4 text-[#6b6b6b]">
               Free for home &amp; shop. Starter from ₹999/mo. Growth for multi-entity teams. Custom for
               industrialists.
             </p>
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4">
               <Link
                 href="/pricing"
-                className="inline-flex rounded-lg bg-brand px-8 py-3.5 text-base font-semibold text-white transition hover:bg-brand-hover"
+                className="inline-flex w-full items-center justify-center rounded-lg bg-brand px-8 py-3.5 text-base font-semibold text-white transition hover:bg-brand-hover sm:w-auto"
               >
                 View pricing
               </Link>
               <Link
                 href="/register"
-                className="inline-flex rounded-lg border border-[#d1d1d1] bg-white px-8 py-3.5 text-base font-semibold text-[#212121] transition hover:bg-[#fafafa]"
+                className="inline-flex w-full items-center justify-center rounded-lg border border-[#d1d1d1] bg-white px-8 py-3.5 text-base font-semibold text-[#212121] transition hover:bg-[#fafafa] sm:w-auto"
               >
                 Start free trial
               </Link>
@@ -128,8 +129,8 @@ export function LandingPage() {
 
 function HeroIllustration() {
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="rounded-2xl border border-[#e0e0e0] bg-white p-6 shadow-sm">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="rounded-2xl border border-[#e0e0e0] bg-white p-4 shadow-sm sm:p-6">
         <svg viewBox="0 0 200 160" className="h-full w-full" aria-hidden>
           <rect x="20" y="100" width="24" height="40" fill="#FFE8D9" stroke="#212121" strokeWidth="2" />
           <rect x="56" y="70" width="24" height="70" fill="#FF6C37" stroke="#212121" strokeWidth="2" />
@@ -142,7 +143,7 @@ function HeroIllustration() {
           </text>
         </svg>
       </div>
-      <div className="mt-8 rounded-2xl border border-[#e0e0e0] bg-white p-6 shadow-sm">
+      <div className="mt-4 rounded-2xl border border-[#e0e0e0] bg-white p-4 shadow-sm sm:mt-8 sm:p-6">
         <svg viewBox="0 0 200 160" className="h-full w-full" aria-hidden>
           <rect x="30" y="30" width="140" height="90" rx="8" fill="#fafafa" stroke="#212121" strokeWidth="2" />
           <circle cx="55" cy="55" r="10" fill="#FF6C37" stroke="#212121" strokeWidth="2" />
@@ -150,7 +151,15 @@ function HeroIllustration() {
           <line x1="75" y1="65" x2="130" y2="65" stroke="#d1d1d1" strokeWidth="3" strokeLinecap="round" />
           <line x1="75" y1="80" x2="140" y2="80" stroke="#d1d1d1" strokeWidth="3" strokeLinecap="round" />
           <rect x="50" y="100" width="100" height="28" rx="6" fill="#FF6C37" stroke="#212121" strokeWidth="2" />
-          <text x="100" y="118" textAnchor="middle" fontSize="10" fill="white" fontFamily="sans-serif" fontWeight="bold">
+          <text
+            x="100"
+            y="118"
+            textAnchor="middle"
+            fontSize="10"
+            fill="white"
+            fontFamily="sans-serif"
+            fontWeight="bold"
+          >
             Add expense
           </text>
         </svg>
