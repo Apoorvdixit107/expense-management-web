@@ -10,6 +10,7 @@ import { saveSession, updateStoredUser } from "@/lib/auth";
 import { resolvePostAuthPath } from "@/lib/authSession";
 import { applyProfilePreferences } from "@/lib/preferences";
 import { clearReferralCode, getReferralCode } from "@/lib/referral";
+import { safeInternalPath } from "@/lib/safeRedirect";
 
 type GoogleSignInButtonProps = {
   mode: "signin" | "signup";
@@ -50,7 +51,7 @@ export function GoogleSignInButton({ mode, redirectTo }: GoogleSignInButtonProps
       } catch {
         // profile sync is best-effort after sign-in
       }
-      router.push(redirectTo || (await resolvePostAuthPath()));
+      router.push(safeInternalPath(redirectTo) || (await resolvePostAuthPath()));
     } catch (err) {
       showAuthError(err, "google");
     } finally {
