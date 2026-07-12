@@ -1,5 +1,6 @@
 import { getToken } from "./auth";
 import { reportTypeLabel, type OrganizationReport, type OrganizationReportType } from "./reports";
+import { logoutClient } from "./session";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
 
@@ -15,6 +16,13 @@ export async function downloadReportPdf(
     `${API_URL}/api/organizations/${organizationId}/reports/pdf?${params}`,
     { headers: token ? { Authorization: `Bearer ${token}` } : {} }
   );
+  if (response.status === 401) {
+    logoutClient();
+    if (typeof window !== "undefined") {
+      window.location.replace("/login?next=/reports");
+    }
+    throw new Error("Session expired. Please sign in again.");
+  }
   if (!response.ok) throw new Error("Failed to download PDF");
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);
