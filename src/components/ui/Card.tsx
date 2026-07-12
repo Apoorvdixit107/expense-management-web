@@ -7,15 +7,15 @@ type CardProps = {
 };
 
 const paddingMap = {
-  sm: "p-5",
-  md: "p-6",
-  lg: "p-8",
+  sm: "p-4 sm:p-5",
+  md: "p-4 sm:p-6",
+  lg: "p-5 sm:p-8",
 };
 
 export function Card({ children, className = "", padding = "md" }: CardProps) {
   return (
     <div
-      className={`rounded-2xl border border-border bg-surface ${paddingMap[padding]} ${className}`}
+      className={`min-w-0 rounded-2xl border border-border bg-surface ${paddingMap[padding]} ${className}`}
       style={{ boxShadow: "var(--shadow-card)" }}
     >
       {children}

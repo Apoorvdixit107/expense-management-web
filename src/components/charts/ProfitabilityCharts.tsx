@@ -49,9 +49,9 @@ export function ProfitTrendChart({ items }: { items: ProfitPeriodPoint[] }) {
   }
 
   return (
-    <div className="h-[280px] w-full">
+    <div className="h-[240px] w-full min-w-0 overflow-hidden sm:h-[280px]">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
           <XAxis
             dataKey="shortLabel"
@@ -61,11 +61,11 @@ export function ProfitTrendChart({ items }: { items: ProfitPeriodPoint[] }) {
             interval="preserveStartEnd"
           />
           <YAxis
-            tick={{ fontSize: 11, fill: "var(--muted)" }}
+            tick={{ fontSize: 10, fill: "var(--muted)" }}
             axisLine={false}
             tickLine={false}
-            tickFormatter={(v) => formatCurrency(v)}
-            width={72}
+            tickFormatter={(v) => (Math.abs(v) >= 1000 ? `₹${(v / 1000).toFixed(0)}k` : `₹${v}`)}
+            width={44}
           />
           <Tooltip content={<ProfitTooltip />} />
           <Bar dataKey="profit" radius={[4, 4, 0, 0]} maxBarSize={40}>

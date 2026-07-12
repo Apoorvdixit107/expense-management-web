@@ -107,7 +107,7 @@ export default function DashboardPage() {
           )}
         />
 
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
           <StatCard label={`Spend (${periodStatLabel(filter)})`} value={formatCurrency(spendOverview?.totalSpendOut ?? totalOut)} highlight />
           <StatCard
             label="Pending approvals"
@@ -128,11 +128,11 @@ export default function DashboardPage() {
           <DashboardChartCard title="Pending approvals" subtitle="Top items awaiting finance review">
             <ul className="divide-y divide-border">
               {pendingApprovals.map((item) => (
-                <li key={item.id} className="flex items-center justify-between py-3 text-sm">
-                  <span>
+                <li key={item.id} className="flex items-start justify-between gap-3 py-3 text-sm">
+                  <span className="min-w-0 break-words">
                     {item.category} · {item.description || "No description"}
                   </span>
-                  <span className="font-semibold text-ink">{formatCurrency(item.amount)}</span>
+                  <span className="shrink-0 font-semibold text-ink">{formatCurrency(item.amount)}</span>
                 </li>
               ))}
             </ul>
@@ -142,12 +142,12 @@ export default function DashboardPage() {
           </DashboardChartCard>
         ) : null}
 
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
           <StatCard label={`Money in (${periodStatLabel(filter)})`} value={formatCurrency(totalIn)} />
           <StatCard label={`Profit (${periodStatLabel(filter)})`} value={formatCurrency(profit)} highlight={profit >= 0} />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:gap-6">
           <DashboardChartCard title="Today" subtitle="Live cash flow for today">
             <TodayOverviewPanel report={todayReport} />
           </DashboardChartCard>

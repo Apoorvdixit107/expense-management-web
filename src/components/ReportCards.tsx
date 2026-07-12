@@ -8,9 +8,13 @@ function periodAmount(item: PeriodBreakdown): number {
 
 export function StatCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <Card padding="md">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
-      <p className={`mt-3 text-[28px] font-bold leading-none ${highlight ? "text-brand" : "text-ink"}`}>
+    <Card padding="md" className="min-w-0 overflow-hidden">
+      <p className="truncate text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
+      <p
+        className={`mt-3 break-words text-2xl font-bold leading-none sm:text-[28px] ${
+          highlight ? "text-brand" : "text-ink"
+        }`}
+      >
         {value}
       </p>
     </Card>

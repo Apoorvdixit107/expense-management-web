@@ -76,8 +76,8 @@ export function CategoryDonutChart({
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 lg:flex-row">
-      <div className="relative h-[240px] w-full max-w-[280px]">
+    <div className="flex min-w-0 flex-col items-center gap-6 lg:flex-row">
+      <div className="relative mx-auto h-[200px] w-[200px] shrink-0 sm:h-[240px] sm:w-[240px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -86,8 +86,8 @@ export function CategoryDonutChart({
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={62}
-              outerRadius={96}
+              innerRadius="55%"
+              outerRadius="85%"
               paddingAngle={2}
               strokeWidth={0}
             >
@@ -98,20 +98,22 @@ export function CategoryDonutChart({
             <Tooltip content={<ChartTooltip />} />
           </PieChart>
         </ResponsiveContainer>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted">{centerLabel}</p>
-          <p className="text-lg font-bold text-ink">{formatCurrency(total)}</p>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-2">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted sm:text-xs">
+            {centerLabel}
+          </p>
+          <p className="text-base font-bold text-ink sm:text-lg">{formatCurrency(total)}</p>
         </div>
       </div>
-      <ul className="w-full flex-1 space-y-2">
+      <ul className="w-full min-w-0 flex-1 space-y-2">
         {data.map((item) => {
           const pct = total > 0 ? ((item.value / total) * 100).toFixed(1) : "0";
           return (
-            <li key={item.name} className="flex items-center gap-3 text-sm">
+            <li key={item.name} className="flex min-w-0 items-center gap-2 text-sm sm:gap-3">
               <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: item.color }} />
-              <span className="flex-1 truncate font-medium text-ink">{item.name}</span>
-              <span className="text-muted">{pct}%</span>
-              <span className="font-semibold text-ink">{formatCurrency(item.value)}</span>
+              <span className="min-w-0 flex-1 truncate font-medium text-ink">{item.name}</span>
+              <span className="shrink-0 text-muted">{pct}%</span>
+              <span className="shrink-0 font-semibold text-ink">{formatCurrency(item.value)}</span>
             </li>
           );
         })}
@@ -141,10 +143,10 @@ export function CashFlowTrendChart({
   }
 
   return (
-    <div className="h-[260px] w-full">
-      <p className="mb-4 text-sm font-medium text-muted">{title}</p>
+    <div className="h-[240px] w-full min-w-0 overflow-hidden sm:h-[260px]">
+      {title ? <p className="mb-2 text-sm font-medium text-muted sm:mb-4">{title}</p> : null}
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="outGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={BRAND} stopOpacity={0.3} />
@@ -168,7 +170,7 @@ export function CashFlowTrendChart({
             axisLine={false}
             tickLine={false}
             tickFormatter={(v) => (v >= 1000 ? `₹${(v / 1000).toFixed(0)}k` : `₹${v}`)}
-            width={48}
+            width={40}
           />
           <Tooltip
             content={({ active, payload }) => {
@@ -227,10 +229,10 @@ export function SpendingTrendChart({
   }
 
   return (
-    <div className="h-[260px] w-full">
-      <p className="mb-4 text-sm font-medium text-muted">{title}</p>
+    <div className="h-[240px] w-full min-w-0 overflow-hidden sm:h-[260px]">
+      {title ? <p className="mb-2 text-sm font-medium text-muted sm:mb-4">{title}</p> : null}
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="spendGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={BRAND} stopOpacity={0.35} />
@@ -250,7 +252,7 @@ export function SpendingTrendChart({
             axisLine={false}
             tickLine={false}
             tickFormatter={(v) => (v >= 1000 ? `₹${(v / 1000).toFixed(0)}k` : `₹${v}`)}
-            width={48}
+            width={40}
           />
           <Tooltip
             content={({ active, payload }) => {
@@ -292,16 +294,16 @@ export function TopCategoriesChart({ items }: { items: CategoryBreakdown[] }) {
   }
 
   return (
-    <div className="h-[260px] w-full">
+    <div className="h-[240px] w-full min-w-0 overflow-hidden sm:h-[260px]">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
           <XAxis type="number" hide />
           <YAxis
             type="category"
             dataKey="name"
-            width={88}
-            tick={{ fontSize: 12, fill: "var(--ink)" }}
+            width={72}
+            tick={{ fontSize: 11, fill: "var(--ink)" }}
             axisLine={false}
             tickLine={false}
           />
@@ -351,9 +353,9 @@ export function TodayOverviewPanel({ report }: { report: ExpenseReport | null })
       </div>
 
       {hasActivity ? (
-        <div className="h-[140px] w-full">
+        <div className="h-[140px] w-full min-w-0 overflow-hidden">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+            <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 9, fill: "var(--muted)" }}
@@ -399,10 +401,10 @@ export function DashboardChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card>
-      <h2 className="text-lg font-bold text-ink">{title}</h2>
+    <Card className="min-w-0 overflow-hidden">
+      <h2 className="text-base font-bold text-ink sm:text-lg">{title}</h2>
       {subtitle ? <p className="mt-1 text-sm text-muted">{subtitle}</p> : null}
-      <div className="mt-6">{children}</div>
+      <div className="mt-4 min-w-0 overflow-x-auto sm:mt-6">{children}</div>
     </Card>
   );
 }
@@ -417,7 +419,7 @@ const PRESET_PERIODS: { label: string; value: DashboardPeriod }[] = [
 ];
 
 function periodButtonClass(active: boolean) {
-  return `h-10 rounded-xl px-4 text-sm font-semibold transition ${
+  return `h-10 w-full rounded-xl px-2 text-xs font-semibold transition sm:w-auto sm:px-4 sm:text-sm ${
     active
       ? "bg-brand text-white shadow-sm"
       : "border border-border bg-surface text-ink hover:bg-paper"
@@ -436,8 +438,8 @@ export function PeriodSelector({
   }
 
   return (
-    <div className="flex w-full max-w-3xl flex-col items-end gap-3">
-      <div className="flex flex-wrap justify-end gap-2">
+    <div className="flex w-full min-w-0 max-w-3xl flex-col gap-3 sm:items-end">
+      <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:justify-end">
         {PRESET_PERIODS.map((opt) => (
           <button
             key={opt.value}
@@ -451,48 +453,52 @@ export function PeriodSelector({
       </div>
 
       {filter.period === "MONTH" ? (
-        <label className="flex items-center gap-2 text-sm text-muted">
-          <span>Month</span>
+        <label className="flex w-full items-center gap-2 text-sm text-muted sm:w-auto">
+          <span className="shrink-0">Month</span>
           <input
             type="month"
             value={filter.monthInput}
             onChange={(e) => onChange({ ...filter, monthInput: e.target.value })}
-            className="h-10 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 sm:flex-none"
           />
         </label>
       ) : null}
 
       {filter.period === "YEAR" ? (
-        <label className="flex items-center gap-2 text-sm text-muted">
-          <span>Year</span>
+        <label className="flex w-full items-center gap-2 text-sm text-muted sm:w-auto">
+          <span className="shrink-0">Year</span>
           <input
             type="number"
             min={2000}
             max={2100}
             value={filter.yearInput}
             onChange={(e) => onChange({ ...filter, yearInput: Number(e.target.value) })}
-            className="h-10 w-28 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="h-10 w-full max-w-[8rem] rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
         </label>
       ) : null}
 
       {filter.period === "CUSTOM_RANGE" ? (
-        <div className="flex flex-wrap items-center justify-end gap-2 text-sm text-muted">
-          <span>From</span>
-          <input
-            type="date"
-            value={filter.fromDate}
-            onChange={(e) => onChange({ ...filter, fromDate: e.target.value })}
-            className="h-10 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-          />
-          <span>To</span>
-          <input
-            type="date"
-            value={filter.toDate}
-            min={filter.fromDate}
-            onChange={(e) => onChange({ ...filter, toDate: e.target.value })}
-            className="h-10 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-          />
+        <div className="grid w-full grid-cols-1 gap-2 text-sm text-muted sm:flex sm:flex-wrap sm:items-center sm:justify-end">
+          <label className="flex items-center gap-2">
+            <span className="w-10 shrink-0 sm:w-auto">From</span>
+            <input
+              type="date"
+              value={filter.fromDate}
+              onChange={(e) => onChange({ ...filter, fromDate: e.target.value })}
+              className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+            />
+          </label>
+          <label className="flex items-center gap-2">
+            <span className="w-10 shrink-0 sm:w-auto">To</span>
+            <input
+              type="date"
+              value={filter.toDate}
+              min={filter.fromDate}
+              onChange={(e) => onChange({ ...filter, toDate: e.target.value })}
+              className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+            />
+          </label>
         </div>
       ) : null}
     </div>
