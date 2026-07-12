@@ -1,12 +1,16 @@
 import { ApiError } from "./api";
 import { toast } from "@/components/toast";
+import { CONTACT_EMAIL } from "./contact";
 
 const FALLBACK =
   "Payment could not be started. Check your details and try again, or use a different payment method.";
 
 const KNOWN: Array<{ match: string | RegExp; message: string }> = [
   { match: "Payment cancelled", message: "Payment cancelled." },
-  { match: "Payment verification failed", message: "Payment could not be verified. Contact support if money was deducted." },
+  {
+    match: "Payment verification failed",
+    message: `Payment could not be verified. Contact ${CONTACT_EMAIL} if money was deducted.`,
+  },
   { match: /input fields not set properly/i, message: "Payment details were incomplete. Enter your name and a valid 10-digit phone number, then try again." },
   { match: /input_validation_failed/i, message: FALLBACK },
   { match: "Razorpay checkout is unavailable", message: "Payment service failed to load. Refresh the page and try again." },

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { showBillingError } from "@/lib/billingErrors";
+import { CONTACT_EMAIL } from "@/lib/contact";
 import { getUser } from "@/lib/auth";
 import type { BillingCompany, ShippingDetails } from "@/lib/types";
 
@@ -89,7 +90,7 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
           <p className="font-semibold text-ink">Billed by</p>
           <p className="mt-1 text-muted">{billingCompany.companyName}</p>
           <p className="text-muted">{billingCompany.location}</p>
-          <p className="text-muted">{billingCompany.email}</p>
+          <p className="text-muted">{billingCompany.email || CONTACT_EMAIL}</p>
         </div>
       ) : null}
 

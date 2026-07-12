@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { buildRazorpayPrefill, showBillingError } from "@/lib/billingErrors";
+import { CONTACT_EMAIL } from "@/lib/contact";
 import { useSubscription } from "@/components/SubscriptionProvider";
 import type { CheckoutSession, PlanCode, ShippingDetails } from "@/lib/types";
 
@@ -73,7 +74,7 @@ async function openCheckout(
 ) {
   if (checkout.mock) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("Payment could not be started. Please try again or contact support.");
+      throw new Error(`Payment could not be started. Please try again or contact ${CONTACT_EMAIL}.`);
     }
     const confirmed = confirmMockPayment
       ? await confirmMockPayment(checkout)

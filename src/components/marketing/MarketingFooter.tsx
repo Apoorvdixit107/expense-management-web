@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CONTACT_EMAIL, CONTACT_MAILTO } from "@/lib/contact";
 
 type MarketingFooterProps = {
   className?: string;
@@ -25,6 +26,9 @@ export function MarketingFooter({ className = "" }: MarketingFooterProps) {
           <Link href="/cookies" className="hover:text-[#212121]">
             Cookies
           </Link>
+          <a href={CONTACT_MAILTO} className="hover:text-[#212121]">
+            {CONTACT_EMAIL}
+          </a>
         </div>
       </div>
     </footer>
