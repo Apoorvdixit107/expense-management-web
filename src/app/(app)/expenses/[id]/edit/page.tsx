@@ -51,13 +51,20 @@ export default function EditExpensePage() {
 
     api
       .getExpense(expenseId)
-      .then((item) => setExpense(item))
+      .then((item) => {
+        if (currentOrgId != null && item.organizationId !== currentOrgId) {
+          toast.error("This spend belongs to a different entity.");
+          router.replace("/expenses");
+          return;
+        }
+        setExpense(item);
+      })
       .catch((err) => {
         showApiError(err, "Failed to load transaction");
         router.replace("/expenses");
       })
       .finally(() => setLoading(false));
-  }, [expenseId, router]);
+  }, [expenseId, router, currentOrgId]);
 
   if (loading) {
     return <div className="py-20 text-center text-muted">Loading transaction...</div>;
