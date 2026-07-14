@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "@/components/toast";
 import { api } from "@/lib/api";
 import { buildRazorpayPrefill, showBillingError } from "@/lib/billingErrors";
@@ -15,6 +15,25 @@ declare global {
       on: (event: string, handler: (response: { error?: { description?: string } }) => void) => void;
     };
   }
+}
+
+const CHECKOUT_TIMEOUT_MS = 25_000;
+const VERIFY_TIMEOUT_MS = 45_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        window.clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
 }
 
 function loadRazorpayScript(): Promise<void> {
@@ -34,6 +53,13 @@ function loadRazorpayScript(): Promise<void> {
 export function useRazorpayCheckout() {
   const { refresh } = useSubscription();
   const [loadingPlan, setLoadingPlan] = useState<PlanCode | null>(null);
+  const cancelPaymentRef = useRef<(() => void) | null>(null);
+
+  const cancelPayment = useCallback(() => {
+    cancelPaymentRef.current?.();
+    cancelPaymentRef.current = null;
+    setLoadingPlan(null);
+  }, []);
 
   const payForPlan = useCallback(
     async (
@@ -45,47 +71,80 @@ export function useRazorpayCheckout() {
       }
     ) => {
       setLoadingPlan(planCode);
+      let settled = false;
+
+      const cancelWaiters: Array<() => void> = [];
+      cancelPaymentRef.current = () => {
+        if (settled) return;
+        settled = true;
+        for (const cancel of cancelWaiters) cancel();
+      };
 
       try {
-        const checkout = await api.createCheckout({ planCode, shippingDetails, sendInvoiceEmail });
-        await openCheckout(checkout, shippingDetails, refresh, options?.confirmMockPayment);
+        const checkout = await withTimeout(
+          api.createCheckout({ planCode, shippingDetails, sendInvoiceEmail }),
+          CHECKOUT_TIMEOUT_MS,
+          "Payment is taking too long to start. Check your connection and try again."
+        );
+
+        await openCheckout(checkout, shippingDetails, refresh, options?.confirmMockPayment, {
+          onAwaitingPayment: () => {
+            toast.info("Complete payment in the Razorpay window to finish.");
+          },
+          registerCancel: (cancel) => {
+            cancelWaiters.push(cancel);
+          },
+        });
+
+        if (settled) return;
+
         toast.success(
           sendInvoiceEmail
-            ? "Payment successful. Invoice will be emailed to you."
+            ? `Payment successful. Invoice will be emailed from ${CONTACT_EMAIL}.`
             : "Payment successful. Download your invoice from Manage plan."
         );
       } catch (err) {
-        showBillingError(err);
+        if (!settled) showBillingError(err);
       } finally {
+        settled = true;
+        cancelPaymentRef.current = null;
         setLoadingPlan(null);
       }
     },
     [refresh]
   );
 
-  return { payForPlan, loadingPlan };
+  return { payForPlan, loadingPlan, cancelPayment };
 }
 
 async function openCheckout(
   checkout: CheckoutSession,
   shipping: ShippingDetails,
   onSuccess: () => Promise<void>,
-  confirmMockPayment?: (checkout: CheckoutSession) => Promise<boolean>
+  confirmMockPayment?: (checkout: CheckoutSession) => Promise<boolean>,
+  hooks?: {
+    onAwaitingPayment?: () => void;
+    registerCancel?: (cancel: () => void) => void;
+  }
 ) {
   if (checkout.mock) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error(`Payment could not be started. Please try again or contact ${CONTACT_EMAIL}.`);
+      throw new Error(
+        `Live Razorpay keys are not configured on the server. Contact ${CONTACT_EMAIL} or enable mock only for local testing.`
+      );
     }
-    const confirmed = confirmMockPayment
-      ? await confirmMockPayment(checkout)
-      : false;
+    const confirmed = confirmMockPayment ? await confirmMockPayment(checkout) : false;
     if (!confirmed) throw new Error("Payment cancelled");
 
-    await api.verifyPayment({
-      razorpayOrderId: checkout.orderId,
-      razorpayPaymentId: `pay_mock_${Date.now()}`,
-      razorpaySignature: "mock_signature",
-    });
+    await withTimeout(
+      api.verifyPayment({
+        razorpayOrderId: checkout.orderId,
+        razorpayPaymentId: `pay_mock_${Date.now()}`,
+        razorpaySignature: "mock_signature",
+      }),
+      VERIFY_TIMEOUT_MS,
+      "Payment verification timed out. If money was deducted, contact support."
+    );
     await onSuccess();
     return;
   }
@@ -94,7 +153,11 @@ async function openCheckout(
     throw new Error("Payment could not be started. Razorpay is not configured correctly.");
   }
 
-  await loadRazorpayScript();
+  await withTimeout(
+    loadRazorpayScript(),
+    15_000,
+    "Payment service failed to load. Check your connection and try again."
+  );
   if (!window.Razorpay) {
     throw new Error("Razorpay checkout is unavailable");
   }
@@ -102,6 +165,17 @@ async function openCheckout(
   const prefill = buildRazorpayPrefill(shipping);
 
   return new Promise<void>((resolve, reject) => {
+    let done = false;
+    const finish = (fn: () => void) => {
+      if (done) return;
+      done = true;
+      fn();
+    };
+
+    hooks?.registerCancel?.(() => {
+      finish(() => reject(new Error("Payment cancelled")));
+    });
+
     const options: Record<string, unknown> = {
       key: checkout.keyId,
       currency: checkout.currency,
@@ -117,27 +191,32 @@ async function openCheckout(
         razorpay_signature: string;
       }) => {
         try {
-          await api.verifyPayment({
-            razorpayOrderId: response.razorpay_order_id,
-            razorpayPaymentId: response.razorpay_payment_id,
-            razorpaySignature: response.razorpay_signature,
-          });
+          await withTimeout(
+            api.verifyPayment({
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            }),
+            VERIFY_TIMEOUT_MS,
+            `Payment verification timed out. If money was deducted, contact ${CONTACT_EMAIL}.`
+          );
           await onSuccess();
-          resolve();
+          finish(() => resolve());
         } catch (err) {
-          reject(err);
+          finish(() => reject(err));
         }
       },
       modal: {
-        ondismiss: () => reject(new Error("Payment cancelled")),
+        ondismiss: () => finish(() => reject(new Error("Payment cancelled"))),
       },
     };
 
     const razorpay = new window.Razorpay!(options);
     razorpay.on("payment.failed", (response) => {
       const description = response.error?.description;
-      reject(new Error(description || "Payment failed. Please try again."));
+      finish(() => reject(new Error(description || "Payment failed. Please try again.")));
     });
     razorpay.open();
+    hooks?.onAwaitingPayment?.();
   });
 }

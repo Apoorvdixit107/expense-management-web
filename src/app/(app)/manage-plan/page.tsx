@@ -30,7 +30,7 @@ const features = [
 export default function ManagePlanPage() {
   const router = useRouter();
   const { subscription, loading, refresh } = useSubscription();
-  const { payForPlan, loadingPlan } = useRazorpayCheckout();
+  const { payForPlan, loadingPlan, cancelPayment } = useRazorpayCheckout();
   const { confirm, dialog: confirmDialog } = useConfirmDialog();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -166,7 +166,7 @@ export default function ManagePlanPage() {
       <Modal
         open={checkoutPlan != null}
         onClose={() => {
-          if (loadingPlan) return;
+          cancelPayment();
           setCheckoutPlan(null);
         }}
         title="Your billing details"
@@ -180,7 +180,10 @@ export default function ManagePlanPage() {
           <ShippingDetailsForm
             planLabel={checkoutPlan.name}
             loading={loadingPlan === checkoutPlan.code}
-            onCancel={() => setCheckoutPlan(null)}
+            onCancel={() => {
+              cancelPayment();
+              setCheckoutPlan(null);
+            }}
             onSubmit={async (details: ShippingDetails, sendInvoiceEmail: boolean) => {
               await payForPlan(checkoutPlan.code, details, sendInvoiceEmail, {
                 confirmMockPayment: async (checkout) =>
@@ -193,7 +196,7 @@ export default function ManagePlanPage() {
               });
               setCheckoutPlan(null);
               await refresh();
-              const updated = await api.listInvoices();
+              const updated = await api.listInvoices().catch(() => [] as Invoice[]);
               setInvoices(updated);
             }}
           />

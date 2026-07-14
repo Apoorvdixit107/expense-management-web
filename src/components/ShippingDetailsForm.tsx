@@ -130,7 +130,8 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
           <span>
             <span className="block text-sm font-semibold text-ink">Send invoice to my email</span>
             <span className="mt-0.5 block text-xs text-muted">
-              You can always download the PDF from Manage plan. Email is only sent if this is checked.
+              Sent from {CONTACT_EMAIL} only after payment succeeds. You can always download the PDF
+              from Manage plan.
             </span>
           </span>
         </label>
@@ -139,10 +140,16 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
           <Button type="submit" disabled={busy}>
             {busy ? "Processing..." : "Continue to payment"}
           </Button>
-          <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
+          <Button type="button" variant="secondary" onClick={onCancel}>
             Cancel
           </Button>
         </div>
+        {busy ? (
+          <p className="mt-3 text-xs text-muted">
+            Invoice email is not sent while processing — finish (or cancel) payment first. If this
+            stays stuck, press Cancel and try again.
+          </p>
+        ) : null}
       </form>
     </div>
   );
