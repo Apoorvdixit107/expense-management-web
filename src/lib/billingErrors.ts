@@ -15,25 +15,31 @@ const KNOWN: Array<{ match: string | RegExp; message: string }> = [
   { match: /input_validation_failed/i, message: FALLBACK },
   { match: "Razorpay checkout is unavailable", message: "Payment service failed to load. Refresh the page and try again." },
   { match: "Failed to load Razorpay checkout", message: "Payment service failed to load. Check your connection and try again." },
+  { match: /taking too long/i, message: "Payment is taking too long to start. Check your connection and try again." },
+  { match: /verification timed out/i, message: `Payment verification timed out. If money was deducted, contact ${CONTACT_EMAIL}.` },
+  { match: /Live Razorpay keys/i, message: `Live Razorpay keys are not configured on the server. Contact ${CONTACT_EMAIL}.` },
 ];
 
 export function getBillingErrorMessage(err: unknown): string {
+  const rawMessage =
+    err instanceof ApiError || err instanceof Error ? err.message : "";
+
+  if (rawMessage === "Payment cancelled") return "Payment cancelled.";
+
+  for (const entry of KNOWN) {
+    if (typeof entry.match === "string") {
+      if (rawMessage.includes(entry.match)) return entry.message;
+    } else if (entry.match.test(rawMessage)) {
+      return entry.message;
+    }
+  }
+
   if (!(err instanceof ApiError)) {
-    const msg = err instanceof Error ? err.message : "";
-    if (msg === "Payment cancelled") return "Payment cancelled.";
     return FALLBACK;
   }
 
   if (err.status === 0) {
     return "Cannot reach the server. Check your connection and try again.";
-  }
-
-  for (const entry of KNOWN) {
-    if (typeof entry.match === "string") {
-      if (err.message.includes(entry.match)) return entry.message;
-    } else if (entry.match.test(err.message)) {
-      return entry.message;
-    }
   }
 
   if (err.status >= 500) return FALLBACK;
