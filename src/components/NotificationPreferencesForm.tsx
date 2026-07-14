@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/toast";
 import { showApiError } from "@/lib/apiErrors";
 import { api } from "@/lib/api";
+import { CONTACT_EMAIL } from "@/lib/contact";
 import type { NotificationPreferences } from "@/lib/types";
 
 export function NotificationPreferencesForm() {
@@ -45,9 +46,9 @@ export function NotificationPreferencesForm() {
     try {
       await api.updateNotificationPreferences(prefs);
       await api.sendTestNotification();
-      toast.success("Test notification sent.");
+      toast.success("Check your inbox (and spam).");
     } catch (err) {
-      showApiError(err, "Failed to send test notification");
+      showApiError(err, "Failed to send test email");
     } finally {
       setTesting(false);
     }
@@ -58,6 +59,7 @@ export function NotificationPreferencesForm() {
       <h2 className="text-lg font-bold text-ink">Email & SMS preferences</h2>
       <p className="mt-1 text-sm text-muted">
         Get expense alerts instantly and a daily summary at 8 PM with a link to your reports.
+        Alerts are sent from ExpenseKit ({CONTACT_EMAIL}).
       </p>
 
       <div className="mt-6 space-y-4">
@@ -106,7 +108,7 @@ export function NotificationPreferencesForm() {
           {saving ? "Saving..." : "Save preferences"}
         </Button>
         <Button variant="secondary" onClick={() => void sendTest()} disabled={testing || saving}>
-          {testing ? "Sending..." : "Send test notification"}
+          {testing ? "Sending..." : "Send test email"}
         </Button>
       </div>
     </Card>

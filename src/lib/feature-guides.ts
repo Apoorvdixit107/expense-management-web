@@ -353,7 +353,8 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuideContent> = {
       },
       {
         label: "Invites",
-        detail: "Send an email invite. They join your entity when they accept and sign in.",
+        detail:
+          "Create an invite link and share it. They join your entity when they open the link and sign in.",
       },
     ],
     tip: "Give finance role only to people who should approve spends and see all transactions.",

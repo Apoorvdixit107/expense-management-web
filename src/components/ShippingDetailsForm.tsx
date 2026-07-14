@@ -90,7 +90,12 @@ export function ShippingDetailsForm({ onSubmit, onCancel, loading, planLabel }: 
           <p className="font-semibold text-ink">Billed by</p>
           <p className="mt-1 text-muted">{billingCompany.companyName}</p>
           <p className="text-muted">{billingCompany.location}</p>
-          <p className="text-muted">{billingCompany.email || CONTACT_EMAIL}</p>
+          <a
+            href={`mailto:${billingCompany.email || CONTACT_EMAIL}`}
+            className="text-muted underline-offset-2 hover:text-brand hover:underline"
+          >
+            {billingCompany.email || CONTACT_EMAIL}
+          </a>
         </div>
       ) : null}
 
