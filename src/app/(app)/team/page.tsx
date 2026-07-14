@@ -15,6 +15,15 @@ import { FinanceRoleGuard } from "@/components/FinanceRoleGuard";
 import { FeatureGuideTrigger } from "@/components/FeatureGuide";
 import type { OrganizationInvite, OrganizationMember, OrgMemberRole } from "@/lib/types";
 
+async function copyInviteLink(url: string) {
+  try {
+    await navigator.clipboard.writeText(url);
+    toast.success("Invite link copied.");
+  } catch {
+    toast.error("Could not copy link. Copy it manually from the list.");
+  }
+}
+
 export default function TeamPage() {
   const { currentOrgId } = useOrganization();
   const [members, setMembers] = useState<OrganizationMember[]>([]);
@@ -23,6 +32,7 @@ export default function TeamPage() {
   const [role, setRole] = useState<Exclude<OrgMemberRole, "OWNER">>("MEMBER");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [lastInvite, setLastInvite] = useState<OrganizationInvite | null>(null);
 
   function load() {
     if (!currentOrgId) {
@@ -48,12 +58,16 @@ export default function TeamPage() {
     if (!currentOrgId) return;
     setSaving(true);
     try {
-      await api.inviteTeamMember(currentOrgId, { email, role });
-      toast.success("Invite sent");
+      const invite = await api.inviteTeamMember(currentOrgId, { email, role });
+      setLastInvite(invite);
+      toast.success("Invite created — copy the link to share.");
       setEmail("");
       load();
+      if (invite.acceptUrl) {
+        await copyInviteLink(invite.acceptUrl);
+      }
     } catch (err) {
-      showApiError(err, "Could not send invite");
+      showApiError(err, "Could not create invite");
     } finally {
       setSaving(false);
     }
@@ -70,7 +84,10 @@ export default function TeamPage() {
       />
 
       <Card className="mt-8" padding="lg">
-        <h2 className="text-lg font-semibold text-ink">Invite by email</h2>
+        <h2 className="text-lg font-semibold text-ink">Create invite</h2>
+        <p className="mt-1 text-sm text-muted">
+          Creates a link to share. Email invite delivery is not sent automatically yet.
+        </p>
         <form onSubmit={handleInvite} className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
           <Input
             label="Email"
@@ -95,9 +112,24 @@ export default function TeamPage() {
             </select>
           </div>
           <Button type="submit" variant="primary" disabled={saving}>
-            {saving ? "Sending…" : "Send invite"}
+            {saving ? "Creating…" : "Create invite"}
           </Button>
         </form>
+
+        {lastInvite?.acceptUrl ? (
+          <div className="mt-4 rounded-xl border border-border bg-paper p-4 text-sm">
+            <p className="font-medium text-ink">Share this link with {lastInvite.email}</p>
+            <p className="mt-2 break-all text-muted">{lastInvite.acceptUrl}</p>
+            <Button
+              type="button"
+              variant="secondary"
+              className="mt-3"
+              onClick={() => void copyInviteLink(lastInvite.acceptUrl)}
+            >
+              Copy invite link
+            </Button>
+          </div>
+        ) : null}
       </Card>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -125,7 +157,7 @@ export default function TeamPage() {
           {invites.length === 0 ? (
             <p className="mt-4 text-sm text-muted">No pending invites.</p>
           ) : (
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-4 space-y-3">
               {invites.map((invite) => (
                 <li
                   key={invite.id}
@@ -136,6 +168,16 @@ export default function TeamPage() {
                     {invite.role} · expires{" "}
                     {invite.expiresAt ? new Date(invite.expiresAt).toLocaleDateString() : "—"}
                   </p>
+                  {invite.acceptUrl ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="mt-2"
+                      onClick={() => void copyInviteLink(invite.acceptUrl)}
+                    >
+                      Copy link
+                    </Button>
+                  ) : null}
                 </li>
               ))}
             </ul>
